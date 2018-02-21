@@ -1,5 +1,6 @@
 
+cd tabs
+call join
+cd ..
 
-C:\shell_w32\bash.exe join.sh
-
-PAUSE
+copy  /b main.js  +bin.js  +lctf.js  +tabs\tabs.js   Typr.js
