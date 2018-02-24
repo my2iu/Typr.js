@@ -63,10 +63,22 @@ Typr.U.glyphToPath = function(font, gid)
 	return path;
 }
 
-Typr.U._drawGlyf = function(gid, font, path)
+Typr.U.getGlyphDimentions = function(font, gid)
+{
+	var gl = Typr.U._getGlyf(gid, font);
+	if (gl != null)
+		return [gl.xMin, gl.yMin, gl.xMax, gl.yMax];
+	return null;
+}
+Typr.U._getGlyf = function(gid, font)
 {
 	var gl = font.glyf[gid];
 	if(gl==null) gl = font.glyf[gid] = Typr.glyf._parseGlyf(font, gid);
+	return gl;
+}
+Typr.U._drawGlyf = function(gid, font, path)
+{
+	var gl = Typr.U._getGlyf(gid, font);
 	if(gl!=null){
 		if(gl.noc>-1) Typr.U._simpleGlyph(gl, path);
 		else          Typr.U._compoGlyph (gl, font, path);
@@ -308,6 +320,22 @@ Typr.U._applyType1 = function(gls, ci, tab) {
 		else            gls[ci] = ttab.newg[ind];
 		//console.log(ci, gl, "subst", flist[fi].tag, i, j, ttab.newg[ind]);
 	}
+}
+
+Typr.U.glyphsToPositions = function(font, gls)
+{	
+	var pos = [];
+	var x = 0;
+	
+	for(var i=0; i<gls.length; i++)
+	{
+		var gid = gls[i];  if(gid==-1) continue;
+		var gid2 = (i<gls.length-1 && gls[i+1]!=-1)  ? gls[i+1] : 0;
+		x += font.hmtx.aWidth[gid];
+		if(i<gls.length-1) x += Typr.U.getPairAdjustment(font, gid, gid2);
+		pos.push(x);
+	}
+	return pos;
 }
 
 Typr.U.glyphsToPath = function(font, gls, clr)
