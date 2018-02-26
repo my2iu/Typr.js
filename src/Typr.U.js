@@ -63,7 +63,7 @@ Typr.U.glyphToPath = function(font, gid)
 	return path;
 }
 
-Typr.U.getGlyphDimentions = function(font, gid)
+Typr.U.getGlyphDimensions = function(font, gid)
 {
 	var gl = Typr.U._getGlyf(gid, font);
 	if (gl != null)
@@ -326,6 +326,7 @@ Typr.U.glyphsToPositions = function(font, gls)
 {	
 	var pos = [];
 	var x = 0;
+	pos.push(0);
 	
 	for(var i=0; i<gls.length; i++)
 	{
