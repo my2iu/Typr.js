@@ -1,11 +1,18 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr.maxp = {};
-Typr.maxp.parse = function(data, offset, length)
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace="Typr")
+public class maxp
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length)
+  /*-{
 	//console.log(data.length, offset, length);
 	
-	var bin = Typr._bin;
+	var bin = $wnd.Typr._bin;
 	var obj = {};
 	
 	// both versions 0.5 and 1.0
@@ -31,4 +38,5 @@ Typr.maxp.parse = function(data, offset, length)
 	}
 	
 	return obj;
+}-*/;
 }

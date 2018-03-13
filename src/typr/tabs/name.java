@@ -1,9 +1,16 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr.name = {};
-Typr.name.parse = function(data, offset, length)
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace="Typr")
+public class name
 {
-	var bin = Typr._bin;
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length)
+  /*-{
+	var bin = $wnd.Typr._bin;
 	var obj = {};
 	var format = bin.readUshort(data, offset);  offset += 2;
 	var count  = bin.readUshort(data, offset);  offset += 2;
@@ -70,17 +77,15 @@ Typr.name.parse = function(data, offset, length)
 		obj[plat][cname] = str;
 		obj[plat]._lang = languageID;
 	}
-	/*
-	if(format == 1)
-	{
-		var langTagCount = bin.readUshort(data, offset);  offset += 2;
-		for(var i=0; i<langTagCount; i++)
-		{
-			var length  = bin.readUshort(data, offset);  offset += 2;
-			var noffset = bin.readUshort(data, offset);  offset += 2;
-		}
-	}
-	*/
+//	if(format == 1)
+//	{
+//		var langTagCount = bin.readUshort(data, offset);  offset += 2;
+//		for(var i=0; i<langTagCount; i++)
+//		{
+//			var length  = bin.readUshort(data, offset);  offset += 2;
+//			var noffset = bin.readUshort(data, offset);  offset += 2;
+//		}
+//	}
 	
 	//console.log(obj);
 	
@@ -92,4 +97,5 @@ Typr.name.parse = function(data, offset, length)
 	for(var p in obj) { tname=p; break; }
 	console.log("returning name table with languageID "+ obj[tname]._lang);
 	return obj[tname];
+}-*/;
 }

@@ -1,9 +1,16 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr.post = {};
-Typr.post.parse = function(data, offset, length)
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace="Typr")
+public class post
 {
-	var bin = Typr._bin;
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length)
+  /*-{
+	var bin = $wnd.Typr._bin;
 	var obj = {};
 	
 	obj.version           = bin.readFixed(data, offset);  offset+=4;
@@ -12,4 +19,5 @@ Typr.post.parse = function(data, offset, length)
 	obj.underlineThickness = bin.readShort(data, offset);  offset+=2;
 
 	return obj;
+}-*/;
 }
