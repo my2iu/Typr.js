@@ -1,8 +1,15 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr["OS/2"] = {};
-Typr["OS/2"].parse = function(data, offset, length)
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace="Typr")
+public class OS2
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length)
+  /*-{
 	var bin = Typr._bin;
 	var ver = bin.readUshort(data, offset); offset += 2;
 	
@@ -14,10 +21,10 @@ Typr["OS/2"].parse = function(data, offset, length)
 	else throw "unknown OS/2 table version: "+ver;
 	
 	return obj;
-}
+}-*/;
 
-Typr["OS/2"].version0 = function(data, offset, obj)
-{
+  @JsMethod public static native JavaScriptObject version0 (JavaScriptObject data, int offset, JavaScriptObject obj)
+  /*-{
 	var bin = Typr._bin;
 	obj.xAvgCharWidth = bin.readShort(data, offset); offset += 2;
 	obj.usWeightClass = bin.readUshort(data, offset); offset += 2;
@@ -49,20 +56,20 @@ Typr["OS/2"].version0 = function(data, offset, obj)
 	obj.usWinAscent = bin.readUshort(data, offset); offset += 2;
 	obj.usWinDescent = bin.readUshort(data, offset); offset += 2;
 	return offset;
-}
+}-*/;
 
-Typr["OS/2"].version1 = function(data, offset, obj)
-{
+  @JsMethod public static native JavaScriptObject version1 (JavaScriptObject data, int offset, JavaScriptObject obj)
+  /*-{
 	var bin = Typr._bin;
 	offset = Typr["OS/2"].version0(data, offset, obj);
 	
 	obj.ulCodePageRange1 = bin.readUint(data, offset); offset += 4;
 	obj.ulCodePageRange2 = bin.readUint(data, offset); offset += 4;
 	return offset;
-}
+}-*/;
 
-Typr["OS/2"].version2 = function(data, offset, obj)
-{
+  @JsMethod public static native JavaScriptObject version2 (JavaScriptObject data, int offset, JavaScriptObject obj)
+  /*-{
 	var bin = Typr._bin;
 	offset = Typr["OS/2"].version1(data, offset, obj);
 	
@@ -72,14 +79,15 @@ Typr["OS/2"].version2 = function(data, offset, obj)
 	obj.usBreak = bin.readUshort(data, offset); offset += 2;
 	obj.usMaxContext = bin.readUshort(data, offset); offset += 2;
 	return offset;
-}
+}-*/;
 
-Typr["OS/2"].version5 = function(data, offset, obj)
-{
+  @JsMethod public static native JavaScriptObject version5 (JavaScriptObject data, int offset, JavaScriptObject obj)
+  /*-{
 	var bin = Typr._bin;
 	offset = Typr["OS/2"].version2(data, offset, obj);
 
 	obj.usLowerOpticalPointSize = bin.readUshort(data, offset); offset += 2;
 	obj.usUpperOpticalPointSize = bin.readUshort(data, offset); offset += 2;
 	return offset;
+}-*/;
 }
