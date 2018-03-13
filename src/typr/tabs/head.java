@@ -1,15 +1,19 @@
 package typr.tabs;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace="Typr")
 public class head
 {
+  @JsProperty public int unitsPerEm;
+  @JsProperty public int xMin;
+  @JsProperty public int xMax;
+  @JsProperty public int yMin;
+  @JsProperty public int yMax;
+  
   @JsIgnore 
   public static native head parse(Uint8Array data, int offset, int length) /*-{
 	var bin = Typr._bin;

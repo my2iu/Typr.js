@@ -7,7 +7,6 @@ import elemental.html.Uint8Array;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
-import typr.GwtTestEntryPoint.TyprFont;
 import typr.tabs.CFF;
 import typr.tabs.GPOS;
 import typr.tabs.GSUB;

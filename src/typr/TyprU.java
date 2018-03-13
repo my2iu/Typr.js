@@ -6,8 +6,6 @@ import elemental.html.CanvasRenderingContext2D;
 import elemental.util.ArrayOfInt;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
-import typr.GwtTestEntryPoint.TyprFont;
-import typr.GwtTestEntryPoint.TyprPath;
 
 @JsType(namespace="Typr",name="U")
 public class TyprU
