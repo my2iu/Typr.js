@@ -6,11 +6,12 @@ import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
+import typr.TyprFont;
 
 @JsType(namespace="Typr")
 public class GSUB
 {
-  @JsIgnore public static native JavaScriptObject parse (Uint8Array data, int offset, int length, JavaScriptObject font) /*-{  return Typr._lctf.parse(data, offset, length, font, Typr.GSUB.subt);  }-*/;
+  @JsIgnore public static native GSUB parse (Uint8Array data, int offset, int length, TyprFont font) /*-{  return Typr._lctf.parse(data, offset, length, font, Typr.GSUB.subt);  }-*/;
 
 
   @JsMethod public static native JavaScriptObject subt (JavaScriptObject data, JavaScriptObject ltype, int offset)	// lookup type

@@ -94,9 +94,7 @@ public class Typr
 		//console.log(t);
 		//if(tabs[t]) console.log(t, tabs[t].offset, tabs[t].length);
 		if (tabs[t]) {
-		  var parsed = @typr.Typr::parseTab(Lcom/google/gwt/core/client/JavaScriptObject;Lelemental/html/Uint8Array;IILjava/lang/String;)(obj,data,tabs[t].offset, tabs[t].length,t);
-		  if (parsed)
-		    obj[t.trim()] = parsed;
+		  @typr.Typr::parseTab(Ltypr/TyprFont;Lelemental/html/Uint8Array;IILjava/lang/String;)(obj,data,tabs[t].offset, tabs[t].length,t);
 		}
 //		if(tabs[t]) obj[t.trim()] = Typr[t.trim()].parse(data, tabs[t].offset, tabs[t].length, obj);
 	}
@@ -104,54 +102,68 @@ public class Typr
 	return obj;
 }-*/;
 
-  static Object parseTab(JavaScriptObject obj, Uint8Array data, int offset, int length, String tag)
+  static void parseTab(TyprFont obj, Uint8Array data, int offset, int length, String tag)
   {
     switch(tag)
     {
     case "cmap":
-      return cmap.parse(data, offset, length);
+      obj.cmap = cmap.parse(data, offset, length);
+      break;
     case "head":
-      return head.parse(data, offset, length);
+      obj.head = head.parse(data, offset, length);
+      break;
     case "hhea":
-      return hhea.parse(data, offset, length);
+      obj.hhea = hhea.parse(data, offset, length);
+      break;
     case "maxp":
-      return maxp.parse(data, offset, length);
+      obj.maxp = maxp.parse(data, offset, length);
+      break;
     case "hmtx":
-      return hmtx.parse(data, offset, length, obj);
+      obj.hmtx = hmtx.parse(data, offset, length, obj);
+      break;
     case "name":
-      return name.parse(data, offset, length);
+      obj.name = name.parse(data, offset, length);
+      break;
     case "OS/2":
-      return OS2.parse(data, offset, length);
+      obj.OS2 = OS2.parse(data, offset, length);
+      break;
     case "post":
-      return post.parse(data, offset, length);
+      obj.post = post.parse(data, offset, length);
+      break;
     
     //"cvt",
     //"fpgm",
     case "loca":
-      return loca.parse(data, offset, length, obj);
+      obj.loca = loca.parse(data, offset, length, obj);
+      break;
     case "glyf":
-      return glyf.parse(data, offset, length, obj);
+      obj.glyf = glyf.parse(data, offset, length, obj);
+      break;
     case "kern":
-      return kern.parse(data, offset, length, obj);
+      obj.kern = kern.parse(data, offset, length, obj);
+      break;
     
     //"prep"
     //"gasp"
     
     case "CFF ":
-      return CFF.parse(data, offset, length);
+      obj.CFF = CFF.parse(data, offset, length);
+      break;
     
     
     case "GPOS":
-      return GPOS.parse(data, offset, length, obj);
+      obj.GPOS = GPOS.parse(data, offset, length, obj);
+      break;
     case "GSUB":
-      return GSUB.parse(data, offset, length, obj);
+      obj.GSUB = GSUB.parse(data, offset, length, obj);
+      break;
     
     case "SVG ":
-      return SVG.parse(data, offset, length);
+      obj.SVG = SVG.parse(data, offset, length);
+      break;
     //"VORG",
     
     }
-    return null;
     
   }
   

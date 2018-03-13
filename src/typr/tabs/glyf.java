@@ -6,11 +6,12 @@ import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
+import typr.TyprFont;
 
 @JsType(namespace="Typr")
 public class glyf
 {
-  @JsIgnore public static native JavaScriptObject parse (Uint8Array data, int offset, int length, JavaScriptObject font)
+  @JsIgnore public static native glyf parse (Uint8Array data, int offset, int length, TyprFont font)
   /*-{
 	var obj = [];
 	for(var g=0; g<font.maxp.numGlyphs; g++) obj.push(null);

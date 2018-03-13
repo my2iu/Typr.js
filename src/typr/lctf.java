@@ -2,6 +2,7 @@ package typr;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import elemental.html.Uint8Array;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
 
@@ -10,7 +11,7 @@ import jsinterop.annotations.JsType;
 @JsType(name="_lctf", namespace="Typr")
 public class lctf
 {
-  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length, JavaScriptObject font, JavaScriptObject subt)
+  @JsMethod public static native JavaScriptObject parse (Uint8Array data, int offset, int length, TyprFont font, JavaScriptObject subt)
   /*-{
 	var bin = Typr._bin;
 	var obj = {};
@@ -29,7 +30,7 @@ public class lctf
 	return obj;
 }-*/;
 
-  @JsMethod public static native JavaScriptObject readLookupList (JavaScriptObject data, int offset, JavaScriptObject subt)
+  @JsMethod public static native JavaScriptObject readLookupList (Uint8Array data, int offset, JavaScriptObject subt)
   /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
@@ -44,7 +45,7 @@ public class lctf
 	return obj;
 }-*/;
 
-  @JsMethod public static native JavaScriptObject readLookupTable (JavaScriptObject data, JavaScriptObject offset, JavaScriptObject subt)
+  @JsMethod public static native JavaScriptObject readLookupTable (Uint8Array data, JavaScriptObject offset, JavaScriptObject subt)
   /*-{
 	//console.log("Parsing lookup table", offset);
 	var bin = Typr._bin;

@@ -10,7 +10,7 @@ import jsinterop.annotations.JsType;
 @JsType(namespace="Typr")
 public class SVG
 {
-  @JsIgnore public static native JavaScriptObject parse (Uint8Array data, int offset, int length)
+  @JsIgnore public static native SVG parse (Uint8Array data, int offset, int length)
   /*-{
 	var bin = Typr._bin;
 	var obj = { entries: []};

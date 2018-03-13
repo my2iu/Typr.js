@@ -1,16 +1,14 @@
 package typr.tabs;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
+import typr.TyprFont;
 
 @JsType(namespace="Typr")
 public class loca
 {
-  @JsIgnore  public static native JavaScriptObject parse (Uint8Array data, int offset, int length, JavaScriptObject font)
+  @JsIgnore  public static native loca parse (Uint8Array data, int offset, int length, TyprFont font)
   /*-{
 	var bin = Typr._bin;
 	var obj = [];

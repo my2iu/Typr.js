@@ -10,7 +10,7 @@ import jsinterop.annotations.JsType;
 @JsType(namespace="Typr")
 public class OS2
 {
-  @JsIgnore  public static native JavaScriptObject parse (Uint8Array data, int offset, int length)
+  @JsIgnore  public static native OS2 parse (Uint8Array data, int offset, int length)
   /*-{
 	var bin = Typr._bin;
 	var ver = bin.readUshort(data, offset); offset += 2;

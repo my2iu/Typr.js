@@ -6,11 +6,12 @@ import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
+import typr.TyprFont;
 
 @JsType(namespace="Typr")
 public class GPOS
 {
-  @JsIgnore public static native JavaScriptObject parse (Uint8Array data, int offset, int length, JavaScriptObject font) /*-{  return Typr._lctf.parse(data, offset, length, font, Typr.GPOS.subt);  }-*/;
+  @JsIgnore public static native GPOS parse (Uint8Array data, int offset, int length, TyprFont font) /*-{  return Typr._lctf.parse(data, offset, length, font, Typr.GPOS.subt);  }-*/;
 
 
 

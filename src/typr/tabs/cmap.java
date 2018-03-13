@@ -10,7 +10,7 @@ import jsinterop.annotations.JsType;
 @JsType(namespace="Typr")
 public class cmap
 {
-  @JsIgnore public static native JavaScriptObject parse(Uint8Array data, int offset, int length)
+  @JsIgnore public static native cmap parse(Uint8Array data, int offset, int length)
   /*-{
 	data = new Uint8Array(data.buffer, offset, length);
 	offset = 0;

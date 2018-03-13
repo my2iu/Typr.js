@@ -12,7 +12,7 @@ import jsinterop.annotations.JsType;
 @JsType(namespace="Typr")
 public class CFF
 {
-  @JsIgnore public static native JavaScriptObject parse (Uint8Array data, int offset, int length)
+  @JsIgnore public static native CFF parse (Uint8Array data, int offset, int length)
   /*-{
         var bin = Typr._bin;
         

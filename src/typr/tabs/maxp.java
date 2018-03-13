@@ -1,16 +1,13 @@
 package typr.tabs;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace="Typr")
 public class maxp
 {
-  @JsIgnore  public static native JavaScriptObject parse (Uint8Array data, int offset, int length)
+  @JsIgnore  public static native maxp parse (Uint8Array data, int offset, int length)
   /*-{
 	//console.log(data.length, offset, length);
 	
