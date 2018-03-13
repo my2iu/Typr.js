@@ -1,5 +1,6 @@
 package typr;
 
+import elemental.util.ArrayOfInt;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -15,7 +16,7 @@ public class TyprFont
   @JsProperty public typr.tabs.name name;
   @JsProperty public typr.tabs.OS2 OS2;
   @JsProperty public typr.tabs.post post;
-  @JsProperty public typr.tabs.loca loca;
+  @JsProperty public ArrayOfInt loca;
   @JsProperty public typr.tabs.glyf glyf;
   @JsProperty public typr.tabs.kern kern;
   @JsProperty public typr.tabs.CFF CFF;

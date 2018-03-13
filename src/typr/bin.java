@@ -19,10 +19,10 @@ import jsinterop.annotations.JsType;
 @JsType(namespace="Typr",name="_bin")
 public class bin
 {
-  @JsMethod public static native JavaScriptObject readFixed (JavaScriptObject data, JavaScriptObject o)
-  /*-{
-		return ((data[o]<<8) | data[o+1]) +  (((data[o+2]<<8)|data[o+3])/(256*256+4));
-	}-*/;
+  @JsMethod public static int readFixed (Uint8Array data, int o)
+  {
+		return ((data.intAt(o)<<8) | data.intAt(o+1)) +  (((data.intAt(o+2)<<8)|data.intAt(o+3))/(256*256+4));
+	}
 	@JsMethod public static native JavaScriptObject readF2dot14 (JavaScriptObject data, JavaScriptObject o)
 	/*-{
 		var num = Typr._bin.readShort(data, o);
@@ -49,18 +49,18 @@ public class bin
 		a[0] = buff[p];
 		return Typr._bin.t.int8[0];
 	}-*/;
-	@JsMethod public static native JavaScriptObject readShort (JavaScriptObject buff, JavaScriptObject p)
-	/*-{
+	@JsMethod public static short readShort (Uint8Array buff, int p)
+	{
 		//if(p>=buff.length) throw "error";
-		var a = Typr._bin.t.uint8;
-		a[1] = buff[p]; a[0] = buff[p+1];
-		return Typr._bin.t.int16[0];
-	}-*/;
-	@JsMethod public static native JavaScriptObject readUshort (JavaScriptObject buff, JavaScriptObject p)
-	/*-{
+		SettableInt a = (SettableInt)t.uint8;
+		a.setAt(1, buff.intAt(p)); a.setAt(0, buff.intAt(p+1));
+		return (short)t.int16.intAt(0);
+	}
+	@JsMethod public static int readUshort (Uint8Array buff, int p)
+	{
 		//if(p>=buff.length) throw "error";
-		return (buff[p]<<8) | buff[p+1];
-	}-*/;
+		return (buff.intAt(p)<<8) | buff.intAt(p+1);
+	}
 	@JsMethod public static native JavaScriptObject readUshorts (JavaScriptObject buff, JavaScriptObject p, JavaScriptObject len)
 	/*-{
 		var arr = [];
