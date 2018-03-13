@@ -1,11 +1,19 @@
+package typr;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-// OpenType Layout Common Table Formats
+import elemental.util.ArrayOfInt;
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
 
-Typr._lctf = {};
+//OpenType Layout Common Table Formats
 
-Typr._lctf.parse = function(data, offset, length, font, subt)
+@JsType(namespace="Typr")
+public class _lctf
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length, JavaScriptObject font, JavaScriptObject subt)
+  /*-{
 	var bin = Typr._bin;
 	var obj = {};
 	var offset0 = offset;
@@ -21,10 +29,10 @@ Typr._lctf.parse = function(data, offset, length, font, subt)
 	obj.lookupList  = Typr._lctf.readLookupList (data, offset0 + offLookupList, subt);
 	
 	return obj;
-}
+}-*/;
 
-Typr._lctf.readLookupList = function(data, offset, subt)
-{
+  @JsMethod public static native JavaScriptObject readLookupList (JavaScriptObject data, int offset, JavaScriptObject subt)
+  /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
 	var obj = [];
@@ -36,10 +44,10 @@ Typr._lctf.readLookupList = function(data, offset, subt)
 		obj.push(lut);
 	}
 	return obj;
-}
+}-*/;
 
-Typr._lctf.readLookupTable = function(data, offset, subt)
-{
+  @JsMethod public static native JavaScriptObject readLookupTable (JavaScriptObject data, JavaScriptObject offset, JavaScriptObject subt)
+  /*-{
 	//console.log("Parsing lookup table", offset);
 	var bin = Typr._bin;
 	var offset0 = offset;
@@ -57,17 +65,17 @@ Typr._lctf.readLookupTable = function(data, offset, subt)
 		obj.tabs.push(tab);
 	}
 	return obj;
-}
+}-*/;
 
-Typr._lctf.numOfOnes = function(n)
-{
+  @JsMethod public static native JavaScriptObject numOfOnes (JavaScriptObject n)
+  /*-{
 	var num = 0;
 	for(var i=0; i<32; i++) if(((n>>>i)&1) != 0) num++;
 	return num;
-}
+}-*/;
 
-Typr._lctf.readClassDef = function(data, offset)
-{
+  @JsMethod public static native JavaScriptObject readClassDef (JavaScriptObject data, int offset)
+  /*-{
 	var bin = Typr._bin;
 	var obj = [];
 	var format = bin.readUshort(data, offset);  offset+=2;
@@ -93,19 +101,19 @@ Typr._lctf.readClassDef = function(data, offset)
 		}
 	}
 	return obj;
-}
-Typr._lctf.getInterval = function(tab, val)
-{
+}-*/;
+  @JsMethod public static native JavaScriptObject getInterval (JavaScriptObject tab, JavaScriptObject val)
+  /*-{
 	for(var i=0; i<tab.length; i+=3)
 	{
 		var start = tab[i], end = tab[i+1], index = tab[i+2];
 		if(start<=val && val<=end) return i;
 	}
 	return -1;
-}
+}-*/;
 
-Typr._lctf.readValueRecord = function(data, offset, valFmt)
-{
+  @JsMethod public static native JavaScriptObject readValueRecord (JavaScriptObject data, JavaScriptObject offset, JavaScriptObject valFmt)
+  /*-{
 	var bin = Typr._bin;
 	var arr = [];
 	arr.push( (valFmt&1) ? bin.readShort(data, offset) : 0 );  offset += (valFmt&1) ? 2 : 0;
@@ -113,10 +121,10 @@ Typr._lctf.readValueRecord = function(data, offset, valFmt)
 	arr.push( (valFmt&4) ? bin.readShort(data, offset) : 0 );  offset += (valFmt&4) ? 2 : 0;
 	arr.push( (valFmt&8) ? bin.readShort(data, offset) : 0 );  offset += (valFmt&8) ? 2 : 0;
 	return arr;
-}
+}-*/;
 
-Typr._lctf.readCoverage = function(data, offset)
-{
+  @JsMethod public static native JavaScriptObject readCoverage (JavaScriptObject data, JavaScriptObject offset)
+  /*-{
 	var bin = Typr._bin;
 	var cvg = {};
 	cvg.fmt   = bin.readUshort(data, offset);  offset+=2;
@@ -125,10 +133,10 @@ Typr._lctf.readCoverage = function(data, offset)
 	if(cvg.fmt==1) cvg.tab = bin.readUshorts(data, offset, count); 
 	if(cvg.fmt==2) cvg.tab = bin.readUshorts(data, offset, count*3);
 	return cvg;
-}
+}-*/;
 
-Typr._lctf.coverageIndex = function(cvg, val)
-{
+  @JsMethod public static native JavaScriptObject coverageIndex (JavaScriptObject cvg, JavaScriptObject val)
+  /*-{
 	var tab = cvg.tab;
 	if(cvg.fmt==1) return tab.indexOf(val);
 	if(cvg.fmt==2) {
@@ -136,10 +144,10 @@ Typr._lctf.coverageIndex = function(cvg, val)
 		if(ind!=-1) return tab[ind+2] + (val - tab[ind]);
 	}
 	return -1;
-}
+}-*/;
 
-Typr._lctf.readFeatureList = function(data, offset)
-{
+  @JsMethod public static native JavaScriptObject readFeatureList (JavaScriptObject data, JavaScriptObject offset)
+  /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
 	var obj = [];
@@ -153,10 +161,10 @@ Typr._lctf.readFeatureList = function(data, offset)
 		obj.push({tag: tag.trim(), tab:Typr._lctf.readFeatureTable(data, offset0 + noff)});
 	}
 	return obj;
-}
+}-*/;
 
-Typr._lctf.readFeatureTable = function(data, offset)
-{
+  @JsMethod public static native JavaScriptObject readFeatureTable (JavaScriptObject data, JavaScriptObject offset)
+  /*-{
 	var bin = Typr._bin;
 	
 	var featureParams = bin.readUshort(data, offset);  offset+=2;	// = 0
@@ -165,11 +173,11 @@ Typr._lctf.readFeatureTable = function(data, offset)
 	var indices = [];
 	for(var i=0; i<lookupCount; i++) indices.push(bin.readUshort(data, offset+2*i));
 	return indices;
-}
+}-*/;
 
 
-Typr._lctf.readScriptList = function(data, offset)
-{
+  @JsMethod public static native JavaScriptObject readScriptList (JavaScriptObject data, JavaScriptObject offset)
+  /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
 	var obj = {};
@@ -183,10 +191,10 @@ Typr._lctf.readScriptList = function(data, offset)
 		obj[tag.trim()] = Typr._lctf.readScriptTable(data, offset0 + noff);
 	}
 	return obj;
-}
+}-*/;
 
-Typr._lctf.readScriptTable = function(data, offset)
-{
+  @JsMethod public static native JavaScriptObject readScriptTable (JavaScriptObject data, JavaScriptObject offset)
+  /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
 	var obj = {};
@@ -203,10 +211,10 @@ Typr._lctf.readScriptTable = function(data, offset)
 		obj[tag.trim()] = Typr._lctf.readLangSysTable(data, offset0 + langSysOff);
 	}
 	return obj;
-}
+}-*/;
 
-Typr._lctf.readLangSysTable = function(data, offset)
-{
+  @JsMethod public static native JavaScriptObject readLangSysTable (JavaScriptObject data, JavaScriptObject offset)
+  /*-{
 	var bin = Typr._bin;
 	var obj = {};
 	
@@ -220,4 +228,5 @@ Typr._lctf.readLangSysTable = function(data, offset)
 	var featureCount = bin.readUshort(data, offset);  offset+=2;
 	obj.features = bin.readUshorts(data, offset, featureCount);
 	return obj;
+}-*/;
 }
