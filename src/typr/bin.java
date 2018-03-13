@@ -2,6 +2,15 @@ package typr;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import elemental.client.Browser;
+import elemental.html.ArrayBuffer;
+import elemental.html.Int16Array;
+import elemental.html.Int32Array;
+import elemental.html.Int8Array;
+import elemental.html.Uint16Array;
+import elemental.html.Uint32Array;
+import elemental.html.Uint8Array;
+import elemental.util.SettableInt;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
@@ -22,16 +31,16 @@ public class bin
 		var intg = (num >> 14), frac = ((num & 0x3fff)/(0x3fff+1));
 		return (intg>0) ? (intg+frac) : (intg-frac);
 	}-*/;
-	@JsMethod public static native JavaScriptObject readInt (JavaScriptObject buff, JavaScriptObject p)
-	/*-{
+	@JsMethod public static int readInt (Uint8Array buff, int p)
+	{
 		//if(p>=buff.length) throw "error";
-		var a = Typr._bin.t.uint8;
-		a[0] = buff[p+3];
-		a[1] = buff[p+2];
-		a[2] = buff[p+1];
-		a[3] = buff[p];
-		return Typr._bin.t.int32[0];
-	}-*/;
+		SettableInt a = (SettableInt)t.uint8;
+		a.setAt(0, buff.intAt(p+3));
+		a.setAt(1, buff.intAt(p+2));
+		a.setAt(2, buff.intAt(p+1));
+		a.setAt(3, buff.intAt(p));
+		return t.int32.intAt(0);
+	}
 	
 	@JsMethod public static native JavaScriptObject readInt8 (JavaScriptObject buff, JavaScriptObject p)
 	/*-{
@@ -111,16 +120,17 @@ public class bin
 	}-*/;
 @JsIgnore static native void init() /*-{ 
 Typr._bin._tdec = window["TextDecoder"] ? new window["TextDecoder"]() : null;
-Typr._bin.t = {
-	buff: new ArrayBuffer(8),
-};
-Typr._bin.t.int8   = new Int8Array  (Typr._bin.t.buff);
-Typr._bin.t.uint8  = new Uint8Array (Typr._bin.t.buff);
-Typr._bin.t.int16  = new Int16Array (Typr._bin.t.buff);
-Typr._bin.t.uint16 = new Uint16Array(Typr._bin.t.buff);
-Typr._bin.t.int32  = new Int32Array (Typr._bin.t.buff);
-Typr._bin.t.uint32 = new Uint32Array(Typr._bin.t.buff);
 }-*/;
-
-
+  @JsType
+  static class Union
+  {
+    @JsProperty ArrayBuffer buff = Browser.getWindow().newUint8Array(8).getBuffer();
+    @JsProperty Int8Array int8 = Browser.getWindow().newInt8Array(buff, 0, 8); 
+    @JsProperty Uint8Array uint8 = Browser.getWindow().newUint8Array(buff, 0, 8); 
+    @JsProperty Int16Array int16 = Browser.getWindow().newInt16Array(buff, 0, 4); 
+    @JsProperty Uint16Array uint16 = Browser.getWindow().newUint16Array(buff, 0, 4); 
+    @JsProperty Int32Array int32 = Browser.getWindow().newInt32Array(buff, 0, 2); 
+    @JsProperty Uint32Array uint32 = Browser.getWindow().newUint32Array(buff, 0, 2); 
+  }
+  @JsProperty static Union t = new Union();
 }
