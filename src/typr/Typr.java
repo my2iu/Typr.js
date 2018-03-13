@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
@@ -166,6 +167,20 @@ public class Typr
     }
     
   }
+
+  /**
+   * Call this once in order to make sure Typr classes are accessible
+   * both from the main window and also the GWT iframe
+   */
+  @JsIgnore public static void init()
+  {
+    remapTypr();
+    bin.init();
+  }
+  @JsIgnore private static native void remapTypr() /*-{
+    window.Typr = $wnd.Typr;
+  }-*/;
+
   
   @JsMethod public static native JavaScriptObject _tabOffset (JavaScriptObject data, JavaScriptObject tab)
 /*-{

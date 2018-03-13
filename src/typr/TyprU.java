@@ -55,7 +55,7 @@ public class TyprU
 }-*/;
 
 
-  @JsMethod public static native JavaScriptObject glyphToPath (JavaScriptObject font, JavaScriptObject gid)
+  @JsMethod public static native TyprPath glyphToPath (TyprFont font, int gid)
   /*-{
 	var path = { cmds:[], crds:[] };
 	if(font.SVG && font.SVG.entries[gid]) {
@@ -71,7 +71,7 @@ public class TyprU
 	return path;
 }-*/;
 
-  @JsMethod public static native JavaScriptObject getGlyphDimensions (JavaScriptObject font, JavaScriptObject gid)
+  @JsMethod public static native ArrayOfInt getGlyphDimensions (TyprFont font, int gid)
   /*-{
 	var gl = Typr.U._getGlyf(gid, font);
 	if (gl != null)
@@ -331,7 +331,7 @@ public class TyprU
 	}
 }-*/;
 
-  @JsMethod public static native JavaScriptObject glyphsToPositions (JavaScriptObject font, JavaScriptObject gls)
+  @JsMethod public static native ArrayOfInt glyphsToPositions (TyprFont font, ArrayOfInt gls)
   /*-{	
 	var pos = [];
 	var x = 0;

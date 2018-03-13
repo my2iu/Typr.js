@@ -6,7 +6,8 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-@JsType(isNative=true,namespace=JsPackage.GLOBAL) class TyprPath
+@JsType(isNative=true,namespace=JsPackage.GLOBAL)
+public class TyprPath
 {
   @JsProperty public ArrayOfString cmds;
   @JsProperty public ArrayOfNumber crds;

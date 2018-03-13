@@ -10,7 +10,6 @@ import elemental.html.CanvasElement;
 import elemental.html.CanvasRenderingContext2D;
 import elemental.util.ArrayOfInt;
 import elemental.xml.XMLHttpRequest;
-import jsinterop.annotations.JsMethod;
 
 public class GwtTestEntryPoint implements com.google.gwt.core.client.EntryPoint
 {
@@ -37,10 +36,6 @@ public class GwtTestEntryPoint implements com.google.gwt.core.client.EntryPoint
     xmlhttp.send();
   }
 
-  @JsMethod public static native void remapTypr()
-  /*-{
-    window.Typr = $wnd.Typr;
-}-*/;
   
   
   /**
@@ -48,8 +43,7 @@ public class GwtTestEntryPoint implements com.google.gwt.core.client.EntryPoint
    */
   public void onModuleLoad()
   {
-    remapTypr();
-    bin.init();
+    Typr.init();
     CanvasElement canvas = (CanvasElement)Browser.getDocument().querySelector("canvas");
     loadXmlHttpArrayBuffer("../demo/LiberationSans-Bold.ttf", (arrbuf) -> {
       // TODO: handle what happens if loading fails

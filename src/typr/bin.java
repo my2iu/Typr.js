@@ -2,8 +2,8 @@ package typr;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
-import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -109,7 +109,7 @@ public class bin
 			s.push(String.fromCharCode(buff[p+i]));
 		return s;
 	}-*/;
-static native void init() /*-{ 
+@JsIgnore static native void init() /*-{ 
 Typr._bin._tdec = window["TextDecoder"] ? new window["TextDecoder"]() : null;
 Typr._bin.t = {
 	buff: new ArrayBuffer(8),
