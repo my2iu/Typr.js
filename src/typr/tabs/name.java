@@ -10,7 +10,7 @@ public class name
 {
   @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length)
   /*-{
-	var bin = $wnd.Typr._bin;
+	var bin = Typr._bin;
 	var obj = {};
 	var format = bin.readUshort(data, offset);  offset += 2;
 	var count  = bin.readUshort(data, offset);  offset += 2;

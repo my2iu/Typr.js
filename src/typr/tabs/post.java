@@ -10,7 +10,7 @@ public class post
 {
   @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length)
   /*-{
-	var bin = $wnd.Typr._bin;
+	var bin = Typr._bin;
 	var obj = {};
 	
 	obj.version           = bin.readFixed(data, offset);  offset+=4;

@@ -14,7 +14,7 @@ public class cmap
 	offset = 0;
 
 	var offset0 = offset;
-	var bin = $wnd.Typr._bin;
+	var bin = Typr._bin;
 	var obj = {};
 	var version   = bin.readUshort(data, offset);  offset += 2;
 	var numTables = bin.readUshort(data, offset);  offset += 2;
@@ -44,10 +44,10 @@ public class cmap
 			var subt;
 			offs.push(noffset);
 			var format = bin.readUshort(data, noffset);
-			if     (format== 0) subt = $wnd.Typr.cmap.parse0(data, noffset);
-			else if(format== 4) subt = $wnd.Typr.cmap.parse4(data, noffset);
-			else if(format== 6) subt = $wnd.Typr.cmap.parse6(data, noffset);
-			else if(format==12) subt = $wnd.Typr.cmap.parse12(data,noffset);
+			if     (format== 0) subt = Typr.cmap.parse0(data, noffset);
+			else if(format== 4) subt = Typr.cmap.parse4(data, noffset);
+			else if(format== 6) subt = Typr.cmap.parse6(data, noffset);
+			else if(format==12) subt = Typr.cmap.parse12(data,noffset);
 			else console.log("unknown format: "+format, platformID, encodingID, noffset);
 			obj.tables.push(subt);
 		}
@@ -60,7 +60,7 @@ public class cmap
 
   @JsMethod public static native JavaScriptObject parse0 (JavaScriptObject data, int offset)
   /*-{
-	var bin = $wnd.Typr._bin;
+	var bin = Typr._bin;
 	var obj = {};
 	obj.format = bin.readUshort(data, offset);  offset += 2;
 	var len    = bin.readUshort(data, offset);  offset += 2;
@@ -72,7 +72,7 @@ public class cmap
 
   @JsMethod public static native JavaScriptObject parse4 (JavaScriptObject data, int offset)
   /*-{
-	var bin = $wnd.Typr._bin;
+	var bin = Typr._bin;
 	var offset0 = offset;
 	var obj = {};
 	
@@ -97,7 +97,7 @@ public class cmap
 
   @JsMethod public static native JavaScriptObject parse6 (JavaScriptObject data, int offset)
   /*-{
-	var bin = $wnd.Typr._bin;
+	var bin = Typr._bin;
 	var offset0 = offset;
 	var obj = {};
 	
@@ -114,7 +114,7 @@ public class cmap
 
   @JsMethod public static native JavaScriptObject parse12 (JavaScriptObject data, int offset)
   /*-{
-	var bin = $wnd.Typr._bin;
+	var bin = Typr._bin;
 	var offset0 = offset;
 	var obj = {};
 	

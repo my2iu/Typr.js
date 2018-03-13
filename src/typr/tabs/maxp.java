@@ -12,7 +12,7 @@ public class maxp
   /*-{
 	//console.log(data.length, offset, length);
 	
-	var bin = $wnd.Typr._bin;
+	var bin = Typr._bin;
 	var obj = {};
 	
 	// both versions 0.5 and 1.0

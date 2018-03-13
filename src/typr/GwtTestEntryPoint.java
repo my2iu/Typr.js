@@ -110,6 +110,7 @@ public class GwtTestEntryPoint implements com.google.gwt.core.client.EntryPoint
   public void onModuleLoad()
   {
     remapTypr();
+    bin.init();
     CanvasElement canvas = (CanvasElement)Browser.getDocument().querySelector("canvas");
     loadXmlHttpArrayBuffer("../demo/LiberationSans-Bold.ttf", (arrbuf) -> {
       // TODO: handle what happens if loading fails

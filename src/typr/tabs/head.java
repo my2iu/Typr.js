@@ -10,7 +10,7 @@ public class head
 {
   @JsMethod
   public static native head parse(JavaScriptObject data, int offset, int length) /*-{
-	var bin = $wnd.Typr._bin;
+	var bin = Typr._bin;
 	var obj = {};
 	var tableVersion = bin.readFixed(data, offset);  offset += 4;
 	obj.fontRevision = bin.readFixed(data, offset);  offset += 4;
