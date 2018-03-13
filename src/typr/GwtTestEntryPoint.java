@@ -1,5 +1,7 @@
 package typr;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 import elemental.client.Browser;
 import elemental.events.Event;
 import elemental.events.EventListener;
@@ -10,6 +12,7 @@ import elemental.util.ArrayOfInt;
 import elemental.util.ArrayOfNumber;
 import elemental.util.ArrayOfString;
 import elemental.xml.XMLHttpRequest;
+import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -94,12 +97,18 @@ public class GwtTestEntryPoint implements com.google.gwt.core.client.EntryPoint
     xmlhttp.send();
   }
 
+  @JsMethod public static native void remapTypr()
+  /*-{
+    window.Typr = $wnd.Typr;
+}-*/;
+  
   
   /**
    * This is the entry point method.
    */
   public void onModuleLoad()
   {
+    remapTypr();
     CanvasElement canvas = (CanvasElement)Browser.getDocument().querySelector("canvas");
     loadXmlHttpArrayBuffer("../demo/LiberationSans-Bold.ttf", (arrbuf) -> {
       // TODO: handle what happens if loading fails

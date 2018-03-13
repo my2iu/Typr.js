@@ -1,12 +1,19 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr.GPOS = {};
-Typr.GPOS.parse = function(data, offset, length, font) {  return Typr._lctf.parse(data, offset, length, font, Typr.GPOS.subt);  }
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
 
-
-
-Typr.GPOS.subt = function(data, ltype, offset)	// lookup type
+@JsType(namespace="Typr")
+public class GPOS
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length, JavaScriptObject font) /*-{  return Typr._lctf.parse(data, offset, length, font, Typr.GPOS.subt);  }-*/;
+
+
+
+  @JsMethod public static native JavaScriptObject subt (JavaScriptObject data, JavaScriptObject ltype, int offset)	// lookup type
+  /*-{
 	if(ltype!=2) return null;
 	
 	var bin = Typr._bin, offset0 = offset, tab = {};
@@ -65,4 +72,5 @@ Typr.GPOS.subt = function(data, ltype, offset)	// lookup type
 		}
 	}
 	return tab;
+}-*/;
 }

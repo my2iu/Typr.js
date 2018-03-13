@@ -1,11 +1,18 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr.GSUB = {};
-Typr.GSUB.parse = function(data, offset, length, font) {  return Typr._lctf.parse(data, offset, length, font, Typr.GSUB.subt);  }
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
 
-
-Typr.GSUB.subt = function(data, ltype, offset)	// lookup type
+@JsType(namespace="Typr")
+public class GSUB
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length, JavaScriptObject font) /*-{  return Typr._lctf.parse(data, offset, length, font, Typr.GSUB.subt);  }-*/;
+
+
+  @JsMethod public static native JavaScriptObject subt (JavaScriptObject data, JavaScriptObject ltype, int offset)	// lookup type
+  /*-{
 	var bin = Typr._bin, offset0 = offset, tab = {};
 	
 	if(ltype!=1 && ltype!=4 && ltype!=5) return null;
@@ -52,32 +59,31 @@ Typr.GSUB.subt = function(data, ltype, offset)	// lookup type
 		else console.log("unknown table format", tab.fmt);
 	}
 	
-	/*
-	else if(ltype==6) {
-		if(fmt==2) {
-			var btDef = bin.readUshort(data, offset);  offset+=2;
-			var inDef = bin.readUshort(data, offset);  offset+=2;
-			var laDef = bin.readUshort(data, offset);  offset+=2;
-			
-			tab.btDef = Typr._lctf.readClassDef(data, offset0 + btDef);
-			tab.inDef = Typr._lctf.readClassDef(data, offset0 + inDef);
-			tab.laDef = Typr._lctf.readClassDef(data, offset0 + laDef);
-			
-			tab.scset = [];
-			var cnt = bin.readUshort(data, offset);  offset+=2;
-			for(var i=0; i<cnt; i++) {
-				var loff = bin.readUshort(data, offset);  offset+=2;
-				tab.scset.push(Typr.GSUB.readChainSubClassSet(data, offset0+loff));
-			}
-		}
-	} */
+//	else if(ltype==6) {
+//		if(fmt==2) {
+//			var btDef = bin.readUshort(data, offset);  offset+=2;
+//			var inDef = bin.readUshort(data, offset);  offset+=2;
+//			var laDef = bin.readUshort(data, offset);  offset+=2;
+//			
+//			tab.btDef = Typr._lctf.readClassDef(data, offset0 + btDef);
+//			tab.inDef = Typr._lctf.readClassDef(data, offset0 + inDef);
+//			tab.laDef = Typr._lctf.readClassDef(data, offset0 + laDef);
+//			
+//			tab.scset = [];
+//			var cnt = bin.readUshort(data, offset);  offset+=2;
+//			for(var i=0; i<cnt; i++) {
+//				var loff = bin.readUshort(data, offset);  offset+=2;
+//				tab.scset.push(Typr.GSUB.readChainSubClassSet(data, offset0+loff));
+//			}
+//		}
+//	} 
 	//if(tab.coverage.indexOf(3)!=-1) console.log(ltype, fmt, tab);
 	
 	return tab;
-}
+}-*/;
 
-Typr.GSUB.readSubClassSet = function(data, offset)
-{
+  @JsMethod public static native JavaScriptObject readSubClassSet (JavaScriptObject data, int offset)
+  /*-{
 	var rUs = Typr._bin.readUshort, offset0 = offset, lset = [];
 	var cnt = rUs(data, offset);  offset+=2;
 	for(var i=0; i<cnt; i++) {
@@ -85,9 +91,9 @@ Typr.GSUB.readSubClassSet = function(data, offset)
 		lset.push(Typr.GSUB.readSubClassRule(data, offset0+loff));
 	}
 	return lset;
-}
-Typr.GSUB.readSubClassRule= function(data, offset)
-{
+}-*/;
+  @JsMethod public static native JavaScriptObject readSubClassRule(JavaScriptObject data, int offset)
+  /*-{
 	var rUs = Typr._bin.readUshort, offset0 = offset, rule = {};
 	var gcount = rUs(data, offset);  offset+=2;
 	var scount = rUs(data, offset);  offset+=2;
@@ -97,17 +103,17 @@ Typr.GSUB.readSubClassRule= function(data, offset)
 	}
 	rule.substLookupRecords = Typr.GSUB.readSubstLookupRecords(data, offset, scount);
 	return rule;
-}
-Typr.GSUB.readSubstLookupRecords = function(data, offset, cnt)
-{
+}-*/;
+  @JsMethod public static native JavaScriptObject readSubstLookupRecords (JavaScriptObject data, int offset, int cnt)
+  /*-{
 	var rUs = Typr._bin.readUshort;
 	var out = [];
 	for(var i=0; i<cnt; i++) {  out.push(rUs(data, offset), rUs(data, offset+2));  offset+=4;  }
 	return out;
-}
+}-*/;
 
-Typr.GSUB.readChainSubClassSet = function(data, offset)
-{
+  @JsMethod public static native JavaScriptObject readChainSubClassSet (JavaScriptObject data, int offset)
+  /*-{
 	var bin = Typr._bin, offset0 = offset, lset = [];
 	var cnt = bin.readUshort(data, offset);  offset+=2;
 	for(var i=0; i<cnt; i++) {
@@ -115,9 +121,9 @@ Typr.GSUB.readChainSubClassSet = function(data, offset)
 		lset.push(Typr.GSUB.readChainSubClassRule(data, offset0+loff));
 	}
 	return lset;
-}
-Typr.GSUB.readChainSubClassRule= function(data, offset)
-{
+}-*/;
+  @JsMethod public static native JavaScriptObject readChainSubClassRule(JavaScriptObject data, int offset)
+  /*-{
 	var bin = Typr._bin, offset0 = offset, rule = {};
 	var pps = ["backtrack", "input", "lookahead"];
 	for(var pi=0; pi<pps.length; pi++) {
@@ -127,10 +133,10 @@ Typr.GSUB.readChainSubClassRule= function(data, offset)
 	var cnt = bin.readUshort(data, offset);  offset+=2;
 	rule.subst = bin.readUshorts(data, offset, cnt*2);  offset += rule.subst.length*2;
 	return rule;
-}
+}-*/;
 
-Typr.GSUB.readLigatureSet = function(data, offset)
-{
+  @JsMethod public static native JavaScriptObject readLigatureSet (JavaScriptObject data, int offset)
+  /*-{
 	var bin = Typr._bin, offset0 = offset, lset = [];
 	var lcnt = bin.readUshort(data, offset);  offset+=2;
 	for(var j=0; j<lcnt; j++) {
@@ -138,13 +144,13 @@ Typr.GSUB.readLigatureSet = function(data, offset)
 		lset.push(Typr.GSUB.readLigature(data, offset0+loff));
 	}
 	return lset;
-}
-Typr.GSUB.readLigature = function(data, offset)
-{
+}-*/;
+  @JsMethod public static native JavaScriptObject readLigature (JavaScriptObject data, int offset)
+  /*-{
 	var bin = Typr._bin, lig = {chain:[]};
 	lig.nglyph = bin.readUshort(data, offset);  offset+=2;
 	var ccnt = bin.readUshort(data, offset);  offset+=2;
 	for(var k=0; k<ccnt-1; k++) {  lig.chain.push(bin.readUshort(data, offset));  offset+=2;  }
 	return lig;
+}-*/;
 }
-

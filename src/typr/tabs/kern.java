@@ -1,8 +1,15 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr.kern = {};
-Typr.kern.parse = function(data, offset, length, font)
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace="Typr")
+public class kern
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length, JavaScriptObject font)
+      /*-{
 	var bin = Typr._bin;
 	
 	var version = bin.readUshort(data, offset);  offset+=2;
@@ -16,15 +23,16 @@ Typr.kern.parse = function(data, offset, length, font)
 		var length  = bin.readUshort(data, offset);  offset+=2;
 		var coverage = bin.readUshort(data, offset);  offset+=2;
 		var format = coverage>>>8;
-		/* I have seen format 128 once, that's why I do */ format &= 0xf;
+		// I have seen format 128 once, that's why I do  
+  format &= 0xf;
 		if(format==0) offset = Typr.kern.readFormat0(data, offset, map);
 		else throw "unknown kern table format: "+format;
 	}
 	return map;
-}
+  }-*/;
 
-Typr.kern.parseV1 = function(data, offset, length, font)
-{
+  @JsMethod public static native JavaScriptObject parseV1 (JavaScriptObject data, int offset, int length, JavaScriptObject font)
+      /*-{
 	var bin = Typr._bin;
 	
 	var version = bin.readFixed(data, offset);  offset+=4;
@@ -37,15 +45,16 @@ Typr.kern.parseV1 = function(data, offset, length, font)
 		var coverage = bin.readUshort(data, offset);  offset+=2;
 		var tupleIndex = bin.readUshort(data, offset);  offset+=2;
 		var format = coverage>>>8;
-		/* I have seen format 128 once, that's why I do */ format &= 0xf;
+//		 I have seen format 128 once, that's why I do  
+      format &= 0xf;
 		if(format==0) offset = Typr.kern.readFormat0(data, offset, map);
 		else throw "unknown kern table format: "+format;
 	}
 	return map;
-}
+  }-*/;
 
-Typr.kern.readFormat0 = function(data, offset, map)
-{
+  @JsMethod public static native JavaScriptObject readFormat0 (JavaScriptObject data, int offset, JavaScriptObject map)
+  /*-{
 	var bin = Typr._bin;
 	var pleft = -1;
 	var nPairs        = bin.readUshort(data, offset);  offset+=2;
@@ -63,5 +72,6 @@ Typr.kern.readFormat0 = function(data, offset, map)
 		pleft = left;
 	}
 	return offset;
-}
+}-*/;
 
+}

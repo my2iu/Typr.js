@@ -12,7 +12,7 @@ public class CFF
 {
   @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length)
   /*-{
-        var bin = Typr._bin;
+        var bin = $wnd.Typr._bin;
         
         data = new Uint8Array(data.buffer, offset, length);
         offset = 0;
@@ -26,7 +26,7 @@ public class CFF
         
         // Name INDEX
         var ninds = [];
-        offset = Typr.CFF.readIndex(data, offset, ninds);
+        offset = $wnd.Typr.CFF.readIndex(data, offset, ninds);
         var names = [];
         
         for(var i=0; i<ninds.length-1; i++) names.push(bin.readASCII(data, offset+ninds[i], ninds[i+1]-ninds[i]));
@@ -36,31 +36,31 @@ public class CFF
         
         // Top DICT INDEX
         var tdinds = [];
-        offset = Typr.CFF.readIndex(data, offset, tdinds);
+        offset = $wnd.Typr.CFF.readIndex(data, offset, tdinds);
         // Top DICT Data
         var topDicts = [];
-        for(var i=0; i<tdinds.length-1; i++) topDicts.push( Typr.CFF.readDict(data, offset+tdinds[i], offset+tdinds[i+1]) );
+        for(var i=0; i<tdinds.length-1; i++) topDicts.push( $wnd.Typr.CFF.readDict(data, offset+tdinds[i], offset+tdinds[i+1]) );
         offset += tdinds[tdinds.length-1];
         var topdict = topDicts[0];
         //console.log(topdict);
         
         // String INDEX
         var sinds = [];
-        offset = Typr.CFF.readIndex(data, offset, sinds);
+        offset = $wnd.Typr.CFF.readIndex(data, offset, sinds);
         // String Data
         var strings = [];
         for(var i=0; i<sinds.length-1; i++) strings.push(bin.readASCII(data, offset+sinds[i], sinds[i+1]-sinds[i]));
         offset += sinds[sinds.length-1];
         
         // Global Subr INDEX  (subroutines)     
-        Typr.CFF.readSubrs(data, offset, topdict);
+        $wnd.Typr.CFF.readSubrs(data, offset, topdict);
         
         // charstrings
         if(topdict.CharStrings)
         {
             offset = topdict.CharStrings;
             var sinds = [];
-            offset = Typr.CFF.readIndex(data, offset, sinds);
+            offset = $wnd.Typr.CFF.readIndex(data, offset, sinds);
             
             var cstr = [];
             for(var i=0; i<sinds.length-1; i++) cstr.push(bin.readBytes(data, offset+sinds[i], sinds[i+1]-sinds[i]));
@@ -70,16 +70,16 @@ public class CFF
         }
         
         // Encoding
-        if(topdict.Encoding) topdict.Encoding = Typr.CFF.readEncoding(data, topdict.Encoding, topdict.CharStrings.length);
+        if(topdict.Encoding) topdict.Encoding = $wnd.Typr.CFF.readEncoding(data, topdict.Encoding, topdict.CharStrings.length);
         
         // charset
-        if(topdict.charset ) topdict.charset  = Typr.CFF.readCharset (data, topdict.charset , topdict.CharStrings.length);
+        if(topdict.charset ) topdict.charset  = $wnd.Typr.CFF.readCharset (data, topdict.charset , topdict.CharStrings.length);
         
         if(topdict.Private)
         {
             offset = topdict.Private[1];
-            topdict.Private = Typr.CFF.readDict(data, offset, offset+topdict.Private[0]);
-            if(topdict.Private.Subrs)  Typr.CFF.readSubrs(data, offset+topdict.Private.Subrs, topdict.Private);
+            topdict.Private = $wnd.Typr.CFF.readDict(data, offset, offset+topdict.Private[0]);
+            if(topdict.Private.Subrs)  $wnd.Typr.CFF.readSubrs(data, offset+topdict.Private.Subrs, topdict.Private);
         }
         
         var obj = {};
@@ -94,9 +94,9 @@ public class CFF
     
   @JsMethod public static native JavaScriptObject readSubrs(JavaScriptObject data, int offset, int obj)
         /*-{
-        var bin = Typr._bin;
+        var bin = $wnd.Typr._bin;
         var gsubinds = [];
-        offset = Typr.CFF.readIndex(data, offset, gsubinds);
+        offset = $wnd.Typr.CFF.readIndex(data, offset, gsubinds);
         
         var bias, nSubrs = gsubinds.length;
         if (false) bias = 0;
@@ -159,12 +159,12 @@ public class CFF
     @JsMethod public static native JavaScriptObject glyphBySE(JavaScriptObject cff, JavaScriptObject charcode)  // glyph by standard encoding
         /*-{
         if ( charcode < 0 || charcode > 255 ) return -1;
-        return Typr.CFF.glyphByUnicode(cff, Typr.CFF.tableSE[charcode]);        
+        return $wnd.Typr.CFF.glyphByUnicode(cff, $wnd.Typr.CFF.tableSE[charcode]);        
     }-*/;
     
     @JsMethod public static native JavaScriptObject readEncoding (JavaScriptObject data, int offset, int num)
         /*-{
-        var bin = Typr._bin;
+        var bin = $wnd.Typr._bin;
         
         var array = ['.notdef'];
         var format = data[offset];  offset++;
@@ -194,7 +194,7 @@ public class CFF
 
     @JsMethod public static native JavaScriptObject readCharset (JavaScriptObject data, int offset, int num)
         /*-{
-        var bin = Typr._bin;
+        var bin = $wnd.Typr._bin;
         
         var charset = ['.notdef'];
         var format = data[offset];  offset++;
@@ -225,7 +225,7 @@ public class CFF
 
     @JsMethod public static native JavaScriptObject readIndex (JavaScriptObject data, int offset, int inds)
         /*-{
-        var bin = Typr._bin;
+        var bin = $wnd.Typr._bin;
         
         var count = bin.readUshort(data, offset);  offset+=2;
         var offsize = data[offset];  offset++;
@@ -241,7 +241,7 @@ public class CFF
     
     @JsMethod public static native JavaScriptObject getCharString (JavaScriptObject data, int offset, int o)
         /*-{
-        var bin = Typr._bin;
+        var bin = $wnd.Typr._bin;
         
         var b0 = data[offset], b1 = data[offset+1], b2 = data[offset+2], b3 = data[offset+3], b4=data[offset+4];
         var vs = 1;
@@ -265,7 +265,7 @@ public class CFF
     @JsMethod public static native JavaScriptObject readCharString (JavaScriptObject data, int offset, int length)
         /*-{
         var end = offset + length;
-        var bin = Typr._bin;
+        var bin = $wnd.Typr._bin;
         var arr = [];
         
         while(offset<end)
@@ -298,7 +298,7 @@ public class CFF
 
     @JsMethod public static native JavaScriptObject readDict (JavaScriptObject data, int offset, int end)
         /*-{
-        var bin = Typr._bin;
+        var bin = $wnd.Typr._bin;
         //var dict = [];
         var dict = {};
         var carr = [];

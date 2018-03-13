@@ -1,8 +1,15 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr.loca = {};
-Typr.loca.parse = function(data, offset, length, font)
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace="Typr")
+public class loca
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length, JavaScriptObject font)
+  /*-{
 	var bin = Typr._bin;
 	var obj = [];
 	
@@ -14,4 +21,5 @@ Typr.loca.parse = function(data, offset, length, font)
 	if(ver==1) for(var i=0; i<len; i++) obj.push(bin.readUint  (data, offset+(i<<2))   );
 	
 	return obj;
+}-*/;
 }

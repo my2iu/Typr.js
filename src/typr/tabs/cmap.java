@@ -1,13 +1,20 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr.cmap = {};
-Typr.cmap.parse = function(data, offset, length)
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace="Typr")
+public class cmap
 {
+  @JsMethod public static native JavaScriptObject parse(JavaScriptObject data, int offset, int length)
+  /*-{
 	data = new Uint8Array(data.buffer, offset, length);
 	offset = 0;
 
 	var offset0 = offset;
-	var bin = Typr._bin;
+	var bin = $wnd.Typr._bin;
 	var obj = {};
 	var version   = bin.readUshort(data, offset);  offset += 2;
 	var numTables = bin.readUshort(data, offset);  offset += 2;
@@ -37,10 +44,10 @@ Typr.cmap.parse = function(data, offset, length)
 			var subt;
 			offs.push(noffset);
 			var format = bin.readUshort(data, noffset);
-			if     (format== 0) subt = Typr.cmap.parse0(data, noffset);
-			else if(format== 4) subt = Typr.cmap.parse4(data, noffset);
-			else if(format== 6) subt = Typr.cmap.parse6(data, noffset);
-			else if(format==12) subt = Typr.cmap.parse12(data,noffset);
+			if     (format== 0) subt = $wnd.Typr.cmap.parse0(data, noffset);
+			else if(format== 4) subt = $wnd.Typr.cmap.parse4(data, noffset);
+			else if(format== 6) subt = $wnd.Typr.cmap.parse6(data, noffset);
+			else if(format==12) subt = $wnd.Typr.cmap.parse12(data,noffset);
 			else console.log("unknown format: "+format, platformID, encodingID, noffset);
 			obj.tables.push(subt);
 		}
@@ -49,11 +56,11 @@ Typr.cmap.parse = function(data, offset, length)
 		obj[id] = tind;
 	}
 	return obj;
-}
+}-*/;
 
-Typr.cmap.parse0 = function(data, offset)
-{
-	var bin = Typr._bin;
+  @JsMethod public static native JavaScriptObject parse0 (JavaScriptObject data, int offset)
+  /*-{
+	var bin = $wnd.Typr._bin;
 	var obj = {};
 	obj.format = bin.readUshort(data, offset);  offset += 2;
 	var len    = bin.readUshort(data, offset);  offset += 2;
@@ -61,11 +68,11 @@ Typr.cmap.parse0 = function(data, offset)
 	obj.map = [];
 	for(var i=0; i<len-6; i++) obj.map.push(data[offset+i]);
 	return obj;
-}
+}-*/;
 
-Typr.cmap.parse4 = function(data, offset)
-{
-	var bin = Typr._bin;
+  @JsMethod public static native JavaScriptObject parse4 (JavaScriptObject data, int offset)
+  /*-{
+	var bin = $wnd.Typr._bin;
 	var offset0 = offset;
 	var obj = {};
 	
@@ -86,11 +93,11 @@ Typr.cmap.parse4 = function(data, offset)
 	obj.glyphIdArray = [];
 	while(offset< offset0+length) {obj.glyphIdArray.push(bin.readUshort(data, offset));  offset+=2;}
 	return obj;
-}
+}-*/;
 
-Typr.cmap.parse6 = function(data, offset)
-{
-	var bin = Typr._bin;
+  @JsMethod public static native JavaScriptObject parse6 (JavaScriptObject data, int offset)
+  /*-{
+	var bin = $wnd.Typr._bin;
 	var offset0 = offset;
 	var obj = {};
 	
@@ -103,11 +110,11 @@ Typr.cmap.parse6 = function(data, offset)
 	for(var i=0; i<entryCount; i++) {obj.glyphIdArray.push(bin.readUshort(data, offset));  offset+=2;}
 	
 	return obj;
-}
+}-*/;
 
-Typr.cmap.parse12 = function(data, offset)
-{
-	var bin = Typr._bin;
+  @JsMethod public static native JavaScriptObject parse12 (JavaScriptObject data, int offset)
+  /*-{
+	var bin = $wnd.Typr._bin;
 	var offset0 = offset;
 	var obj = {};
 	
@@ -127,4 +134,5 @@ Typr.cmap.parse12 = function(data, offset)
 		obj.groups.push([  startCharCode, endCharCode, startGlyphID  ]);
 	}
 	return obj;
+}-*/;
 }

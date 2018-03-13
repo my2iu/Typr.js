@@ -1,8 +1,15 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr.hhea = {};
-Typr.hhea.parse = function(data, offset, length)
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace="Typr")
+public class hhea
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length)
+  /*-{
 	var bin = Typr._bin;
 	var obj = {};
 	var tableVersion = bin.readFixed(data, offset);  offset += 4;
@@ -24,4 +31,5 @@ Typr.hhea.parse = function(data, offset, length)
 	obj.metricDataFormat = bin.readShort (data, offset);  offset += 2;
 	obj.numberOfHMetrics = bin.readUshort(data, offset);  offset += 2;
 	return obj;
+}-*/;
 }

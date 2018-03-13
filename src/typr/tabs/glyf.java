@@ -1,19 +1,26 @@
+package typr.tabs;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-Typr.glyf = {};
-Typr.glyf.parse = function(data, offset, length, font)
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace="Typr")
+public class glyf
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length, JavaScriptObject font)
+  /*-{
 	var obj = [];
 	for(var g=0; g<font.maxp.numGlyphs; g++) obj.push(null);
 	return obj;
-}
+}-*/;
 
-Typr.glyf._parseGlyf = function(font, g)
-{
-	var bin = Typr._bin;
+  @JsMethod public static native JavaScriptObject _parseGlyf (JavaScriptObject font, JavaScriptObject g)
+  /*-{
+	var bin = $wnd.Typr._bin;
 	var data = font._data;
 	
-	var offset = Typr._tabOffset(data, "glyf") + font.loca[g];
+	var offset = $wnd.Typr._tabOffset(data, "glyf") + font.loca[g];
 		
 	if(font.loca[g]==font.loca[g+1]) return null;
 		
@@ -126,4 +133,5 @@ Typr.glyf._parseGlyf = function(font, g)
 		}
 	}
 	return gl;
+}-*/;
 }
