@@ -1,5 +1,7 @@
 package typr;
 
+import java.util.function.Consumer;
+
 import elemental.client.Browser;
 import elemental.events.Event;
 import elemental.events.EventListener;
@@ -49,29 +51,6 @@ public class GwtTestEntryPoint implements com.google.gwt.core.client.EntryPoint
     @JsProperty public ArrayOfNumber crds;
   }
 
-//  @JsType(isNative=true,name="Typr",namespace=JsPackage.GLOBAL)
-//  public static class Typr
-//  {
-//    public static native TyprFont parse(ArrayBuffer buf);
-//  }
-//
-//  @JsType(isNative=true,name="Typr.U",namespace=JsPackage.GLOBAL)
-//  public static class TyprU
-//  {
-//    public static native ArrayOfInt stringToGlyphs(TyprFont font, String str);
-//    public static native ArrayOfInt getGlyphDimensions(TyprFont font, int gid);
-//    public static native TyprPath glyphsToPath(TyprFont font, ArrayOfInt gls);
-//    public static native TyprPath glyphToPath(TyprFont font, int gid);
-//    public static native void pathToContext(TyprPath path, CanvasRenderingContext2D ctx);
-//    public static native ArrayOfInt glyphsToPositions(TyprFont font, ArrayOfInt gls);
-//    
-//  }
-
-  interface Consumer<T>
-  {
-    public void accept(T a);
-  }
-  
   public static void loadXmlHttpArrayBuffer(String url, final Consumer<ArrayBuffer> dataCallback, final Runnable failCallback)
   {
     final XMLHttpRequest xmlhttp = Browser.getWindow().newXMLHttpRequest();
