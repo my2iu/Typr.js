@@ -2,15 +2,13 @@ package typr;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-import elemental.util.ArrayOfInt;
 import jsinterop.annotations.JsMethod;
-import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 //OpenType Layout Common Table Formats
 
-@JsType(namespace="Typr")
-public class _lctf
+@JsType(name="_lctf", namespace="Typr")
+public class lctf
 {
   @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length, JavaScriptObject font, JavaScriptObject subt)
   /*-{
@@ -200,7 +198,7 @@ public class _lctf
 	var obj = {};
 	
 	var defLangSysOff = bin.readUshort(data, offset);  offset+=2;
-	obj.default = Typr._lctf.readLangSysTable(data, offset0 + defLangSysOff);
+	obj['default'] = Typr._lctf.readLangSysTable(data, offset0 + defLangSysOff);
 	
 	var langSysCount = bin.readUshort(data, offset);  offset+=2;
 	
