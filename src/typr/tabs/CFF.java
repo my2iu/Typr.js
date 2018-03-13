@@ -3,7 +3,6 @@ package typr.tabs;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.util.ArrayOfInt;
-import elemental.util.ArrayOfNumber;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;

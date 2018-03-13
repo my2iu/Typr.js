@@ -1,6 +1,15 @@
-Typr.SVG = {};
-Typr.SVG.parse = function(data, offset, length)
+package typr.tabs;
+
+import com.google.gwt.core.client.JavaScriptObject;
+
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace="Typr")
+public class SVG
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject data, int offset, int length)
+  /*-{
 	var bin = Typr._bin;
 	var obj = { entries: []};
 
@@ -29,10 +38,10 @@ Typr.SVG.parse = function(data, offset, length)
 		}
 	}
 	return obj;
-}
+}-*/;
 
-Typr.SVG.toPath = function(str)
-{
+  @JsMethod public static native JavaScriptObject toPath (String str)
+  /*-{
 	var pth = {cmds:[], crds:[]};
 	if(str==null) return pth;
 	
@@ -52,9 +61,9 @@ Typr.SVG.toPath = function(str)
 		pth.crds[i+1] = y;
 	}
 	return pth;
-}
+}-*/;
 
-Typr.SVG._toPath = function(nds, pth, fill) {
+  @JsMethod public static native JavaScriptObject _toPath (JavaScriptObject nds, JavaScriptObject pth, JavaScriptObject fill) /*-{
 	for(var ni=0; ni<nds.length; ni++) {
 		var nd = nds[ni], tn = nd.tagName;
 		var cfl = nd.getAttribute("fill");  if(cfl==null) cfl = fill;
@@ -68,9 +77,9 @@ Typr.SVG._toPath = function(nds, pth, fill) {
 		else if(tn=="defs") {}
 		else console.log(tn, nd);
 	}
-}
+}-*/;
 
-Typr.SVG._tokens = function(d) {
+  @JsMethod public static native JavaScriptObject _tokens (JavaScriptObject d) /*-{
 	var ts = [], off = 0, rn=false, cn="";  // reading number, current number
 	while(off<d.length){
 		var cc=d.charCodeAt(off), ch = d.charAt(off);  off++;
@@ -88,9 +97,9 @@ Typr.SVG._tokens = function(d) {
 	}
 	if(rn) ts.push(parseFloat(cn));
 	return ts;
-}
+}-*/;
 
-Typr.SVG._toksToPath = function(ts, pth) {	
+  @JsMethod public static native JavaScriptObject _toksToPath (JavaScriptObject ts, JavaScriptObject pth) /*-{	
 	var i = 0, x = 0, y = 0, ox = 0, oy = 0;
 	var pc = {"M":2,"L":2,"H":1,"V":1,   "S":4,   "C":6};
 	var cmds = pth.cmds, crds = pth.crds;
@@ -125,9 +134,10 @@ Typr.SVG._toksToPath = function(ts, pth) {
 			}
 		}
 	}
-}
-Typr.SVG._reps = function(ts, off, ps) {
+}-*/;
+  @JsMethod public static native JavaScriptObject _reps (JavaScriptObject ts, JavaScriptObject off, JavaScriptObject ps) /*-{
 	var i = off;
 	while(i<ts.length) {  if((typeof ts[i]) == "string") break;  i+=ps;  }
 	return (i-off)/ps;
+}-*/;
 }
