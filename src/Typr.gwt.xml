@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.5.1//EN"
+  "http://google-web-toolkit.googlecode.com/svn/tags/2.5.1/distro-source/core/src/gwt-module.dtd">
+<module rename-to='typr'>
+  <!-- Inherit the core Web Toolkit stuff.                        -->
+  <inherits name='elemental.Elemental'/>
+  <inherits name="com.google.gwt.resources.Resources" />
+  <inherits name="com.google.gwt.i18n.I18N"/>
+
+  <!-- Specify the app entry point class.                         -->
+  <entry-point class='typr.GwtTestEntryPoint'/>
+
+  <!-- Specify the paths for translatable code                    -->
+  <source path='typr'/>
+  
+  
+  <add-linker name="xsiframe"/>
+  <set-configuration-property name="devModeRedirectEnabled" value="true"/>
+  <set-property name="compiler.useSourceMaps" value="true" />
+</module>
