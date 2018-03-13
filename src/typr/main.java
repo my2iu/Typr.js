@@ -1,9 +1,16 @@
+package typr;
 
+import com.google.gwt.core.client.JavaScriptObject;
 
-var Typr = {};
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsType;
 
-Typr.parse = function(buff)
+@JsType(namespace=JsPackage.GLOBAL)
+public class Typr
 {
+  @JsMethod public static native JavaScriptObject parse (JavaScriptObject buff)
+  /*-{
 	var bin = Typr._bin;
 	var data = new Uint8Array(buff);
 	var offset = 0;
@@ -73,10 +80,10 @@ Typr.parse = function(buff)
 	}
 	
 	return obj;
-}
+}-*/;
 
-Typr._tabOffset = function(data, tab)
-{
+  @JsMethod public static native JavaScriptObject _tabOffset (JavaScriptObject data, JavaScriptObject tab)
+/*-{
 	var bin = Typr._bin;
 	var numTables = bin.readUshort(data, 4);
 	var offset = 12;
@@ -89,8 +96,9 @@ Typr._tabOffset = function(data, tab)
 		if(tag==tab) return toffset;
 	}
 	return 0;
+}-*/;
+
+
+
+
 }
-
-
-
-
