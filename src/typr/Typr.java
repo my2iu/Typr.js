@@ -3,6 +3,7 @@ package typr;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.html.ArrayBuffer;
+import elemental.html.Uint8Array;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
@@ -94,7 +95,7 @@ public class Typr
 		//console.log(t);
 		//if(tabs[t]) console.log(t, tabs[t].offset, tabs[t].length);
 		if (tabs[t]) {
-		  var parsed = @typr.Typr::parseTab(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;IILjava/lang/String;)(obj,data,tabs[t].offset, tabs[t].length,t);
+		  var parsed = @typr.Typr::parseTab(Lcom/google/gwt/core/client/JavaScriptObject;Lelemental/html/Uint8Array;IILjava/lang/String;)(obj,data,tabs[t].offset, tabs[t].length,t);
 		  if (parsed)
 		    obj[t.trim()] = parsed;
 		}
@@ -104,7 +105,7 @@ public class Typr
 	return obj;
 }-*/;
 
-  static Object parseTab(JavaScriptObject obj, JavaScriptObject data, int offset, int length, String tag)
+  static Object parseTab(JavaScriptObject obj, Uint8Array data, int offset, int length, String tag)
   {
     switch(tag)
     {

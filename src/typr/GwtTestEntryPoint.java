@@ -77,7 +77,6 @@ public class GwtTestEntryPoint implements com.google.gwt.core.client.EntryPoint
   @JsMethod public static native void remapTypr()
   /*-{
     window.Typr = $wnd.Typr;
-    Typr["OS/2"] = Typr.OS2;
 }-*/;
   
   
