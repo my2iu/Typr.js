@@ -2,10 +2,8 @@ package typr.tabs;
 
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsType;
 import typr.TyprFont;
 
-@JsType(namespace="Typr")
 public class hmtx
 {
   @JsIgnore  public static native hmtx parse (Uint8Array data, int offset, int length, TyprFont font)

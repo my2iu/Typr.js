@@ -2,9 +2,7 @@ package typr.tabs;
 
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsType;
 
-@JsType(namespace="Typr")
 public class maxp
 {
   @JsIgnore  public static native maxp parse (Uint8Array data, int offset, int length)

@@ -3,10 +3,8 @@ package typr.tabs;
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 import typr.bin;
 
-@JsType(namespace="Typr")
 public class post
 {
   @JsProperty int version;

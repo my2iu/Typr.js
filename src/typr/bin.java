@@ -56,10 +56,10 @@ public class bin
 		a.setAt(1, buff.intAt(p)); a.setAt(0, buff.intAt(p+1));
 		return (short)t.int16.intAt(0);
 	}
-	@JsMethod public static int readUshort (Uint8Array buff, int p)
+	@JsMethod public static char readUshort (Uint8Array buff, int p)
 	{
 		//if(p>=buff.length) throw "error";
-		return (buff.intAt(p)<<8) | buff.intAt(p+1);
+		return (char)((buff.intAt(p)<<8) | buff.intAt(p+1));
 	}
 	@JsMethod public static native JavaScriptObject readUshorts (JavaScriptObject buff, JavaScriptObject p, JavaScriptObject len)
 	/*-{
@@ -67,25 +67,25 @@ public class bin
 		for(var i=0; i<len; i++) arr.push(Typr._bin.readUshort(buff, p+i*2));
 		return arr;
 	}-*/;
-	@JsMethod public static native JavaScriptObject readUint (JavaScriptObject buff, JavaScriptObject p)
-	/*-{
+	@JsMethod public static int readUint (Uint8Array buff, int p)
+	{
 		//if(p>=buff.length) throw "error";
-		var a = Typr._bin.t.uint8;
-		a[3] = buff[p];  a[2] = buff[p+1];  a[1] = buff[p+2];  a[0] = buff[p+3];
-		return Typr._bin.t.uint32[0];
-	}-*/;
+		SettableInt a = (SettableInt)t.uint8;
+		a.setAt(3, buff.intAt(p));  a.setAt(2, buff.intAt(p+1));  a.setAt(1, buff.intAt(p+2));  a.setAt(0, buff.intAt(p+3));
+		return t.uint32.intAt(0);
+	}
 	@JsMethod public static native JavaScriptObject readUint64 (JavaScriptObject buff, JavaScriptObject p)
 	/*-{
 		//if(p>=buff.length) throw "error";
 		return (Typr._bin.readUint(buff, p)*(0xffffffff+1)) + Typr._bin.readUint(buff, p+4);
 	}-*/;
-	@JsMethod public static native JavaScriptObject readASCII (JavaScriptObject buff, JavaScriptObject p, JavaScriptObject l)	// l : length in Characters (not Bytes)
-	/*-{
+	@JsMethod public static String readASCII (Uint8Array buff, int p, int l)	// l : length in Characters (not Bytes)
+	{
 		//if(p>=buff.length) throw "error";
-		var s = "";
-		for(var i = 0; i < l; i++) s += String.fromCharCode(buff[p+i]);
+		String s = "";
+		for(int i = 0; i < l; i++) s += String.valueOf((char)buff.intAt(p+i));
 		return s;
-	}-*/;
+	}
 	@JsMethod public static native JavaScriptObject readUnicode (JavaScriptObject buff, JavaScriptObject p, JavaScriptObject l)
 	/*-{
 		//if(p>=buff.length) throw "error";

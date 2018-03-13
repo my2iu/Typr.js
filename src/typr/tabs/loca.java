@@ -3,10 +3,8 @@ package typr.tabs;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOfInt;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsType;
 import typr.TyprFont;
 
-@JsType(namespace="Typr")
 public class loca
 {
   @JsIgnore  public static native ArrayOfInt parse (Uint8Array data, int offset, int length, TyprFont font)

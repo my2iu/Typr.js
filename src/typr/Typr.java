@@ -1,7 +1,11 @@
 package typr;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.google.gwt.core.client.JavaScriptObject;
 
+import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
@@ -27,24 +31,24 @@ import typr.tabs.post;
 @JsType(namespace=JsPackage.GLOBAL)
 public class Typr
 {
-  @JsMethod public static native TyprFont parse (ArrayBuffer buff)
-  /*-{
-	var bin = Typr._bin;
-	var data = new Uint8Array(buff);
-	var offset = 0;
+  @JsMethod public static TyprFont parse (ArrayBuffer buff)
+  {
+//	var bin = Typr._bin;
+	Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
+	int offset = 0;
 	
-	var sfnt_version = bin.readFixed(data, offset);
+	int sfnt_version = bin.readFixed(data, offset);
 	offset += 4;
-	var numTables = bin.readUshort(data, offset);
+	int numTables = bin.readUshort(data, offset);
 	offset += 2;
-	var searchRange = bin.readUshort(data, offset);
+	int searchRange = bin.readUshort(data, offset);
 	offset += 2;
-	var entrySelector = bin.readUshort(data, offset);
+	int entrySelector = bin.readUshort(data, offset);
 	offset += 2;
-	var rangeShift = bin.readUshort(data, offset);
+	int rangeShift = bin.readUshort(data, offset);
 	offset += 2;
 	
-	var tags = [
+	String []tags = new String[] {
 		"cmap",
 		"head",
 		"hhea",
@@ -71,37 +75,40 @@ public class Typr
 		
 		"SVG "
 		//"VORG",
-		];
+	};
 	
-	var obj = {_data:data};
+	TyprFont obj = new TyprFont();
+	obj._data = data;
 	//console.log(sfnt_version, numTables, searchRange, entrySelector, rangeShift);
 	
-	var tabs = {};
+//	var tabs = {};
+	Map<String, Integer> tabOffset = new HashMap<>();
+	Map<String, Integer> tabLength = new HashMap<>();
 	
-	for(var i=0; i<numTables; i++)
+	for(int i=0; i<numTables; i++)
 	{
-		var tag = bin.readASCII(data, offset, 4);   offset += 4;
-		var checkSum = bin.readUint(data, offset);  offset += 4;
-		var toffset = bin.readUint(data, offset);   offset += 4;
-		var length = bin.readUint(data, offset);    offset += 4;
-		tabs[tag] = {offset:toffset, length:length};
+		String tag = bin.readASCII(data, offset, 4);   offset += 4;
+		int checkSum = bin.readUint(data, offset);  offset += 4;
+		int toffset = bin.readUint(data, offset);   offset += 4;
+		int length = bin.readUint(data, offset);    offset += 4;
+		tabOffset.put(tag, toffset);
+		tabLength.put(tag, length);
+//		tabs[tag] = {offset:toffset, length:length};
 		
 		//if(tags.indexOf(tag)==-1) console.log("unknown tag", tag, length);
 	}
 	
-	for(var i=0; i< tags.length; i++)
+	for(String t: tags)
 	{
-		var t = tags[i];
 		//console.log(t);
 		//if(tabs[t]) console.log(t, tabs[t].offset, tabs[t].length);
-		if (tabs[t]) {
-		  @typr.Typr::parseTab(Ltypr/TyprFont;Lelemental/html/Uint8Array;IILjava/lang/String;)(obj,data,tabs[t].offset, tabs[t].length,t);
-		}
+		if (tabOffset.containsKey(t)) 
+		  parseTab(obj,data,tabOffset.get(t), tabLength.get(t),t);
 //		if(tabs[t]) obj[t.trim()] = Typr[t.trim()].parse(data, tabs[t].offset, tabs[t].length, obj);
 	}
 	
 	return obj;
-}-*/;
+  }
 
   static void parseTab(TyprFont obj, Uint8Array data, int offset, int length, String tag)
   {

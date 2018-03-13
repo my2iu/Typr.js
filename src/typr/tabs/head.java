@@ -3,9 +3,7 @@ package typr.tabs;
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 
-@JsType(namespace="Typr")
 public class head
 {
   @JsProperty public int unitsPerEm;

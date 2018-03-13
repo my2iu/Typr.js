@@ -3,12 +3,10 @@ package typr.tabs;
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 
 /**
  * Horizontal Header
  */
-@JsType(namespace="Typr")
 public class hhea
 {
   @JsProperty public int advanceWidthMax;
