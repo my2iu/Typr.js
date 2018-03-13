@@ -1,10 +1,20 @@
+package typr;
 
-if(Typr  ==null) Typr   = {};
-if(Typr.U==null) Typr.U = {};
+import com.google.gwt.core.client.JavaScriptObject;
 
+import elemental.html.CanvasRenderingContext2D;
+import elemental.util.ArrayOfInt;
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+import typr.GwtTestEntryPoint.TyprFont;
+import typr.GwtTestEntryPoint.TyprPath;
 
-Typr.U.codeToGlyph = function(font, code)
+@JsType(namespace="Typr",name="U")
+public class TyprU
 {
+
+  @JsMethod public static native JavaScriptObject codeToGlyph (JavaScriptObject font, JavaScriptObject code)
+  /*-{
 	var cmap = font.cmap;
 	
 	var tind = -1;
@@ -44,11 +54,11 @@ Typr.U.codeToGlyph = function(font, code)
 		return 0;
 	}
 	else throw "unknown cmap table format "+tab.format;
-}
+}-*/;
 
 
-Typr.U.glyphToPath = function(font, gid)
-{
+  @JsMethod public static native JavaScriptObject glyphToPath (JavaScriptObject font, JavaScriptObject gid)
+  /*-{
 	var path = { cmds:[], crds:[] };
 	if(font.SVG && font.SVG.entries[gid]) {
 		var p = font.SVG.entries[gid];  if(p==null) return path;
@@ -61,31 +71,31 @@ Typr.U.glyphToPath = function(font, gid)
 	}
 	else if(font.glyf) {  Typr.U._drawGlyf(gid, font, path);  }
 	return path;
-}
+}-*/;
 
-Typr.U.getGlyphDimensions = function(font, gid)
-{
+  @JsMethod public static native JavaScriptObject getGlyphDimensions (JavaScriptObject font, JavaScriptObject gid)
+  /*-{
 	var gl = Typr.U._getGlyf(gid, font);
 	if (gl != null)
 		return [gl.xMin, gl.yMin, gl.xMax, gl.yMax];
 	return null;
-}
-Typr.U._getGlyf = function(gid, font)
-{
+}-*/;
+  @JsMethod public static native JavaScriptObject _getGlyf (JavaScriptObject gid, JavaScriptObject font)
+  /*-{
 	var gl = font.glyf[gid];
 	if(gl==null) gl = font.glyf[gid] = Typr.glyf._parseGlyf(font, gid);
 	return gl;
-}
-Typr.U._drawGlyf = function(gid, font, path)
-{
+}-*/;
+  @JsMethod public static native JavaScriptObject _drawGlyf (JavaScriptObject gid, JavaScriptObject font, JavaScriptObject path)
+  /*-{
 	var gl = Typr.U._getGlyf(gid, font);
 	if(gl!=null){
 		if(gl.noc>-1) Typr.U._simpleGlyph(gl, path);
 		else          Typr.U._compoGlyph (gl, font, path);
 	}
-}
-Typr.U._simpleGlyph = function(gl, p)
-{
+}-*/;
+  @JsMethod public static native JavaScriptObject _simpleGlyph (JavaScriptObject gl, JavaScriptObject p)
+  /*-{
 	for(var c=0; c<gl.noc; c++)
 	{
 		var i0 = (c==0) ? 0 : (gl.endPts[c-1] + 1);
@@ -105,7 +115,8 @@ Typr.U._simpleGlyph = function(gl, p)
 				if(onCurve)  
 				{
 					if(prOnCurve) Typr.U.P.moveTo(p, gl.xs[pr], gl.ys[pr]); 
-					else          {  Typr.U.P.moveTo(p,x,y);  continue;  /*  will do curveTo at il  */  }
+					else          {  Typr.U.P.moveTo(p,x,y);  continue;  //  will do curveTo at il    
+  }
 				}
 				else        
 				{
@@ -125,9 +136,9 @@ Typr.U._simpleGlyph = function(gl, p)
 		}
 		Typr.U.P.closePath(p);
 	}
-}
-Typr.U._compoGlyph = function(gl, font, p)
-{
+  }-*/;
+  @JsMethod public static native JavaScriptObject _compoGlyph (JavaScriptObject gl, JavaScriptObject font, JavaScriptObject p)
+  /*-{
 	for(var j=0; j<gl.parts.length; j++)
 	{
 		var path = { cmds:[], crds:[] };
@@ -143,20 +154,20 @@ Typr.U._compoGlyph = function(gl, font, p)
 		}
 		for(var i=0; i<path.cmds.length; i++) p.cmds.push(path.cmds[i]);
 	}
-}
+}-*/;
 
 
-Typr.U._getGlyphClass = function(g, cd)
-{
+  @JsMethod public static native JavaScriptObject _getGlyphClass (JavaScriptObject g, JavaScriptObject cd)
+  /*-{
 	var intr = Typr._lctf.getInterval(cd, g);
 	return intr==-1 ? 0 : cd[intr+2];
 	//for(var i=0; i<cd.start.length; i++) 
 	//	if(cd.start[i]<=g && cd.end[i]>=g) return cd.class[i];
 	//return 0;
-}
+}-*/;
 
-Typr.U.getPairAdjustment = function(font, g1, g2)
-{
+  @JsMethod public static native JavaScriptObject getPairAdjustment (JavaScriptObject font, JavaScriptObject g1, JavaScriptObject g2)
+  /*-{
 	if(font.GPOS)
 	{
 		var ltab = null;
@@ -203,10 +214,10 @@ Typr.U.getPairAdjustment = function(font, g1, g2)
 	}
 	
 	return 0;
-}
+}-*/;
 
-Typr.U.stringToGlyphs = function(font, str)
-{
+  @JsMethod public static native ArrayOfInt stringToGlyphs (TyprFont font, String str)
+  /*-{
 	var gls = [];
 	for(var i=0; i<str.length; i++) {
 		var cc = str.codePointAt(i);  if(cc>0xffff) i++;
@@ -310,8 +321,8 @@ Typr.U.stringToGlyphs = function(font, str)
 	}
 	
 	return gls;
-}
-Typr.U._applyType1 = function(gls, ci, tab) {
+}-*/;
+  @JsMethod public static native JavaScriptObject _applyType1 (JavaScriptObject gls, JavaScriptObject ci, JavaScriptObject tab) /*-{
 	var gl = gls[ci];
 	for(var j=0; j<tab.tabs.length; j++) {
 		var ttab = tab.tabs[j];
@@ -320,10 +331,10 @@ Typr.U._applyType1 = function(gls, ci, tab) {
 		else            gls[ci] = ttab.newg[ind];
 		//console.log(ci, gl, "subst", flist[fi].tag, i, j, ttab.newg[ind]);
 	}
-}
+}-*/;
 
-Typr.U.glyphsToPositions = function(font, gls)
-{	
+  @JsMethod public static native JavaScriptObject glyphsToPositions (JavaScriptObject font, JavaScriptObject gls)
+  /*-{	
 	var pos = [];
 	var x = 0;
 	pos.push(0);
@@ -337,10 +348,15 @@ Typr.U.glyphsToPositions = function(font, gls)
 		pos.push(x);
 	}
 	return pos;
-}
+}-*/;
 
-Typr.U.glyphsToPath = function(font, gls, clr)
-{	
+  @JsMethod(name="glyphsToPathOverloaded") public static TyprPath glyphsToPath (TyprFont font, ArrayOfInt gls)
+  {
+    return glyphsToPath(font, gls, null);
+  }
+
+  @JsMethod public static native TyprPath glyphsToPath (TyprFont font, ArrayOfInt gls, String clr)
+  /*-{	
 	//gls = gls.reverse();//gls.slice(0,12).concat(gls.slice(12).reverse());
 	
 	var tpath = {cmds:[], crds:[]};
@@ -363,10 +379,10 @@ Typr.U.glyphsToPath = function(font, gls, clr)
 		if(i<gls.length-1) x += Typr.U.getPairAdjustment(font, gid, gid2);
 	}
 	return tpath;
-}
+}-*/;
 
-Typr.U.pathToSVG = function(path, prec)
-{
+  @JsMethod public static native JavaScriptObject pathToSVG (JavaScriptObject path, JavaScriptObject prec)
+  /*-{
 	if(prec==null) prec = 5;
 	var out = [], co = 0, lmap = {"M":2,"L":2,"Q":4,"C":6};
 	for(var i=0; i<path.cmds.length; i++)
@@ -376,10 +392,10 @@ Typr.U.pathToSVG = function(path, prec)
 		while(co<cn) {  var c = path.crds[co++];  out.push(parseFloat(c.toFixed(prec))+(co==cn?"":" "));  }
 	}
 	return out.join("");
-}
+}-*/;
 
-Typr.U.pathToContext = function(path, ctx)
-{
+  @JsMethod public static native JavaScriptObject pathToContext (TyprPath path, CanvasRenderingContext2D ctx)
+  /*-{
 	var c = 0, crds = path.crds;
 	
 	for(var j=0; j<path.cmds.length; j++)
@@ -412,33 +428,34 @@ Typr.U.pathToContext = function(path, ctx)
 			ctx.fill();
 		}
 	}
-}
+}-*/;
 
 
-Typr.U.P = {};
-Typr.U.P.moveTo = function(p, x, y)
-{
+  @JsType(namespace="Typr.U",name="P")
+  public static class TyprUP
+  {
+    @JsMethod public static native JavaScriptObject moveTo (JavaScriptObject p, JavaScriptObject x, JavaScriptObject y)
+    /*-{
 	p.cmds.push("M");  p.crds.push(x,y);
-}
-Typr.U.P.lineTo = function(p, x, y)
-{
+}-*/;
+    @JsMethod public static native JavaScriptObject lineTo (JavaScriptObject p, JavaScriptObject x, JavaScriptObject y)
+    /*-{
 	p.cmds.push("L");  p.crds.push(x,y);
-}
-Typr.U.P.curveTo = function(p, a,b,c,d,e,f)
-{
+}-*/;
+    @JsMethod public static native JavaScriptObject curveTo (JavaScriptObject p, JavaScriptObject a,JavaScriptObject b,JavaScriptObject c,JavaScriptObject d,JavaScriptObject e,JavaScriptObject f)
+    /*-{
 	p.cmds.push("C");  p.crds.push(a,b,c,d,e,f);
-}
-Typr.U.P.qcurveTo = function(p, a,b,c,d)
-{
+}-*/;
+    @JsMethod public static native JavaScriptObject qcurveTo (JavaScriptObject p, JavaScriptObject a,JavaScriptObject b,JavaScriptObject c,JavaScriptObject d)
+    /*-{
 	p.cmds.push("Q");  p.crds.push(a,b,c,d);
-}
-Typr.U.P.closePath = function(p) {  p.cmds.push("Z");  }
+}-*/;
+    @JsMethod public static native JavaScriptObject closePath (JavaScriptObject p) /*-{  p.cmds.push("Z");}-*/;
+  }
 
 
-
-
-Typr.U._drawCFF = function(cmds, state, font, p)
-{
+@JsMethod public static native JavaScriptObject _drawCFF (JavaScriptObject cmds, JavaScriptObject state, JavaScriptObject font, JavaScriptObject p)
+/*-{
 	var stack = state.stack;
 	var nStems = state.nStems, haveWidth=state.haveWidth, width=state.width, open=state.open;
 	var i=0;
@@ -788,4 +805,5 @@ Typr.U._drawCFF = function(cmds, state, font, p)
 	}
 	//console.log(cmds);
 	state.x=x; state.y=y; state.nStems=nStems; state.haveWidth=haveWidth; state.width=width; state.open=open;
+}-*/;
 }

@@ -2,14 +2,16 @@ package typr;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import elemental.html.ArrayBuffer;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
+import typr.GwtTestEntryPoint.TyprFont;
 
 @JsType(namespace=JsPackage.GLOBAL)
 public class Typr
 {
-  @JsMethod public static native JavaScriptObject parse (JavaScriptObject buff)
+  @JsMethod public static native TyprFont parse (ArrayBuffer buff)
   /*-{
 	var bin = Typr._bin;
 	var data = new Uint8Array(buff);
