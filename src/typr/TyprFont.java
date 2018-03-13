@@ -1,6 +1,7 @@
 package typr;
 
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
 import jsinterop.annotations.JsProperty;
 
@@ -17,7 +18,7 @@ public class TyprFont
   @JsProperty public typr.tabs.OS2 OS2;
   @JsProperty public typr.tabs.post post;
   @JsProperty public ArrayOfInt loca;
-  @JsProperty public typr.tabs.glyf glyf;
+  @JsProperty public ArrayOf<typr.tabs.glyf> glyf;
   @JsProperty public typr.tabs.kern kern;
   @JsProperty public typr.tabs.CFF CFF;
   @JsProperty public typr.tabs.GPOS GPOS;

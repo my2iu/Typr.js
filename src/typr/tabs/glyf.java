@@ -3,6 +3,8 @@ package typr.tabs;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOf;
+import elemental.util.Collections;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
@@ -11,14 +13,14 @@ import typr.TyprFont;
 @JsType(namespace="Typr")
 public class glyf
 {
-  @JsIgnore public static native glyf parse (Uint8Array data, int offset, int length, TyprFont font)
-  /*-{
-	var obj = [];
-	for(var g=0; g<font.maxp.numGlyphs; g++) obj.push(null);
+  @JsIgnore public static ArrayOf<glyf> parse (Uint8Array data, int offset, int length, TyprFont font)
+  {
+	ArrayOf<glyf> obj = Collections.arrayOf(); 
+	for(int g=0; g<(int)font.maxp.numGlyphs; g++) obj.push(null);
 	return obj;
-}-*/;
+  }
 
-  @JsMethod public static native JavaScriptObject _parseGlyf (JavaScriptObject font, JavaScriptObject g)
+  @JsMethod public static native glyf _parseGlyf (TyprFont font, JavaScriptObject g)
   /*-{
 	var bin = Typr._bin;
 	var data = font._data;

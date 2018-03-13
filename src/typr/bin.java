@@ -74,7 +74,7 @@ public class bin
 		a.setAt(3, buff.intAt(p));  a.setAt(2, buff.intAt(p+1));  a.setAt(1, buff.intAt(p+2));  a.setAt(0, buff.intAt(p+3));
 		return t.uint32.intAt(0);
 	}
-	@JsMethod public static native JavaScriptObject readUint64 (JavaScriptObject buff, JavaScriptObject p)
+	@JsMethod public static native double readUint64 (Uint8Array buff, int p)
 	/*-{
 		//if(p>=buff.length) throw "error";
 		return (Typr._bin.readUint(buff, p)*(0xffffffff+1)) + Typr._bin.readUint(buff, p+4);
@@ -121,7 +121,6 @@ public class bin
 @JsIgnore static native void init() /*-{ 
 Typr._bin._tdec = window["TextDecoder"] ? new window["TextDecoder"]() : null;
 }-*/;
-  @JsType
   static class Union
   {
     @JsProperty ArrayBuffer buff = Browser.getWindow().newUint8Array(8).getBuffer();

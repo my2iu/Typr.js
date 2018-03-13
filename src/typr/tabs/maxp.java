@@ -2,18 +2,35 @@ package typr.tabs;
 
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsProperty;
+import typr.bin;
 
 public class maxp
 {
-  @JsIgnore  public static native maxp parse (Uint8Array data, int offset, int length)
-  /*-{
+  @JsProperty public char numGlyphs;
+  @JsProperty public char maxPoints;
+  @JsProperty public char maxContours;
+  @JsProperty public char maxCompositePoints;
+  @JsProperty public char maxCompositeContours;
+  @JsProperty public char maxZones;
+  @JsProperty public char maxTwilightPoints;
+  @JsProperty public char maxStorage;
+  @JsProperty public char maxFunctionDefs;
+  @JsProperty public char maxInstructionDefs;
+  @JsProperty public char maxStackElements;
+  @JsProperty public char maxSizeOfInstructions;
+  @JsProperty public char maxComponentElements;
+  @JsProperty public char maxComponentDepth;
+  
+  @JsIgnore  public static maxp parse (Uint8Array data, int offset, int length)
+  {
 	//console.log(data.length, offset, length);
 	
-	var bin = Typr._bin;
-	var obj = {};
+//	var bin = Typr._bin;
+	maxp obj = new maxp();
 	
 	// both versions 0.5 and 1.0
-	var ver = bin.readUint(data, offset); offset += 4;
+	int ver = bin.readUint(data, offset); offset += 4;
 	obj.numGlyphs = bin.readUshort(data, offset);  offset += 2;
 	
 	// only 1.0
@@ -35,5 +52,5 @@ public class maxp
 	}
 	
 	return obj;
-}-*/;
+  }
 }

@@ -3,6 +3,7 @@ package typr.tabs;
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
+import typr.bin;
 
 /**
  * Horizontal Header
@@ -13,12 +14,20 @@ public class hhea
   @JsProperty public int ascender;
   @JsProperty public int descender;
   @JsProperty public int lineGap;
+  @JsProperty public short minLeftSideBearing;
+  @JsProperty public short minRightSideBearing;
+  @JsProperty public short xMaxExtent;
+  @JsProperty public short caretSlopeRise;
+  @JsProperty public short caretSlopeRun;
+  @JsProperty public short caretOffset;
+  @JsProperty public short metricDataFormat;
+  @JsProperty public char numberOfHMetrics;
   
-  @JsIgnore  public static native hhea parse (Uint8Array data, int offset, int length)
-  /*-{
-	var bin = Typr._bin;
-	var obj = {};
-	var tableVersion = bin.readFixed(data, offset);  offset += 4;
+  @JsIgnore public static hhea parse (Uint8Array data, int offset, int length)
+  {
+//	var bin = Typr._bin;
+	hhea obj = new hhea();
+	int tableVersion = bin.readFixed(data, offset);  offset += 4;
 	obj.ascender  = bin.readShort(data, offset);  offset += 2;
 	obj.descender = bin.readShort(data, offset);  offset += 2;
 	obj.lineGap = bin.readShort(data, offset);  offset += 2;
@@ -37,5 +46,5 @@ public class hhea
 	obj.metricDataFormat = bin.readShort (data, offset);  offset += 2;
 	obj.numberOfHMetrics = bin.readUshort(data, offset);  offset += 2;
 	return obj;
-}-*/;
+  }
 }
