@@ -17,10 +17,10 @@ public class lctf
 {
   @JsFunction public static interface Subt
   {
-    JavaScriptObject subt (Uint8Array data, JavaScriptObject ltype, int offset);
+    Object subt (Uint8Array data, char ltype, int offset);
   }
   
-  @JsIgnore public static native Object parse (Uint8Array data, int offset, int length, TyprFont font, Subt subt)
+  @JsIgnore public static native <U> U parse (Uint8Array data, int offset, int length, TyprFont font, Subt subt)
   /*-{
 	var bin = Typr._bin;
 	var obj = {};
@@ -120,7 +120,7 @@ public class lctf
 	return -1;
 }-*/;
 
-  @JsMethod public static native JavaScriptObject readValueRecord (JavaScriptObject data, JavaScriptObject offset, JavaScriptObject valFmt)
+  @JsMethod public static native JavaScriptObject readValueRecord (Uint8Array data, int offset, char valFmt)
   /*-{
 	var bin = Typr._bin;
 	var arr = [];
@@ -131,7 +131,7 @@ public class lctf
 	return arr;
 }-*/;
 
-  @JsMethod public static native JavaScriptObject readCoverage (JavaScriptObject data, JavaScriptObject offset)
+  @JsMethod public static native JavaScriptObject readCoverage (Uint8Array data, int offset)
   /*-{
 	var bin = Typr._bin;
 	var cvg = {};
@@ -236,5 +236,5 @@ public class lctf
 	var featureCount = bin.readUshort(data, offset);  offset+=2;
 	obj.features = bin.readUshorts(data, offset, featureCount);
 	return obj;
-}-*/;
+  }-*/;
 }

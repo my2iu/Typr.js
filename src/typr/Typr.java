@@ -12,7 +12,9 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 import typr.tabs.CFF;
 import typr.tabs.GPOS;
+import typr.tabs.GPOSParser;
 import typr.tabs.GSUB;
+import typr.tabs.GSUBParser;
 import typr.tabs.OS2;
 import typr.tabs.SVG;
 import typr.tabs.cmap;
@@ -158,10 +160,10 @@ public class Typr
     
     
     case "GPOS":
-      obj.GPOS = GPOS.parse(data, offset, length, obj);
+      obj.GPOS = GPOSParser.parse(data, offset, length, obj);
       break;
     case "GSUB":
-      obj.GSUB = GSUB.parse(data, offset, length, obj);
+      obj.GSUB = GSUBParser.parse(data, offset, length, obj);
       break;
     
     case "SVG ":
