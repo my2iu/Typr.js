@@ -6,12 +6,10 @@ import elemental.util.ArrayOfInt;
 import elemental.util.Collections;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 import typr.Typr;
 import typr.TyprFont;
 import typr.bin;
 
-@JsType(namespace="Typr")
 public class glyf
 {
   @JsIgnore public static ArrayOf<glyf> parse (Uint8Array data, int offset, int length, TyprFont font)
