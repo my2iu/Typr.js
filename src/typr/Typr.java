@@ -93,6 +93,7 @@ public class Typr
 		int length = bin.readUint(data, offset);    offset += 4;
 		tabOffset.put(tag, toffset);
 		tabLength.put(tag, length);
+//		Browser.getWindow().getConsole().log(tag + ":" + length);
 //		tabs[tag] = {offset:toffset, length:length};
 		
 		//if(tags.indexOf(tag)==-1) console.log("unknown tag", tag, length);

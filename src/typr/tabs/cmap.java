@@ -3,13 +3,41 @@ package typr.tabs;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOf;
+import elemental.util.ArrayOfInt;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace="Typr")
 public class cmap
 {
+  @JsProperty public Integer p0e4;
+  @JsProperty public Integer p3e1;
+  @JsProperty public Integer p1e0;
+  
+  @JsProperty public ArrayOf<Table> tables;
+  @JsType(isNative=true)
+  public static class Table
+  {
+    @JsProperty public int format;
+    
+    // parse0
+    @JsProperty public ArrayOfInt map;
+    
+    // parse4
+    @JsProperty public ArrayOfInt startCount;
+    @JsProperty public ArrayOfInt endCount;
+    @JsProperty public ArrayOfInt idRangeOffset;
+    @JsProperty public ArrayOfInt glyphIdArray;
+    @JsProperty public ArrayOfInt idDelta;
+    
+    // parse12
+    @JsProperty public ArrayOf<ArrayOfInt> groups;
+  }
+  
+  
   @JsIgnore public static native cmap parse(Uint8Array data, int offset, int length)
   /*-{
 	data = new Uint8Array(data.buffer, offset, length);

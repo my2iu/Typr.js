@@ -11,49 +11,58 @@ import typr.tabs.glyf;
 @JsType(namespace="Typr",name="U")
 public class TyprU
 {
-
-  @JsMethod public static native JavaScriptObject codeToGlyph (JavaScriptObject font, JavaScriptObject code)
+  /**
+   * GWT is generating the code for this wrong (cmap.p0e4!=null becomes cmap.p0e4), so
+   * I'll just use the original JS version.
+   */
+  private static native int getCmapTind(typr.tabs.cmap cmap)
   /*-{
-	var cmap = font.cmap;
+    var tind = -1;
+    if(cmap.p0e4!=null) tind = cmap.p0e4;
+    else if(cmap.p3e1!=null) tind = cmap.p3e1;
+    else if(cmap.p1e0!=null) tind = cmap.p1e0;
+    return tind;
+  }-*/;
+  
+  @JsMethod public static int codeToGlyph (TyprFont font, int code)
+  {
+	typr.tabs.cmap cmap = font.cmap;
 	
-	var tind = -1;
-	if(cmap.p0e4!=null) tind = cmap.p0e4;
-	else if(cmap.p3e1!=null) tind = cmap.p3e1;
-	else if(cmap.p1e0!=null) tind = cmap.p1e0;
+	int tind = getCmapTind(cmap);
 	
-	if(tind==-1) throw "no familiar platform and encoding!";
+	if(tind==-1) throw new IllegalArgumentException("no familiar platform and encoding!");
 	
-	var tab = cmap.tables[tind];
+	typr.tabs.cmap.Table tab = cmap.tables.get(tind);
 	
 	if(tab.format==0)
 	{
-		if(code>=tab.map.length) return 0;
-		return tab.map[code];
+		if(code>=tab.map.length()) return 0;
+		return tab.map.get(code);
 	}
 	else if(tab.format==4)
 	{
-		var sind = -1;
-		for(var i=0; i<tab.endCount.length; i++)   if(code<=tab.endCount[i]){  sind=i;  break;  } 
+		int sind = -1;
+		for(int i=0; i<tab.endCount.length(); i++)   if(code<=tab.endCount.get(i)){  sind=i;  break;  } 
 		if(sind==-1) return 0;
-		if(tab.startCount[sind]>code) return 0;
+		if(tab.startCount.get(sind)>code) return 0;
 		
-		var gli = 0;
-		if(tab.idRangeOffset[sind]!=0) gli = tab.glyphIdArray[(code-tab.startCount[sind]) + (tab.idRangeOffset[sind]>>1) - (tab.idRangeOffset.length-sind)];
-		else                           gli = code + tab.idDelta[sind];
+		int gli = 0;
+		if(tab.idRangeOffset.get(sind)!=0) gli = tab.glyphIdArray.get((code-tab.startCount.get(sind)) + (tab.idRangeOffset.get(sind)>>1) - (tab.idRangeOffset.length()-sind));
+		else                           gli = code + tab.idDelta.get(sind);
 		return gli & 0xFFFF;
 	}
 	else if(tab.format==12)
 	{
-		if(code>tab.groups[tab.groups.length-1][1]) return 0;
-		for(var i=0; i<tab.groups.length; i++)
+		if(code>tab.groups.get(tab.groups.length()-1).get(1)) return 0;
+		for(int i=0; i<tab.groups.length(); i++)
 		{
-			var grp = tab.groups[i];
-			if(grp[0]<=code && code<=grp[1]) return grp[2] + (code-grp[0]);
+			ArrayOfInt grp = tab.groups.get(i);
+			if(grp.get(0)<=code && code<=grp.get(1)) return grp.get(2) + (code-grp.get(0));
 		}
 		return 0;
 	}
-	else throw "unknown cmap table format "+tab.format;
-}-*/;
+	else throw new IllegalArgumentException("unknown cmap table format "+tab.format);
+  }
 
 
   @JsMethod public static native TyprPath glyphToPath (TyprFont font, int gid)
