@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
+import elemental.util.MapFromStringToInt;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
@@ -13,28 +14,26 @@ import jsinterop.annotations.JsType;
 @JsType(namespace="Typr")
 public class cmap
 {
-  @JsProperty public Integer p0e4;
-  @JsProperty public Integer p3e1;
-  @JsProperty public Integer p1e0;
+  @JsProperty public MapFromStringToInt platformEncodingMap;
   
   @JsProperty public ArrayOf<Table> tables;
   @JsType(isNative=true)
-  public static class Table
+  public static interface Table
   {
-    @JsProperty public int format;
+    @JsProperty(name="format") public int format();
     
     // parse0
-    @JsProperty public ArrayOfInt map;
+    @JsProperty(name="map") public ArrayOfInt map();
     
     // parse4
-    @JsProperty public ArrayOfInt startCount;
-    @JsProperty public ArrayOfInt endCount;
-    @JsProperty public ArrayOfInt idRangeOffset;
-    @JsProperty public ArrayOfInt glyphIdArray;
-    @JsProperty public ArrayOfInt idDelta;
+    @JsProperty(name="startCount") public ArrayOfInt startCount();
+    @JsProperty(name="endCount") public ArrayOfInt endCount();
+    @JsProperty(name="idRangeOffset") public ArrayOfInt idRangeOffset();
+    @JsProperty(name="glyphIdArray") public ArrayOfInt glyphIdArray();
+    @JsProperty(name="idDelta") public ArrayOfInt idDelta();
     
     // parse12
-    @JsProperty public ArrayOf<ArrayOfInt> groups;
+    @JsProperty(name="groups") public ArrayOf<ArrayOfInt> groups();
   }
   
   
@@ -53,6 +52,7 @@ public class cmap
 	
 	var offs = [];
 	obj.tables = [];
+	obj.platformEncodingMap = {};
 	
 	
 	for(var i=0; i<numTables; i++)
@@ -82,8 +82,8 @@ public class cmap
 			obj.tables.push(subt);
 		}
 		
-		if(obj[id]!=null) throw "multiple tables for one platform+encoding";
-		obj[id] = tind;
+		if(obj.platformEncodingMap[id]!=null) throw "multiple tables for one platform+encoding";
+		obj.platformEncodingMap[id] = tind;
 	}
 	return obj;
 }-*/;

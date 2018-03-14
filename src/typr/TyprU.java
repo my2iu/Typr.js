@@ -11,57 +11,47 @@ import typr.tabs.glyf;
 @JsType(namespace="Typr",name="U")
 public class TyprU
 {
-  /**
-   * GWT is generating the code for this wrong (cmap.p0e4!=null becomes cmap.p0e4), so
-   * I'll just use the original JS version.
-   */
-  private static native int getCmapTind(typr.tabs.cmap cmap)
-  /*-{
-    var tind = -1;
-    if(cmap.p0e4!=null) tind = cmap.p0e4;
-    else if(cmap.p3e1!=null) tind = cmap.p3e1;
-    else if(cmap.p1e0!=null) tind = cmap.p1e0;
-    return tind;
-  }-*/;
-  
   @JsMethod public static int codeToGlyph (TyprFont font, int code)
   {
 	typr.tabs.cmap cmap = font.cmap;
 	
-	int tind = getCmapTind(cmap);
+    int tind = -1;
+    if(cmap.platformEncodingMap.hasKey("p0e4")) tind = cmap.platformEncodingMap.get("p0e4");
+    else if(cmap.platformEncodingMap.hasKey("p3e1")) tind = cmap.platformEncodingMap.get("p3e1");
+    else if(cmap.platformEncodingMap.hasKey("p1e0")) tind = cmap.platformEncodingMap.get("p1e0");
 	
 	if(tind==-1) throw new IllegalArgumentException("no familiar platform and encoding!");
 	
 	typr.tabs.cmap.Table tab = cmap.tables.get(tind);
 	
-	if(tab.format==0)
+	if(tab.format()==0)
 	{
-		if(code>=tab.map.length()) return 0;
-		return tab.map.get(code);
+		if(code>=tab.map().length()) return 0;
+		return tab.map().get(code);
 	}
-	else if(tab.format==4)
+	else if(tab.format()==4)
 	{
 		int sind = -1;
-		for(int i=0; i<tab.endCount.length(); i++)   if(code<=tab.endCount.get(i)){  sind=i;  break;  } 
+		for(int i=0; i<tab.endCount().length(); i++)   if(code<=tab.endCount().get(i)){  sind=i;  break;  } 
 		if(sind==-1) return 0;
-		if(tab.startCount.get(sind)>code) return 0;
+		if(tab.startCount().get(sind)>code) return 0;
 		
 		int gli = 0;
-		if(tab.idRangeOffset.get(sind)!=0) gli = tab.glyphIdArray.get((code-tab.startCount.get(sind)) + (tab.idRangeOffset.get(sind)>>1) - (tab.idRangeOffset.length()-sind));
-		else                           gli = code + tab.idDelta.get(sind);
+		if(tab.idRangeOffset().get(sind)!=0) gli = tab.glyphIdArray().get((code-tab.startCount().get(sind)) + (tab.idRangeOffset().get(sind)>>1) - (tab.idRangeOffset().length()-sind));
+		else                           gli = code + tab.idDelta().get(sind);
 		return gli & 0xFFFF;
 	}
-	else if(tab.format==12)
+	else if(tab.format()==12)
 	{
-		if(code>tab.groups.get(tab.groups.length()-1).get(1)) return 0;
-		for(int i=0; i<tab.groups.length(); i++)
+		if(code>tab.groups().get(tab.groups().length()-1).get(1)) return 0;
+		for(int i=0; i<tab.groups().length(); i++)
 		{
-			ArrayOfInt grp = tab.groups.get(i);
+			ArrayOfInt grp = tab.groups().get(i);
 			if(grp.get(0)<=code && code<=grp.get(1)) return grp.get(2) + (code-grp.get(0));
 		}
 		return 0;
 	}
-	else throw new IllegalArgumentException("unknown cmap table format "+tab.format);
+	else throw new IllegalArgumentException("unknown cmap table format "+tab.format());
   }
 
 
