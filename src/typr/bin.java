@@ -10,6 +10,8 @@ import elemental.html.Int8Array;
 import elemental.html.Uint16Array;
 import elemental.html.Uint32Array;
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOfInt;
+import elemental.util.Collections;
 import elemental.util.SettableInt;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
@@ -23,7 +25,7 @@ public class bin
   {
 		return ((data.intAt(o)<<8) | data.intAt(o+1)) +  (((data.intAt(o+2)<<8)|data.intAt(o+3))/(256*256+4));
 	}
-	@JsMethod public static native JavaScriptObject readF2dot14 (JavaScriptObject data, JavaScriptObject o)
+	@JsMethod public static native double readF2dot14 (Uint8Array data, int o)
 	/*-{
 		var num = Typr._bin.readShort(data, o);
 		return num / 16384;
@@ -42,13 +44,13 @@ public class bin
 		return t.int32.intAt(0);
 	}
 	
-	@JsMethod public static native JavaScriptObject readInt8 (JavaScriptObject buff, JavaScriptObject p)
-	/*-{
+	@JsMethod public static byte readInt8 (Uint8Array buff, int p)
+	{
 		//if(p>=buff.length) throw "error";
-		var a = Typr._bin.t.uint8;
-		a[0] = buff[p];
-		return Typr._bin.t.int8[0];
-	}-*/;
+		SettableInt a = (SettableInt)bin.t.uint8;
+		a.setAt(0, buff.intAt(p));
+		return (byte)bin.t.int8.intAt(0);
+	}
 	@JsMethod public static short readShort (Uint8Array buff, int p)
 	{
 		//if(p>=buff.length) throw "error";
@@ -103,13 +105,13 @@ public class bin
 		if(tdec && p==0 && l==buff.length) return tdec["decode"](buff);
 		return Typr._bin.readASCII(buff,p,l);
 	}-*/;
-	@JsMethod public static native JavaScriptObject readBytes (JavaScriptObject buff, JavaScriptObject p, JavaScriptObject l)
-	/*-{
+	@JsMethod public static ArrayOfInt readBytes (Uint8Array buff, int p, int l)
+	{
 		//if(p>=buff.length) throw "error";
-		var arr = [];
-		for(var i=0; i<l; i++) arr.push(buff[p+i]);
+		ArrayOfInt arr = Collections.arrayOfInt();
+		for(int i=0; i<l; i++) arr.push(buff.intAt(p+i));
 		return arr;
-	}-*/;
+	}
 	@JsMethod public static native JavaScriptObject readASCIIArray (JavaScriptObject buff, JavaScriptObject p, JavaScriptObject l)	// l : length in Characters (not Bytes)
 	/*-{
 		//if(p>=buff.length) throw "error";

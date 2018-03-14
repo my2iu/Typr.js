@@ -7,14 +7,18 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
 import typr.TyprFont;
+import typr.lctf;
 
 @JsType(namespace="Typr")
 public class GSUB
 {
-  @JsIgnore public static native GSUB parse (Uint8Array data, int offset, int length, TyprFont font) /*-{  return Typr._lctf.parse(data, offset, length, font, Typr.GSUB.subt);  }-*/;
+  @JsIgnore public static GSUB parse (Uint8Array data, int offset, int length, TyprFont font) {  return (GSUB)lctf.parse(data, offset, length, font, GSUB.subt);  }
 
+  @JsIgnore public static lctf.Subt subt = (data, ltype, offset) -> { // lookup type
+    return subt2(data, ltype, offset);
+  }; 
 
-  @JsMethod public static native JavaScriptObject subt (JavaScriptObject data, JavaScriptObject ltype, int offset)	// lookup type
+  @JsIgnore public static native JavaScriptObject subt2 (Uint8Array data, JavaScriptObject ltype, int offset)	// lookup type
   /*-{
 	var bin = Typr._bin, offset0 = offset, tab = {};
 	

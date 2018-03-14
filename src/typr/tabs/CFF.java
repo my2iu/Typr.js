@@ -3,10 +3,8 @@ package typr.tabs;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.html.Uint8Array;
-import elemental.util.ArrayOfInt;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
-import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace="Typr")
@@ -112,11 +110,7 @@ public class CFF
         //offset += gsubinds[gsubinds.length-1];
     }-*/;
     
-    @JsProperty static ArrayOfInt tableSE = makeTableSE();
-    
-    static native ArrayOfInt makeTableSE() 
-    /*-{
-      return [
+    private static int[] tableSE = new int[] {
       0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,
@@ -149,20 +143,19 @@ public class CFF
     140, 141, 142, 143,   0,   0,   0,   0,
       0, 144,   0,   0,   0, 145,   0,   0,
     146, 147, 148, 149,   0,   0,   0,   0
-  ];
-    }-*/;
+    };
   
-    @JsMethod public static native JavaScriptObject glyphByUnicode (JavaScriptObject cff, JavaScriptObject code)
+    @JsMethod public static native int glyphByUnicode (JavaScriptObject cff, int code)
         /*-{
         for(var i=0; i<cff.charset.length; i++) if(cff.charset[i]==code) return i;
         return -1;
     }-*/;
     
-    @JsMethod public static native JavaScriptObject glyphBySE(JavaScriptObject cff, JavaScriptObject charcode)  // glyph by standard encoding
-        /*-{
+    @JsMethod public static int glyphBySE(JavaScriptObject cff, int charcode)  // glyph by standard encoding
+    {
         if ( charcode < 0 || charcode > 255 ) return -1;
-        return Typr.CFF.glyphByUnicode(cff, Typr.CFF.tableSE[charcode]);        
-    }-*/;
+        return CFF.glyphByUnicode(cff, CFF.tableSE[charcode]);        
+    }
     
     @JsMethod public static native JavaScriptObject readEncoding (JavaScriptObject data, int offset, int num)
         /*-{

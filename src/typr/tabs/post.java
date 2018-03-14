@@ -23,5 +23,5 @@ public class post
 	obj.underlineThickness = bin.readShort(data, offset);  offset+=2;
 
 	return obj;
-}
+  }
 }

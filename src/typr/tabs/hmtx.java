@@ -1,23 +1,30 @@
 package typr.tabs;
 
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOfInt;
+import elemental.util.Collections;
 import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsProperty;
 import typr.TyprFont;
+import typr.bin;
 
 public class hmtx
 {
-  @JsIgnore  public static native hmtx parse (Uint8Array data, int offset, int length, TyprFont font)
-  /*-{
-	var bin = Typr._bin;
-	var obj = {};
+  @JsProperty ArrayOfInt aWidth;
+  @JsProperty ArrayOfInt lsBearing;
+  
+  @JsIgnore  public static hmtx parse (Uint8Array data, int offset, int length, TyprFont font)
+  {
+//	var bin = Typr._bin;
+	hmtx obj = new hmtx();
 	
-	obj.aWidth = [];
-	obj.lsBearing = [];
+	obj.aWidth = Collections.arrayOfInt();
+	obj.lsBearing = Collections.arrayOfInt();
 	
 	
-	var aw = 0, lsb = 0;
+	int aw = 0, lsb = 0;
 	
-	for(var i=0; i<font.maxp.numGlyphs; i++)
+	for(int i=0; i<font.maxp.numGlyphs; i++)
 	{
 		if(i<font.hhea.numberOfHMetrics) {  aw=bin.readUshort(data, offset);  offset += 2;  lsb=bin.readShort(data, offset);  offset+=2;  }
 		obj.aWidth.push(aw);
@@ -25,5 +32,5 @@ public class hmtx
 	}
 	
 	return obj;
-}-*/;
+  }
 }

@@ -6,6 +6,7 @@ import elemental.html.CanvasRenderingContext2D;
 import elemental.util.ArrayOfInt;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
+import typr.tabs.glyf;
 
 @JsType(namespace="Typr",name="U")
 public class TyprU
@@ -78,12 +79,16 @@ public class TyprU
 		return [gl.xMin, gl.yMin, gl.xMax, gl.yMax];
 	return null;
 }-*/;
-  @JsMethod public static native JavaScriptObject _getGlyf (JavaScriptObject gid, JavaScriptObject font)
-  /*-{
-	var gl = font.glyf[gid];
-	if(gl==null) gl = font.glyf[gid] = Typr.glyf._parseGlyf(font, gid);
+  @JsMethod public static glyf _getGlyf (int gid, TyprFont font)
+  {
+	glyf gl = font.glyf.get(gid);
+	if(gl==null) 
+	{
+	  gl = glyf._parseGlyf(font, gid);
+	  font.glyf.set(gid, gl);
+	}
 	return gl;
-}-*/;
+  }
   @JsMethod public static native JavaScriptObject _drawGlyf (JavaScriptObject gid, JavaScriptObject font, JavaScriptObject path)
   /*-{
 	var gl = Typr.U._getGlyf(gid, font);
@@ -432,23 +437,23 @@ public class TyprU
   @JsType(namespace="Typr.U",name="P")
   public static class TyprUP
   {
-    @JsMethod public static native JavaScriptObject moveTo (JavaScriptObject p, JavaScriptObject x, JavaScriptObject y)
-    /*-{
-	p.cmds.push("M");  p.crds.push(x,y);
-}-*/;
-    @JsMethod public static native JavaScriptObject lineTo (JavaScriptObject p, JavaScriptObject x, JavaScriptObject y)
-    /*-{
-	p.cmds.push("L");  p.crds.push(x,y);
-}-*/;
-    @JsMethod public static native JavaScriptObject curveTo (JavaScriptObject p, JavaScriptObject a,JavaScriptObject b,JavaScriptObject c,JavaScriptObject d,JavaScriptObject e,JavaScriptObject f)
-    /*-{
-	p.cmds.push("C");  p.crds.push(a,b,c,d,e,f);
-}-*/;
-    @JsMethod public static native JavaScriptObject qcurveTo (JavaScriptObject p, JavaScriptObject a,JavaScriptObject b,JavaScriptObject c,JavaScriptObject d)
-    /*-{
-	p.cmds.push("Q");  p.crds.push(a,b,c,d);
-}-*/;
-    @JsMethod public static native JavaScriptObject closePath (JavaScriptObject p) /*-{  p.cmds.push("Z");}-*/;
+    @JsMethod public static void moveTo (TyprPath p, double x, double y)
+    {
+      p.cmds.push("M");  p.crds.push(x); p.crds.push(y);
+    }
+    @JsMethod public static void lineTo (TyprPath p, double x, double y)
+    {
+	p.cmds.push("L");  p.crds.push(x); p.crds.push(y);
+    }
+    @JsMethod public static void curveTo (TyprPath p, double a,double b,double c,double d,double e,double f)
+    {
+	p.cmds.push("C");  p.crds.push(a); p.crds.push(b); p.crds.push(c); p.crds.push(d); p.crds.push(e); p.crds.push(f);
+    }
+    @JsMethod public static void qcurveTo (TyprPath p, double a,double b,double c,double d)
+    {
+	p.cmds.push("Q");  p.crds.push(a); p.crds.push(b); p.crds.push(c); p.crds.push(d);
+    }
+    @JsMethod public static void closePath (TyprPath p) {  p.cmds.push("Z");}
   }
 
 

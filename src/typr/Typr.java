@@ -3,8 +3,6 @@ package typr;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
@@ -189,21 +187,21 @@ public class Typr
   }-*/;
 
   
-  @JsMethod public static native JavaScriptObject _tabOffset (JavaScriptObject data, JavaScriptObject tab)
-/*-{
-	var bin = Typr._bin;
-	var numTables = bin.readUshort(data, 4);
-	var offset = 12;
-	for(var i=0; i<numTables; i++)
+  @JsMethod public static int _tabOffset (Uint8Array data, String tab)
+  {
+//	var bin = Typr._bin;
+	int numTables = bin.readUshort(data, 4);
+	int offset = 12;
+	for(int i=0; i<numTables; i++)
 	{
-		var tag = bin.readASCII(data, offset, 4);   offset += 4;
-		var checkSum = bin.readUint(data, offset);  offset += 4;
-		var toffset = bin.readUint(data, offset);   offset += 4;
-		var length = bin.readUint(data, offset);    offset += 4;
-		if(tag==tab) return toffset;
+		String tag = bin.readASCII(data, offset, 4);   offset += 4;
+		int checkSum = bin.readUint(data, offset);  offset += 4;
+		int toffset = bin.readUint(data, offset);   offset += 4;
+		int length = bin.readUint(data, offset);    offset += 4;
+		if(tag.equals(tab)) return toffset;
 	}
 	return 0;
-}-*/;
+  }
 
 
 

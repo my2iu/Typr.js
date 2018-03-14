@@ -4,18 +4,21 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.html.Uint8Array;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
 import typr.TyprFont;
+import typr.lctf;
 
 @JsType(namespace="Typr")
 public class GPOS
 {
-  @JsIgnore public static native GPOS parse (Uint8Array data, int offset, int length, TyprFont font) /*-{  return Typr._lctf.parse(data, offset, length, font, Typr.GPOS.subt);  }-*/;
+  @JsIgnore public static GPOS parse (Uint8Array data, int offset, int length, TyprFont font) {  return (GPOS)lctf.parse(data, offset, length, font, subt);  }
 
 
-
-  @JsMethod public static native JavaScriptObject subt (JavaScriptObject data, JavaScriptObject ltype, int offset)	// lookup type
+  @JsIgnore public static lctf.Subt subt = (data, ltype, offset) -> { // lookup type
+    return subt2(data, ltype, offset);
+  }; 
+  
+  @JsIgnore public static native JavaScriptObject subt2 (Uint8Array data, JavaScriptObject ltype, int offset)	
   /*-{
 	if(ltype!=2) return null;
 	

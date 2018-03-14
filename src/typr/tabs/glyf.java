@@ -1,14 +1,15 @@
 package typr.tabs;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
+import elemental.util.ArrayOfInt;
 import elemental.util.Collections;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+import typr.Typr;
 import typr.TyprFont;
+import typr.bin;
 
 @JsType(namespace="Typr")
 public class glyf
@@ -20,16 +21,49 @@ public class glyf
 	return obj;
   }
 
-  @JsMethod public static native glyf _parseGlyf (TyprFont font, JavaScriptObject g)
-  /*-{
-	var bin = Typr._bin;
-	var data = font._data;
+  @JsProperty public short noc;
+  @JsProperty public short xMin;
+  @JsProperty public short yMin;
+  @JsProperty public short xMax;
+  @JsProperty public short yMax;
+  @JsProperty public ArrayOfInt endPts;
+  @JsProperty public ArrayOfInt instructions;
+  @JsProperty public ArrayOfInt flags;
+  @JsProperty public ArrayOfInt ys;
+  @JsProperty public ArrayOfInt xs;
+  @JsProperty public ArrayOfInt instr;
+  @JsProperty public ArrayOf<Part> parts;
+
+  
+  static class PartInternal
+  {
+    @JsProperty public double a=1;
+    @JsProperty public double b=0;
+    @JsProperty public double c=0;
+    @JsProperty public double d=1;
+    @JsProperty public int tx=0;
+    @JsProperty public int ty=0;
+  }
+  
+  static class Part
+  {
+    @JsProperty public PartInternal m = new PartInternal();
+    @JsProperty public int p1 = -1;
+    @JsProperty public int p2 = -1;
+    @JsProperty public char glyphIndex;
+  }
+
+  
+  @JsIgnore public static glyf _parseGlyf (TyprFont font, int g)
+  {
+//	var bin = Typr._bin;
+	Uint8Array data = font._data;
 	
-	var offset = Typr._tabOffset(data, "glyf") + font.loca[g];
+	int offset = Typr._tabOffset(data, "glyf") + font.loca.get(g);
 		
-	if(font.loca[g]==font.loca[g+1]) return null;
+	if(font.loca.get(g)==font.loca.get(g+1)) return null;
 		
-	var gl = {};
+	glyf gl = new glyf();
 		
 	gl.noc  = bin.readShort(data, offset);  offset+=2;		// number of contours
 	gl.xMin = bin.readShort(data, offset);  offset+=2;
@@ -41,102 +75,103 @@ public class glyf
 		
 	if(gl.noc>0)
 	{
-		gl.endPts = [];
-		for(var i=0; i<gl.noc; i++) { gl.endPts.push(bin.readUshort(data,offset)); offset+=2; }
+		gl.endPts = Collections.arrayOfInt();
+		for(int i=0; i<gl.noc; i++) { gl.endPts.push(bin.readUshort(data,offset)); offset+=2; }
 		
-		var instructionLength = bin.readUshort(data,offset); offset+=2;
-		if((data.length-offset)<instructionLength) return null;
+		char instructionLength = bin.readUshort(data,offset); offset+=2;
+		if((data.getByteLength()-offset)<instructionLength) return null;
 		gl.instructions = bin.readBytes(data, offset, instructionLength);   offset+=instructionLength;
 		
-		var crdnum = gl.endPts[gl.noc-1]+1;
-		gl.flags = [];
-		for(var i=0; i<crdnum; i++ ) 
+		int crdnum = gl.endPts.get(gl.noc-1)+1;
+		gl.flags = Collections.arrayOfInt();
+		for(int i=0; i<crdnum; i++ ) 
 		{ 
-			var flag = data[offset];  offset++; 
+			int flag = data.intAt(offset);  offset++; 
 			gl.flags.push(flag); 
 			if((flag&8)!=0)
 			{
-				var rep = data[offset];  offset++;
-				for(var j=0; j<rep; j++) { gl.flags.push(flag); i++; }
+				int rep = data.intAt(offset);  offset++;
+				for(int j=0; j<rep; j++) { gl.flags.push(flag); i++; }
 			}
 		}
-		gl.xs = [];
-		for(var i=0; i<crdnum; i++) {
-			var i8=((gl.flags[i]&2)!=0), same=((gl.flags[i]&16)!=0);  
-			if(i8) { gl.xs.push(same ? data[offset] : -data[offset]);  offset++; }
+		gl.xs = Collections.arrayOfInt();
+		for(int i=0; i<crdnum; i++) {
+			boolean i8=((gl.flags.get(i)&2)!=0), same=((gl.flags.get(i)&16)!=0);  
+			if(i8) { gl.xs.push(same ? data.intAt(offset) : -data.intAt(offset));  offset++; }
 			else
 			{
 				if(same) gl.xs.push(0);
 				else { gl.xs.push(bin.readShort(data, offset));  offset+=2; }
 			}
 		}
-		gl.ys = [];
-		for(var i=0; i<crdnum; i++) {
-			var i8=((gl.flags[i]&4)!=0), same=((gl.flags[i]&32)!=0);  
-			if(i8) { gl.ys.push(same ? data[offset] : -data[offset]);  offset++; }
+		gl.ys = Collections.arrayOfInt();
+		for(int i=0; i<crdnum; i++) {
+			boolean i8=((gl.flags.get(i)&4)!=0), same=((gl.flags.get(i)&32)!=0);  
+			if(i8) { gl.ys.push(same ? data.intAt(offset) : -data.intAt(offset));  offset++; }
 			else
 			{
 				if(same) gl.ys.push(0);
 				else { gl.ys.push(bin.readShort(data, offset));  offset+=2; }
 			}
 		}
-		var x = 0, y = 0;
-		for(var i=0; i<crdnum; i++) { x += gl.xs[i]; y += gl.ys[i];  gl.xs[i]=x;  gl.ys[i]=y; }
+		int x = 0, y = 0;
+		for(int i=0; i<crdnum; i++) { x += gl.xs.get(i); y += gl.ys.get(i);  gl.xs.set(i, x);  gl.ys.set(i, y); }
 		//console.log(endPtsOfContours, instructionLength, instructions, flags, xCoordinates, yCoordinates);
 	}
 	else
 	{
-		var ARG_1_AND_2_ARE_WORDS	= 1<<0;
-		var ARGS_ARE_XY_VALUES		= 1<<1;
-		var ROUND_XY_TO_GRID		= 1<<2;
-		var WE_HAVE_A_SCALE			= 1<<3;
-		var RESERVED				= 1<<4;
-		var MORE_COMPONENTS			= 1<<5;
-		var WE_HAVE_AN_X_AND_Y_SCALE= 1<<6;
-		var WE_HAVE_A_TWO_BY_TWO	= 1<<7;
-		var WE_HAVE_INSTRUCTIONS	= 1<<8;
-		var USE_MY_METRICS			= 1<<9;
-		var OVERLAP_COMPOUND		= 1<<10;
-		var SCALED_COMPONENT_OFFSET	= 1<<11;
-		var UNSCALED_COMPONENT_OFFSET	= 1<<12;
+	    char ARG_1_AND_2_ARE_WORDS	= 1<<0;
+	    char ARGS_ARE_XY_VALUES		= 1<<1;
+	    char ROUND_XY_TO_GRID		= 1<<2;
+	    char WE_HAVE_A_SCALE			= 1<<3;
+	    char RESERVED				= 1<<4;
+	    char MORE_COMPONENTS			= 1<<5;
+	    char WE_HAVE_AN_X_AND_Y_SCALE= 1<<6;
+	    char WE_HAVE_A_TWO_BY_TWO	= 1<<7;
+	    char WE_HAVE_INSTRUCTIONS	= 1<<8;
+	    char USE_MY_METRICS			= 1<<9;
+	    char OVERLAP_COMPOUND		= 1<<10;
+	    char SCALED_COMPONENT_OFFSET	= 1<<11;
+	    char UNSCALED_COMPONENT_OFFSET	= 1<<12;
 		
-		gl.parts = [];
-		var flags;
+		gl.parts = Collections.arrayOf();
+		char flags;
 		do {
 			flags = bin.readUshort(data, offset);  offset += 2;
-			var part = { m:{a:1,b:0,c:0,d:1,tx:0,ty:0}, p1:-1, p2:-1 };  gl.parts.push(part);
+			Part part = new Part();  gl.parts.push(part);
 			part.glyphIndex = bin.readUshort(data, offset);  offset += 2;
-			if ( flags & ARG_1_AND_2_ARE_WORDS) {
-				var arg1 = bin.readShort(data, offset);  offset += 2;
-				var arg2 = bin.readShort(data, offset);  offset += 2;
+			short arg1, arg2;
+			if ( (flags & ARG_1_AND_2_ARE_WORDS) != 0) {
+				arg1 = bin.readShort(data, offset);  offset += 2;
+				arg2 = bin.readShort(data, offset);  offset += 2;
 			} else {
-				var arg1 = bin.readInt8(data, offset);  offset ++;
-				var arg2 = bin.readInt8(data, offset);  offset ++;
+				arg1 = bin.readInt8(data, offset);  offset ++;
+				arg2 = bin.readInt8(data, offset);  offset ++;
 			}
 			
-			if(flags & ARGS_ARE_XY_VALUES) { part.m.tx = arg1;  part.m.ty = arg2; }
+			if((flags & ARGS_ARE_XY_VALUES) != 0) { part.m.tx = arg1;  part.m.ty = arg2; }
 			else  {  part.p1=arg1;  part.p2=arg2;  }
 			//part.m.tx = arg1;  part.m.ty = arg2;
 			//else { throw "params are not XY values"; }
 			
-			if ( flags & WE_HAVE_A_SCALE ) {
+			if ( (flags & WE_HAVE_A_SCALE) != 0 ) {
 				part.m.a = part.m.d = bin.readF2dot14(data, offset);  offset += 2;    
-			} else if ( flags & WE_HAVE_AN_X_AND_Y_SCALE ) {
+			} else if ( (flags & WE_HAVE_AN_X_AND_Y_SCALE) != 0 ) {
 				part.m.a = bin.readF2dot14(data, offset);  offset += 2; 
 				part.m.d = bin.readF2dot14(data, offset);  offset += 2; 
-			} else if ( flags & WE_HAVE_A_TWO_BY_TWO ) {
+			} else if ( (flags & WE_HAVE_A_TWO_BY_TWO) != 0 ) {
 				part.m.a = bin.readF2dot14(data, offset);  offset += 2; 
 				part.m.b = bin.readF2dot14(data, offset);  offset += 2; 
 				part.m.c = bin.readF2dot14(data, offset);  offset += 2; 
 				part.m.d = bin.readF2dot14(data, offset);  offset += 2; 
 			}
-		} while ( flags & MORE_COMPONENTS ) 
-		if (flags & WE_HAVE_INSTRUCTIONS){
-			var numInstr = bin.readUshort(data, offset);  offset += 2;
-			gl.instr = [];
-			for(var i=0; i<numInstr; i++) { gl.instr.push(data[offset]);  offset++; }
+		} while ( (flags & MORE_COMPONENTS) != 0 ); 
+		if ( (flags & WE_HAVE_INSTRUCTIONS) != 0){
+			char numInstr = bin.readUshort(data, offset);  offset += 2;
+			gl.instr = Collections.arrayOfInt();
+			for(int i=0; i<numInstr; i++) { gl.instr.push(data.intAt(offset));  offset++; }
 		}
 	}
 	return gl;
-}-*/;
+  }
 }

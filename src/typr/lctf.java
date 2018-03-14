@@ -3,6 +3,10 @@ package typr;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOfInt;
+import elemental.util.Collections;
+import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
 
@@ -11,7 +15,12 @@ import jsinterop.annotations.JsType;
 @JsType(name="_lctf", namespace="Typr")
 public class lctf
 {
-  @JsMethod public static native JavaScriptObject parse (Uint8Array data, int offset, int length, TyprFont font, JavaScriptObject subt)
+  @JsFunction public static interface Subt
+  {
+    JavaScriptObject subt (Uint8Array data, JavaScriptObject ltype, int offset);
+  }
+  
+  @JsIgnore public static native Object parse (Uint8Array data, int offset, int length, TyprFont font, Subt subt)
   /*-{
 	var bin = Typr._bin;
 	var obj = {};
@@ -66,23 +75,23 @@ public class lctf
 	return obj;
 }-*/;
 
-  @JsMethod public static native JavaScriptObject numOfOnes (JavaScriptObject n)
-  /*-{
-	var num = 0;
-	for(var i=0; i<32; i++) if(((n>>>i)&1) != 0) num++;
+  @JsMethod public static int numOfOnes (int n)
+  {
+	int num = 0;
+	for(int i=0; i<32; i++) if(((n>>>i)&1) != 0) num++;
 	return num;
-}-*/;
+  }
 
-  @JsMethod public static native JavaScriptObject readClassDef (JavaScriptObject data, int offset)
-  /*-{
-	var bin = Typr._bin;
-	var obj = [];
-	var format = bin.readUshort(data, offset);  offset+=2;
+  @JsMethod public static ArrayOfInt readClassDef(Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
+	ArrayOfInt obj = Collections.arrayOfInt();
+	char format = bin.readUshort(data, offset);  offset+=2;
 	if(format==1) 
 	{
-		var startGlyph  = bin.readUshort(data, offset);  offset+=2;
-		var glyphCount  = bin.readUshort(data, offset);  offset+=2;
-		for(var i=0; i<glyphCount; i++)
+		char startGlyph  = bin.readUshort(data, offset);  offset+=2;
+		char glyphCount  = bin.readUshort(data, offset);  offset+=2;
+		for(int i=0; i<glyphCount; i++)
 		{
 			obj.push(startGlyph+i);
 			obj.push(startGlyph+i);
@@ -91,8 +100,8 @@ public class lctf
 	}
 	if(format==2)
 	{
-		var count = bin.readUshort(data, offset);  offset+=2;
-		for(var i=0; i<count; i++)
+		char count = bin.readUshort(data, offset);  offset+=2;
+		for(int i=0; i<count; i++)
 		{
 			obj.push(bin.readUshort(data, offset));  offset+=2;
 			obj.push(bin.readUshort(data, offset));  offset+=2;
@@ -100,7 +109,7 @@ public class lctf
 		}
 	}
 	return obj;
-}-*/;
+  }
   @JsMethod public static native JavaScriptObject getInterval (JavaScriptObject tab, JavaScriptObject val)
   /*-{
 	for(var i=0; i<tab.length; i+=3)

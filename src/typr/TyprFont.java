@@ -7,7 +7,7 @@ import jsinterop.annotations.JsProperty;
 
 public class TyprFont
 {
-  @JsProperty Uint8Array _data;
+  @JsProperty public Uint8Array _data;
   
   @JsProperty public typr.tabs.cmap cmap;
   @JsProperty public typr.tabs.head head;
