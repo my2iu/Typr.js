@@ -37,7 +37,7 @@ public class Typr
 	Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
 	int offset = 0;
 	
-	double sfnt_version = bin.readFixed(data, offset);
+	int sfnt_version = bin.readVersion(data, offset);
 	offset += 4;
 	int numTables = bin.readUshort(data, offset);
 	offset += 2;
@@ -47,6 +47,11 @@ public class Typr
 	offset += 2;
 	int rangeShift = bin.readUshort(data, offset);
 	offset += 2;
+	
+	// OTTO or 1 or true (OTTO is for opentype with postscript outlines and typ1 is postscript font in truetype format) 
+	if (sfnt_version != 0x00010000 && sfnt_version != 0x4f54544f
+	    && sfnt_version != 0x74727565)
+	  throw new IllegalArgumentException("Not a truetype or opentype font");
 	
 	String []tags = new String[] {
 		"cmap",
