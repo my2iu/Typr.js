@@ -7,8 +7,8 @@ import typr.bin;
 
 public class post
 {
-  @JsProperty int version;
-  @JsProperty int italicAngle;
+  @JsProperty double version;
+  @JsProperty double italicAngle;
   @JsProperty short underlinePosition;
   @JsProperty short underlineThickness;
   

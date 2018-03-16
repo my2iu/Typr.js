@@ -37,7 +37,7 @@ public class Typr
 	Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
 	int offset = 0;
 	
-	int sfnt_version = bin.readFixed(data, offset);
+	double sfnt_version = bin.readFixed(data, offset);
 	offset += 4;
 	int numTables = bin.readUshort(data, offset);
 	offset += 2;

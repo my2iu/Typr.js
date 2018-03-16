@@ -12,7 +12,7 @@ public class head
   @JsProperty public int xMax;
   @JsProperty public int yMin;
   @JsProperty public int yMax;
-  @JsProperty public int fontRevision;
+  @JsProperty public double fontRevision;
   @JsProperty public char flags;
   @JsProperty public double created;
   @JsProperty public double modified;
@@ -26,7 +26,7 @@ public class head
   public static head parse(Uint8Array data, int offset, int length) {
 //	var bin = Typr._bin;
 	head obj = new head();
-	int tableVersion = bin.readFixed(data, offset);  offset += 4;
+	double tableVersion = bin.readFixed(data, offset);  offset += 4;
 	obj.fontRevision = bin.readFixed(data, offset);  offset += 4;
 	int checkSumAdjustment = bin.readUint(data, offset);  offset += 4;
 	int magicNumber = bin.readUint(data, offset);  offset += 4;

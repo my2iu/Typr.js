@@ -27,7 +27,7 @@ public class hhea
   {
 //	var bin = Typr._bin;
 	hhea obj = new hhea();
-	int tableVersion = bin.readFixed(data, offset);  offset += 4;
+	double tableVersion = bin.readFixed(data, offset);  offset += 4;
 	obj.ascender  = bin.readShort(data, offset);  offset += 2;
 	obj.descender = bin.readShort(data, offset);  offset += 2;
 	obj.lineGap = bin.readShort(data, offset);  offset += 2;

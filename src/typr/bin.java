@@ -21,9 +21,9 @@ import jsinterop.annotations.JsType;
 @JsType(namespace="Typr",name="_bin")
 public class bin
 {
-  @JsMethod public static int readFixed (Uint8Array data, int o)
+  @JsMethod public static double readFixed (Uint8Array data, int o)
   {
-		return ((data.intAt(o)<<8) | data.intAt(o+1)) +  (((data.intAt(o+2)<<8)|data.intAt(o+3))/(256*256+4));
+		return ((data.intAt(o)<<8) | data.intAt(o+1)) +  (((data.intAt(o+2)<<8)|data.intAt(o+3))/(256.0*256+4));
 	}
 	@JsMethod public static native double readF2dot14 (Uint8Array data, int o)
 	/*-{
