@@ -11,9 +11,7 @@ import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 import typr.tabs.CFF;
-import typr.tabs.GPOS;
 import typr.tabs.GPOSParser;
-import typr.tabs.GSUB;
 import typr.tabs.GSUBParser;
 import typr.tabs.OS2;
 import typr.tabs.SVG;
@@ -35,86 +33,120 @@ public class Typr
   {
 //	var bin = Typr._bin;
 	Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
-	int offset = 0;
+    TyprFont obj = new TyprFont();
+    obj._data = data;
 	
-	int sfnt_version = bin.readVersion(data, offset);
-	offset += 4;
-	int numTables = bin.readUshort(data, offset);
-	offset += 2;
-	int searchRange = bin.readUshort(data, offset);
-	offset += 2;
-	int entrySelector = bin.readUshort(data, offset);
-	offset += 2;
-	int rangeShift = bin.readUshort(data, offset);
-	offset += 2;
-	
-	// OTTO or 1 or true (OTTO is for opentype with postscript outlines and typ1 is postscript font in truetype format) 
-	if (sfnt_version != 0x00010000 && sfnt_version != 0x4f54544f
-	    && sfnt_version != 0x74727565)
-	  throw new IllegalArgumentException("Not a truetype or opentype font");
-	
-	String []tags = new String[] {
-		"cmap",
-		"head",
-		"hhea",
-		"maxp",
-		"hmtx",
-		"name",
-		"OS/2",
-		"post",
-		
-		//"cvt",
-		//"fpgm",
-		"loca",
-		"glyf",
-		"kern",
-		
-		//"prep"
-		//"gasp"
-		
-		"CFF ",
-		
-		
-		"GPOS",
-		"GSUB",
-		
-		"SVG "
-		//"VORG",
-	};
-	
-	TyprFont obj = new TyprFont();
-	obj._data = data;
-	//console.log(sfnt_version, numTables, searchRange, entrySelector, rangeShift);
-	
-//	var tabs = {};
-	Map<String, Integer> tabOffset = new HashMap<>();
-	Map<String, Integer> tabLength = new HashMap<>();
-	
-	for(int i=0; i<numTables; i++)
-	{
-		String tag = bin.readASCII(data, offset, 4);   offset += 4;
-		int checkSum = bin.readUint(data, offset);  offset += 4;
-		int toffset = bin.readUint(data, offset);   offset += 4;
-		int length = bin.readUint(data, offset);    offset += 4;
-		tabOffset.put(tag, toffset);
-		tabLength.put(tag, length);
-//		Browser.getWindow().getConsole().log(tag + ":" + length);
-//		tabs[tag] = {offset:toffset, length:length};
-		
-		//if(tags.indexOf(tag)==-1) console.log("unknown tag", tag, length);
-	}
-	
+	Map<String, TableRecord> tableRecords = readTableRecords(data);
+
+	   String []tags = new String[] {
+	        "cmap",
+	        "head",
+	        "hhea",
+	        "maxp",
+	        "hmtx",
+	        "name",
+	        "OS/2",
+	        "post",
+	        
+	        //"cvt",
+	        //"fpgm",
+	        "loca",
+	        "glyf",
+	        "kern",
+	        
+	        //"prep"
+	        //"gasp"
+	        
+	        "CFF ",
+	        
+	        
+	        "GPOS",
+	        "GSUB",
+	        
+	        "SVG "
+	        //"VORG",
+	    };
+
 	for(String t: tags)
 	{
 		//console.log(t);
 		//if(tabs[t]) console.log(t, tabs[t].offset, tabs[t].length);
-		if (tabOffset.containsKey(t)) 
-		  parseTab(obj,data,tabOffset.get(t), tabLength.get(t),t);
+		if (tableRecords.containsKey(t)) 
+		  parseTab(obj,data,tableRecords.get(t).offset, tableRecords.get(t).length,t);
 //		if(tabs[t]) obj[t.trim()] = Typr[t.trim()].parse(data, tabs[t].offset, tabs[t].length, obj);
 	}
 	
 	return obj;
   }
+
+  /**
+   * Read the offset table at the start of the file and then the
+   * table records describing what font tables are in the file.
+   */
+  static Map<String, TableRecord> readTableRecords(Uint8Array data)
+  {
+    int offset = 0;
+    
+    int sfnt_version = bin.readVersion(data, offset);
+    offset += 4;
+    int numTables = bin.readUshort(data, offset);
+    offset += 2;
+    int searchRange = bin.readUshort(data, offset);
+    offset += 2;
+    int entrySelector = bin.readUshort(data, offset);
+    offset += 2;
+    int rangeShift = bin.readUshort(data, offset);
+    offset += 2;
+    
+    // OTTO or 1 or true (OTTO is for opentype with postscript outlines and typ1 is postscript font in truetype format) 
+    if (sfnt_version != 0x00010000 && sfnt_version != 0x4f54544f
+        && sfnt_version != 0x74727565)
+      throw new IllegalArgumentException("Not a truetype or opentype font");
+    
+    
+    //console.log(sfnt_version, numTables, searchRange, entrySelector, rangeShift);
+    
+//	var tabs = {};
+    Map<String, TableRecord> tableRecords = new HashMap<>();
+    
+    for(int i=0; i<numTables; i++)
+    {
+      TableRecord tableRecord = new TableRecord();
+      tableRecord.tag = bin.readUint(data, offset); offset += 4;
+        tableRecord.checkSum = bin.readUint(data, offset); offset += 4;
+        tableRecord.offset = bin.readUint(data, offset); offset += 4;
+        tableRecord.length = bin.readUint(data, offset); offset += 4;
+        tableRecords.put(tableRecord.tagAsString(), tableRecord);
+    }
+    return tableRecords;
+  }
+
+  static class TableRecord
+  {
+    int tag;
+    int checkSum;
+    int offset;
+    int length;
+    public String tagAsString()
+    {
+      String s = "";
+      int ch = (tag >> 24) & 255;
+      s += String.valueOf((char)ch);
+      ch = (tag & 0xff0000) >> 16;
+      s += String.valueOf((char)ch);
+      ch = (tag & 0xff00) >> 8;
+      s += String.valueOf((char)ch);
+      ch = (tag & 0xff);
+      s += String.valueOf((char)ch);
+      return s;
+    }
+  }
+  
+  public static void parseHeader(Uint8Array data)
+  {
+    readTableRecords(data);
+  }
+
 
   static void parseTab(TyprFont obj, Uint8Array data, int offset, int length, String tag)
   {
@@ -189,6 +221,7 @@ public class Typr
   {
     remapTypr();
     bin.init();
+    bin.init2();
   }
   @JsIgnore private static native void remapTypr() /*-{
     window.Typr = $wnd.Typr;
@@ -210,6 +243,7 @@ public class Typr
 	}
 	return 0;
   }
+
 
 
 
