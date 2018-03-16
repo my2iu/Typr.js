@@ -1,6 +1,10 @@
 package typr;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.shared.GwtIncompatible;
 
 import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
@@ -11,6 +15,7 @@ import elemental.html.Uint16Array;
 import elemental.html.Uint32Array;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOfInt;
+import elemental.util.ArrayOfString;
 import elemental.util.Collections;
 import elemental.util.SettableInt;
 import jsinterop.annotations.JsIgnore;
@@ -29,23 +34,22 @@ public class bin
   {
     return readInt(data, o);
   }
-	@JsMethod public static native double readF2dot14 (Uint8Array data, int o)
-	/*-{
-		var num = Typr._bin.readShort(data, o);
-		return num / 16384;
-		
-		var intg = (num >> 14), frac = ((num & 0x3fff)/(0x3fff+1));
-		return (intg>0) ? (intg+frac) : (intg-frac);
-	}-*/;
+	@JsMethod public static double readF2dot14 (Uint8Array data, int o)
+	{
+		short num = bin.readShort(data, o);
+		return num / 16384.0;
+//		
+//		var intg = (num >> 14), frac = ((num & 0x3fff)/(0x3fff+1));
+//		return (intg>0) ? (intg+frac) : (intg-frac);
+	}
 	@JsMethod public static int readInt (Uint8Array buff, int p)
 	{
 		//if(p>=buff.length) throw "error";
-		SettableInt a = (SettableInt)t.uint8;
-		a.setAt(0, buff.intAt(p+3));
-		a.setAt(1, buff.intAt(p+2));
-		a.setAt(2, buff.intAt(p+1));
-		a.setAt(3, buff.intAt(p));
-		return t.int32.intAt(0);
+	  t.writeUint8((byte)buff.intAt(p+3), 0);
+      t.writeUint8((byte)buff.intAt(p+2), 1);
+      t.writeUint8((byte)buff.intAt(p+1), 2);
+      t.writeUint8((byte)buff.intAt(p), 3);
+      return t.readInt32();
 	}
 	
 	@JsMethod public static byte readInt8 (Uint8Array buff, int p)
@@ -67,12 +71,12 @@ public class bin
 		//if(p>=buff.length) throw "error";
 		return (char)((buff.intAt(p)<<8) | buff.intAt(p+1));
 	}
-	@JsMethod public static native JavaScriptObject readUshorts (JavaScriptObject buff, JavaScriptObject p, JavaScriptObject len)
-	/*-{
-		var arr = [];
-		for(var i=0; i<len; i++) arr.push(Typr._bin.readUshort(buff, p+i*2));
+	@JsMethod public static ArrayOfInt readUshorts (Uint8Array buff, int p, int len)
+	{
+		ArrayOfInt arr = Collections.arrayOfInt();
+		for(int i=0; i<len; i++) arr.push(bin.readUshort(buff, p+i*2));
 		return arr;
-	}-*/;
+	};
 	@JsMethod public static int readUint (Uint8Array buff, int p)
 	{
 		//if(p>=buff.length) throw "error";
@@ -80,11 +84,11 @@ public class bin
 		a.setAt(3, buff.intAt(p));  a.setAt(2, buff.intAt(p+1));  a.setAt(1, buff.intAt(p+2));  a.setAt(0, buff.intAt(p+3));
 		return t.uint32.intAt(0);
 	}
-	@JsMethod public static native double readUint64 (Uint8Array buff, int p)
-	/*-{
+	@JsMethod public static double readUint64 (Uint8Array buff, int p)
+	{
 		//if(p>=buff.length) throw "error";
-		return (Typr._bin.readUint(buff, p)*(0xffffffff+1)) + Typr._bin.readUint(buff, p+4);
-	}-*/;
+		return (((double)bin.readUint(buff, p))*(0xffffffff+1)) + bin.readUint(buff, p+4);
+	}
 	@JsMethod public static String readASCII (Uint8Array buff, int p, int l)	// l : length in Characters (not Bytes)
 	{
 		//if(p>=buff.length) throw "error";
@@ -92,17 +96,17 @@ public class bin
 		for(int i = 0; i < l; i++) s += String.valueOf((char)buff.intAt(p+i));
 		return s;
 	}
-	@JsMethod public static native JavaScriptObject readUnicode (JavaScriptObject buff, JavaScriptObject p, JavaScriptObject l)
-	/*-{
+	@JsMethod public static String readUnicode (Uint8Array buff, int p, int l)
+	{
 		//if(p>=buff.length) throw "error";
-		var s = "";
-		for(var i = 0; i < l; i++)	
+		String s = "";
+		for(int i = 0; i < l; i++)	
 		{
-			var c = (buff[p++]<<8) | buff[p++];
-			s += String.fromCharCode(c);
+			char c = (char)((buff.intAt(p++)<<8) | buff.intAt(p++));
+			s += String.valueOf(c);
 		}
 		return s;
-	}-*/;
+	}
 	@JsProperty static JavaScriptObject _tdec;
 	@JsMethod public static native JavaScriptObject readUTF8 (JavaScriptObject buff, JavaScriptObject p, JavaScriptObject l) /*-{
 		var tdec = Typr._bin._tdec;
@@ -116,26 +120,70 @@ public class bin
 		for(int i=0; i<l; i++) arr.push(buff.intAt(p+i));
 		return arr;
 	}
-	@JsMethod public static native JavaScriptObject readASCIIArray (JavaScriptObject buff, JavaScriptObject p, JavaScriptObject l)	// l : length in Characters (not Bytes)
-	/*-{
+	@JsMethod public static ArrayOfString readASCIIArray (Uint8Array buff, int p, int l)	// l : length in Characters (not Bytes)
+	{
 		//if(p>=buff.length) throw "error";
-		var s = [];
-		for(var i = 0; i < l; i++)	
-			s.push(String.fromCharCode(buff[p+i]));
+		ArrayOfString s = Collections.arrayOfString();
+		for(int i = 0; i < l; i++)	
+			s.push(String.valueOf((char)buff.intAt(p+i)));
 		return s;
-	}-*/;
+	}
+	@JsIgnore static void init2() {
+	  t = new JsUnion();
+	}
 @JsIgnore static native void init() /*-{ 
 Typr._bin._tdec = window["TextDecoder"] ? new window["TextDecoder"]() : null;
 }-*/;
-  static class Union
+  static abstract class Union
   {
-    @JsProperty ArrayBuffer buff = Browser.getWindow().newUint8Array(8).getBuffer();
-    @JsProperty Int8Array int8 = Browser.getWindow().newInt8Array(buff, 0, 8); 
-    @JsProperty Uint8Array uint8 = Browser.getWindow().newUint8Array(buff, 0, 8); 
-    @JsProperty Int16Array int16 = Browser.getWindow().newInt16Array(buff, 0, 4); 
-    @JsProperty Uint16Array uint16 = Browser.getWindow().newUint16Array(buff, 0, 4); 
-    @JsProperty Int32Array int32 = Browser.getWindow().newInt32Array(buff, 0, 2); 
-    @JsProperty Uint32Array uint32 = Browser.getWindow().newUint32Array(buff, 0, 2); 
+    @JsProperty ArrayBuffer buff;
+    @JsProperty Int8Array int8; 
+    @JsProperty Uint8Array uint8; 
+    @JsProperty Int16Array int16; 
+    @JsProperty Uint16Array uint16; 
+    @JsProperty Int32Array int32; 
+    @JsProperty Uint32Array uint32; 
+    abstract void writeUint8(byte b, int offset);
+    abstract int readInt32(); 
   }
-  @JsProperty static Union t = new Union();
+  static class JsUnion extends Union
+  {
+    JsUnion()
+    {
+      buff = Browser.getWindow().newUint8Array(8).getBuffer();
+      int8 = Browser.getWindow().newInt8Array(buff, 0, 8); 
+      uint8 = Browser.getWindow().newUint8Array(buff, 0, 8); 
+      int16 = Browser.getWindow().newInt16Array(buff, 0, 4); 
+      uint16 = Browser.getWindow().newUint16Array(buff, 0, 4); 
+      int32 = Browser.getWindow().newInt32Array(buff, 0, 2); 
+      uint32 = Browser.getWindow().newUint32Array(buff, 0, 2); 
+    }
+    @Override void writeUint8(byte b, int offset)
+    {
+      SettableInt a = (SettableInt)t.uint8;
+      a.setAt(offset, b);
+    }
+    @Override int readInt32()
+    {
+      return t.int32.intAt(0);      
+    }
+  }
+  @GwtIncompatible static class JreUnion extends Union
+  {
+    byte [] data = new byte[8];
+    ByteBuffer buffer = ByteBuffer.wrap(data);
+    JreUnion()
+    {
+      buffer.order(ByteOrder.LITTLE_ENDIAN);
+    }
+    @Override void writeUint8(byte b, int offset)
+    {
+      buffer.put(offset, b);
+    }
+    @Override int readInt32()
+    {
+      return buffer.getInt(0);
+    }
+  }
+  @JsProperty public static Union t;
 }
