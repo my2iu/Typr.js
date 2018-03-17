@@ -45,10 +45,10 @@ public class bin
 	@JsMethod public static int readInt (Uint8Array buff, int p)
 	{
 		//if(p>=buff.length) throw "error";
-	  t.writeUint8((byte)buff.intAt(p+3), 0);
-      t.writeUint8((byte)buff.intAt(p+2), 1);
-      t.writeUint8((byte)buff.intAt(p+1), 2);
-      t.writeUint8((byte)buff.intAt(p), 3);
+	  t.writeUint8(0, (byte)buff.intAt(p+3));
+      t.writeUint8(1, (byte)buff.intAt(p+2));
+      t.writeUint8(2, (byte)buff.intAt(p+1));
+      t.writeUint8(3, (byte)buff.intAt(p));
       return t.readInt32();
 	}
 	
@@ -80,9 +80,11 @@ public class bin
 	@JsMethod public static int readUint (Uint8Array buff, int p)
 	{
 		//if(p>=buff.length) throw "error";
-		SettableInt a = (SettableInt)t.uint8;
-		a.setAt(3, buff.intAt(p));  a.setAt(2, buff.intAt(p+1));  a.setAt(1, buff.intAt(p+2));  a.setAt(0, buff.intAt(p+3));
-		return t.uint32.intAt(0);
+	  t.writeUint8(3, (byte)buff.intAt(p));  
+	  t.writeUint8(2, (byte)buff.intAt(p+1));  
+	  t.writeUint8(1, (byte)buff.intAt(p+2));  
+	  t.writeUint8(0, (byte)buff.intAt(p+3));
+	  return t.readUint32();
 	}
 	@JsMethod public static double readUint64 (Uint8Array buff, int p)
 	{
@@ -141,13 +143,14 @@ Typr._bin._tdec = window["TextDecoder"] ? new window["TextDecoder"]() : null;
     @JsProperty Uint8Array uint8; 
     @JsProperty Int16Array int16; 
     @JsProperty Uint16Array uint16; 
-    @JsProperty Int32Array int32; 
-    @JsProperty Uint32Array uint32; 
-    abstract void writeUint8(byte b, int offset);
+    abstract void writeUint8(int offset, byte b);
     abstract int readInt32(); 
+    abstract int readUint32(); 
   }
   static class JsUnion extends Union
   {
+    Int32Array int32; 
+    Uint32Array uint32; 
     JsUnion()
     {
       buff = Browser.getWindow().newUint8Array(8).getBuffer();
@@ -158,14 +161,18 @@ Typr._bin._tdec = window["TextDecoder"] ? new window["TextDecoder"]() : null;
       int32 = Browser.getWindow().newInt32Array(buff, 0, 2); 
       uint32 = Browser.getWindow().newUint32Array(buff, 0, 2); 
     }
-    @Override void writeUint8(byte b, int offset)
+    @Override void writeUint8(int offset, byte b)
     {
       SettableInt a = (SettableInt)t.uint8;
       a.setAt(offset, b);
     }
     @Override int readInt32()
     {
-      return t.int32.intAt(0);      
+      return int32.intAt(0);      
+    }
+    @Override int readUint32()
+    {
+      return uint32.intAt(0);      
     }
   }
   @GwtIncompatible static class JreUnion extends Union
@@ -176,11 +183,15 @@ Typr._bin._tdec = window["TextDecoder"] ? new window["TextDecoder"]() : null;
     {
       buffer.order(ByteOrder.LITTLE_ENDIAN);
     }
-    @Override void writeUint8(byte b, int offset)
+    @Override void writeUint8(int offset, byte b)
     {
       buffer.put(offset, b);
     }
     @Override int readInt32()
+    {
+      return buffer.getInt(0);
+    }
+    @Override int readUint32()
     {
       return buffer.getInt(0);
     }

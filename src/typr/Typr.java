@@ -6,6 +6,7 @@ import java.util.Map;
 import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
+import elemental.util.MapFromIntToString;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
@@ -32,51 +33,57 @@ public class Typr
   @JsMethod public static TyprFont parse (ArrayBuffer buff)
   {
 //	var bin = Typr._bin;
-	Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
-    TyprFont obj = new TyprFont();
-    obj._data = data;
-	
-	Map<String, TableRecord> tableRecords = readTableRecords(data);
-
-	   String []tags = new String[] {
-	        "cmap",
-	        "head",
-	        "hhea",
-	        "maxp",
-	        "hmtx",
-	        "name",
-	        "OS/2",
-	        "post",
-	        
-	        //"cvt",
-	        //"fpgm",
-	        "loca",
-	        "glyf",
-	        "kern",
-	        
-	        //"prep"
-	        //"gasp"
-	        
-	        "CFF ",
-	        
-	        
-	        "GPOS",
-	        "GSUB",
-	        
-	        "SVG "
-	        //"VORG",
-	    };
-
-	for(String t: tags)
-	{
-		//console.log(t);
-		//if(tabs[t]) console.log(t, tabs[t].offset, tabs[t].length);
-		if (tableRecords.containsKey(t)) 
-		  parseTab(obj,data,tableRecords.get(t).offset, tableRecords.get(t).length,t);
-//		if(tabs[t]) obj[t.trim()] = Typr[t.trim()].parse(data, tabs[t].offset, tabs[t].length, obj);
-	}
-	
-	return obj;
+    try {
+  	Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
+      TyprFont obj = new TyprFont();
+      obj._data = data;
+  	
+  	Map<String, TableRecord> tableRecords = readTableRecords(data);
+  
+  	   String []tags = new String[] {
+  	        "cmap",
+  	        "head",
+  	        "hhea",
+  	        "maxp",
+  	        "hmtx",
+  	        "name",
+  	        "OS/2",
+  	        "post",
+  	        
+  	        //"cvt",
+  	        //"fpgm",
+  	        "loca",
+  	        "glyf",
+  	        "kern",
+  	        
+  	        //"prep"
+  	        //"gasp"
+  	        
+  	        "CFF ",
+  	        
+  	        
+  	        "GPOS",
+  	        "GSUB",
+  	        
+  	        "SVG "
+  	        //"VORG",
+  	    };
+  
+  	for(String t: tags)
+  	{
+  		//console.log(t);
+  		//if(tabs[t]) console.log(t, tabs[t].offset, tabs[t].length);
+  		if (tableRecords.containsKey(t)) 
+  		  parseTab(obj,data,tableRecords.get(t).offset, tableRecords.get(t).length,t);
+  //		if(tabs[t]) obj[t.trim()] = Typr[t.trim()].parse(data, tabs[t].offset, tabs[t].length, obj);
+  	}
+  	
+  	return obj;
+    }
+    catch (Throwable t)
+    {
+      return null;
+    }
   }
 
   /**
@@ -113,10 +120,10 @@ public class Typr
     {
       TableRecord tableRecord = new TableRecord();
       tableRecord.tag = bin.readUint(data, offset); offset += 4;
-        tableRecord.checkSum = bin.readUint(data, offset); offset += 4;
-        tableRecord.offset = bin.readUint(data, offset); offset += 4;
-        tableRecord.length = bin.readUint(data, offset); offset += 4;
-        tableRecords.put(tableRecord.tagAsString(), tableRecord);
+      tableRecord.checkSum = bin.readUint(data, offset); offset += 4;
+      tableRecord.offset = bin.readUint(data, offset); offset += 4;
+      tableRecord.length = bin.readUint(data, offset); offset += 4;
+      tableRecords.put(tableRecord.tagAsString(), tableRecord);
     }
     return tableRecords;
   }
@@ -142,9 +149,22 @@ public class Typr
     }
   }
   
-  public static void parseHeader(Uint8Array data)
+  public static MapFromIntToString parseHeaderAndNames(Uint8Array data)
   {
-    readTableRecords(data);
+    try {
+      Map<String, TableRecord> tables = readTableRecords(data);
+      if (tables.containsKey("name"))
+      {
+        TyprFont font = new TyprFont();
+        parseTab(font,data,tables.get("name").offset, tables.get("name").length,"name");
+        return font.name.getEnglishNames();
+      }
+    }
+    catch (Throwable t)
+    {
+      return null;
+    }
+    return null;
   }
 
 
