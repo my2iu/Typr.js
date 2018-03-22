@@ -1,16 +1,15 @@
 package typr;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
-import elemental.util.MapFromIntToString;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
+import typr.TyprJava.TableRecord;
 import typr.tabs.CFF;
 import typr.tabs.GPOSParser;
 import typr.tabs.GSUBParser;
@@ -38,7 +37,7 @@ public class Typr
       TyprFont obj = new TyprFont();
       obj._data = data;
   	
-  	Map<String, TableRecord> tableRecords = readTableRecords(data);
+  	Map<String, TableRecord> tableRecords = TyprJava.readTableRecords(data);
   
   	   String []tags = new String[] {
   	        "cmap",
@@ -85,88 +84,6 @@ public class Typr
       return null;
     }
   }
-
-  /**
-   * Read the offset table at the start of the file and then the
-   * table records describing what font tables are in the file.
-   */
-  static Map<String, TableRecord> readTableRecords(Uint8Array data)
-  {
-    int offset = 0;
-    
-    int sfnt_version = bin.readVersion(data, offset);
-    offset += 4;
-    int numTables = bin.readUshort(data, offset);
-    offset += 2;
-    int searchRange = bin.readUshort(data, offset);
-    offset += 2;
-    int entrySelector = bin.readUshort(data, offset);
-    offset += 2;
-    int rangeShift = bin.readUshort(data, offset);
-    offset += 2;
-    
-    // OTTO or 1 or true (OTTO is for opentype with postscript outlines and typ1 is postscript font in truetype format) 
-    if (sfnt_version != 0x00010000 && sfnt_version != 0x4f54544f
-        && sfnt_version != 0x74727565)
-      throw new IllegalArgumentException("Not a truetype or opentype font");
-    
-    
-    //console.log(sfnt_version, numTables, searchRange, entrySelector, rangeShift);
-    
-//	var tabs = {};
-    Map<String, TableRecord> tableRecords = new HashMap<>();
-    
-    for(int i=0; i<numTables; i++)
-    {
-      TableRecord tableRecord = new TableRecord();
-      tableRecord.tag = bin.readUint(data, offset); offset += 4;
-      tableRecord.checkSum = bin.readUint(data, offset); offset += 4;
-      tableRecord.offset = bin.readUint(data, offset); offset += 4;
-      tableRecord.length = bin.readUint(data, offset); offset += 4;
-      tableRecords.put(tableRecord.tagAsString(), tableRecord);
-    }
-    return tableRecords;
-  }
-
-  static class TableRecord
-  {
-    int tag;
-    int checkSum;
-    int offset;
-    int length;
-    public String tagAsString()
-    {
-      String s = "";
-      int ch = (tag >> 24) & 255;
-      s += String.valueOf((char)ch);
-      ch = (tag & 0xff0000) >> 16;
-      s += String.valueOf((char)ch);
-      ch = (tag & 0xff00) >> 8;
-      s += String.valueOf((char)ch);
-      ch = (tag & 0xff);
-      s += String.valueOf((char)ch);
-      return s;
-    }
-  }
-  
-  public static MapFromIntToString parseHeaderAndNames(Uint8Array data)
-  {
-    try {
-      Map<String, TableRecord> tables = readTableRecords(data);
-      if (tables.containsKey("name"))
-      {
-        TyprFont font = new TyprFont();
-        parseTab(font,data,tables.get("name").offset, tables.get("name").length,"name");
-        return font.name.getEnglishNames();
-      }
-    }
-    catch (Throwable t)
-    {
-      return null;
-    }
-    return null;
-  }
-
 
   static void parseTab(TyprFont obj, Uint8Array data, int offset, int length, String tag)
   {
@@ -240,8 +157,7 @@ public class Typr
   @JsIgnore public static void init()
   {
     remapTypr();
-    bin.init();
-    bin.init2();
+    bin.t = new JsUnion();
   }
   @JsIgnore private static native void remapTypr() /*-{
     window.Typr = $wnd.Typr;

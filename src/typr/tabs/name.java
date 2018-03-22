@@ -92,7 +92,7 @@ public class name
 		//console.log(platformID, encodingID, languageID.toString(16), nameID, length, noffset);
 		
 		String plat = "p"+(int)platformID;//Typr._platforms[platformID];
-		if(!obj.platformLangNameMap.hasKey(plat)) obj.platformLangNameMap.put(plat, Collections.mapFromIntTo());
+		if(!obj.platformLangNameMap.hasKey(plat)) obj.platformLangNameMap.put(plat, Collections.<MapFromIntToString>mapFromIntTo());
 
 		if (!obj.platformLangNameMap.get(plat).hasKey((int)languageID)) obj.platformLangNameMap.get(plat).put((int)languageID, Collections.mapFromIntToString());
 		
