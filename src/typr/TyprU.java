@@ -80,7 +80,9 @@ public class TyprU
 }-*/;
   @JsMethod public static glyf _getGlyf (int gid, TyprFont font)
   {
-	glyf gl = font.glyf.get(gid);
+    glyf gl = null;
+    if (font.glyf != null)
+      gl = font.glyf.get(gid);
 	if(gl==null) 
 	{
 	  gl = glyf._parseGlyf(font, gid);
