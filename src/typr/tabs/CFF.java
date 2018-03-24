@@ -3,9 +3,14 @@ package typr.tabs;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOf;
+import elemental.util.ArrayOfInt;
+import elemental.util.Collections;
+import elemental.util.MapFromStringTo;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
+import typr.bin;
 
 @JsType(namespace="Typr")
 public class CFF
@@ -92,23 +97,28 @@ public class CFF
         return obj;
     }-*/;
     
-  @JsMethod public static native JavaScriptObject readSubrs(JavaScriptObject data, int offset, int obj)
-        /*-{
-        var bin = Typr._bin;
-        var gsubinds = [];
-        offset = Typr.CFF.readIndex(data, offset, gsubinds);
+  @JsMethod public static void readSubrs(Uint8Array data, int offset, MapFromStringTo<JavaScriptObject> obj)
+  {
+//        var bin = Typr._bin;
+        ArrayOfInt gsubinds = Collections.arrayOfInt();
+        offset = readIndex(data, offset, gsubinds);
         
-        var bias, nSubrs = gsubinds.length;
+        int bias, nSubrs = gsubinds.length();
         if (false) bias = 0;
         else if (nSubrs <  1240) bias = 107;
         else if (nSubrs < 33900) bias = 1131;
         else bias = 32768;
-        obj.Bias = bias;
         
-        obj.Subrs = [];
-        for(var i=0; i<gsubinds.length-1; i++) obj.Subrs.push(bin.readBytes(data, offset+gsubinds[i], gsubinds[i+1]-gsubinds[i]));
+        ArrayOf<ArrayOfInt> subrs = Collections.arrayOf();
+        for(int i=0; i<gsubinds.length()-1; i++) subrs.push(bin.readBytes(data, offset+gsubinds.get(i), gsubinds.get(i+1)-gsubinds.get(i)));
         //offset += gsubinds[gsubinds.length-1];
-    }-*/;
+        putBiasSubrs(obj, bias, subrs);
+  }
+  @JsIgnore static native void putBiasSubrs (MapFromStringTo<JavaScriptObject> obj, int bias, ArrayOf<ArrayOfInt> subrs)
+  /*-{
+    obj.Bias = bias;
+    obj.Subrs = subrs;
+  }-*/;
     
     private static int[] tableSE = new int[] {
       0,   0,   0,   0,   0,   0,   0,   0,
@@ -218,21 +228,21 @@ public class CFF
         return charset;
     }-*/;
 
-    @JsMethod public static native JavaScriptObject readIndex (JavaScriptObject data, int offset, int inds)
-        /*-{
-        var bin = Typr._bin;
+    @JsMethod public static int readIndex (Uint8Array data, int offset, ArrayOfInt inds)
+    {
+//        var bin = Typr._bin;
         
-        var count = bin.readUshort(data, offset);  offset+=2;
-        var offsize = data[offset];  offset++;
+        char count = bin.readUshort(data, offset);  offset+=2;
+        int offsize = data.intAt(offset);  offset++;
         
-        if     (offsize==1) for(var i=0; i<count+1; i++) inds.push( data[offset+i] );
-        else if(offsize==2) for(var i=0; i<count+1; i++) inds.push( bin.readUshort(data, offset+i*2) );
-        else if(offsize==3) for(var i=0; i<count+1; i++) inds.push( bin.readUint  (data, offset+i*3 - 1) & 0x00ffffff );
-        else if(count!=0) throw "unsupported offset size: " + offsize + ", count: " + count;
+        if     (offsize==1) for(int i=0; i<count+1; i++) inds.push( data.intAt(offset+i) );
+        else if(offsize==2) for(int i=0; i<count+1; i++) inds.push( bin.readUshort(data, offset+i*2) );
+        else if(offsize==3) for(int i=0; i<count+1; i++) inds.push( bin.readUint  (data, offset+i*3 - 1) & 0x00ffffff );
+        else if(count!=0) throw new IllegalArgumentException("unsupported offset size: " + offsize + ", count: " + count);
         
         offset += (count+1)*offsize;
         return offset-1;
-    }-*/;
+    }
     
     @JsMethod public static native JavaScriptObject getCharString (JavaScriptObject data, int offset, int o)
         /*-{

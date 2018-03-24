@@ -73,16 +73,39 @@ public class TyprU
 
   @JsMethod public static native ArrayOfInt getGlyphDimensions (TyprFont font, int gid)
   /*-{
-	var gl = Typr.U._getGlyf(gid, font);
-	if (gl != null)
-		return [gl.xMin, gl.yMin, gl.xMax, gl.yMax];
+    if((font.SVG != null && font.SVG.entries[gid]) || font.CFF != null) 
+    {
+      var path = Typr.U.glyphToPath(font, gid);
+      // Calculate some bounds from the path since no bounding box is available
+      if (path != null && path.crds.length >= 2)
+      {
+        var xMin = xMax = path.crds[0]; 
+        var yMin = yMax = path.crds[1]; 
+        for (var i = 2; i < path.crds.length; i+=2)
+        {
+          var x = path.crds[i];
+          var y = path.crds[i + 1];
+          if (x < xMin) xMin = x;
+          if (x > xMax) xMax = x;
+          if (y < yMin) yMin = y;
+          if (y > yMax) yMax = y;
+        }
+        return [xMin, yMin, xMax, yMax];
+      }
+    }
+    else if(font.glyf != null) 
+    {  
+      var gl = Typr.U._getGlyf(gid, font);
+      if (gl != null)
+        return [gl.xMin, gl.yMin, gl.xMax, gl.yMax];
+    }
+    
 	return null;
-}-*/;
+  }-*/;
+  
   @JsMethod public static glyf _getGlyf (int gid, TyprFont font)
   {
-    glyf gl = null;
-    if (font.glyf != null)
-      gl = font.glyf.get(gid);
+    glyf gl = font.glyf.get(gid);
 	if(gl==null) 
 	{
 	  gl = glyf._parseGlyf(font, gid);
