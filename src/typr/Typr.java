@@ -81,6 +81,7 @@ public class Typr
     }
     catch (Throwable t)
     {
+       Browser.getWindow().getConsole().log(t);
       return null;
     }
   }

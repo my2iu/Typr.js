@@ -37,14 +37,14 @@ public class GPOSParser
   static class PairSet
   {
     @JsProperty public char gid;
-    @JsProperty public JavaScriptObject val1;
-    @JsProperty public JavaScriptObject val2;
+    @JsProperty public ArrayOfInt val1;
+    @JsProperty public ArrayOfInt val2;
   }
 
   static class MatrixEntry
   {
-    @JsProperty public JavaScriptObject val1;
-    @JsProperty public JavaScriptObject val2;
+    @JsProperty public ArrayOfInt val1;
+    @JsProperty public ArrayOfInt val2;
   }
 
   @JsIgnore public static Object subtGpos2 (Uint8Array data, char ltype, int offset)    
@@ -76,7 +76,7 @@ public class GPOSParser
             for(int j=0; j<pvcount; j++)
             {
                 char gid2 = bin.readUshort(data, psoff);  psoff+=2;
-                JavaScriptObject value1 = null, value2 = null;
+                ArrayOfInt value1 = null, value2 = null;
                 if(tab.valFmt1!=0) {  value1 = lctf.readValueRecord(data, psoff, tab.valFmt1);  psoff+=ones1*2;  }
                 if(tab.valFmt2!=0) {  value2 = lctf.readValueRecord(data, psoff, tab.valFmt2);  psoff+=ones2*2;  }
                 PairSet pair = new PairSet();
@@ -104,7 +104,7 @@ public class GPOSParser
             ArrayOf<MatrixEntry> row = Collections.arrayOf();
             for(int j=0; j<class2Count; j++)
             {
-                JavaScriptObject value1 = null, value2 = null;
+               ArrayOfInt value1 = null, value2 = null;
                 if(tab.valFmt1!=0) { value1 = lctf.readValueRecord(data, offset, tab.valFmt1);  offset+=ones1*2; }
                 if(tab.valFmt2!=0) { value2 = lctf.readValueRecord(data, offset, tab.valFmt2);  offset+=ones2*2; }
                 MatrixEntry m = new MatrixEntry();

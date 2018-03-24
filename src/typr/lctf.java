@@ -120,16 +120,17 @@ public class lctf
 	return -1;
 }-*/;
 
-  @JsMethod public static native JavaScriptObject readValueRecord (Uint8Array data, int offset, char valFmt)
-  /*-{
-	var bin = Typr._bin;
-	var arr = [];
-	arr.push( (valFmt&1) ? bin.readShort(data, offset) : 0 );  offset += (valFmt&1) ? 2 : 0;
-	arr.push( (valFmt&2) ? bin.readShort(data, offset) : 0 );  offset += (valFmt&2) ? 2 : 0;
-	arr.push( (valFmt&4) ? bin.readShort(data, offset) : 0 );  offset += (valFmt&4) ? 2 : 0;
-	arr.push( (valFmt&8) ? bin.readShort(data, offset) : 0 );  offset += (valFmt&8) ? 2 : 0;
+  @JsMethod public static ArrayOfInt readValueRecord (Uint8Array data, int offset, char valFmt)
+  {
+//	var bin = Typr._bin;
+     int iValFmt = (int)valFmt;
+	ArrayOfInt arr = Collections.arrayOfInt();
+	arr.push( ((iValFmt&1) != 0) ? bin.readShort(data, offset) : 0 );  offset += ((iValFmt&1) != 0) ? 2 : 0;
+	arr.push( ((iValFmt&2) != 0) ? bin.readShort(data, offset) : 0 );  offset += ((iValFmt&2) != 0) ? 2 : 0;
+	arr.push( ((iValFmt&4) != 0) ? bin.readShort(data, offset) : 0 );  offset += ((iValFmt&4) != 0) ? 2 : 0;
+	arr.push( ((iValFmt&8) != 0) ? bin.readShort(data, offset) : 0 );  offset += ((iValFmt&8) != 0) ? 2 : 0;
 	return arr;
-}-*/;
+  };
 
   @JsMethod public static native JavaScriptObject readCoverage (Uint8Array data, int offset)
   /*-{
