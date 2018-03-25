@@ -1,31 +1,25 @@
 package typr.tabs;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
 import elemental.util.Collections;
-import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
 import typr.TyprFont;
 import typr.bin;
 import typr.lctf;
+import typr.lctf.Coverage;
 import typr.lctf.LayoutCommonTable;
 
 public class GPOSParser
 {
-  @JsIgnore public static LayoutCommonTable<GPOSTab> parse(Uint8Array data, int offset, int length, TyprFont font) {  return lctf.parse(data, offset, length, font, subtGpos);  }
+  public static LayoutCommonTable<GPOSTab> parse(Uint8Array data, int offset, int length, TyprFont font) {  return lctf.parse(data, offset, length, font, subtGpos);  }
 
 
-  @JsIgnore public static lctf.Subt<GPOSTab> subtGpos = (data, ltype, offset) -> { // lookup type
-    return subtGpos2(data, ltype, offset);
-  }; 
-  
   public static class GPOSTab
   {
     @JsProperty public char format;
-    @JsProperty public JavaScriptObject coverage;
+    @JsProperty public Coverage coverage;
     @JsProperty public char valFmt1;
     @JsProperty public char valFmt2;
     @JsProperty public ArrayOfInt classDef1;
@@ -48,8 +42,7 @@ public class GPOSParser
     @JsProperty public ArrayOfInt val2;
   }
 
-  @JsIgnore public static GPOSTab subtGpos2 (Uint8Array data, char ltype, int offset)    
-  {
+  public static lctf.Subt<GPOSTab> subtGpos = (data, ltype, offset) -> { // lookup type
     if(ltype!=2) return null;
     
 //  var bin = Typr._bin, 
@@ -114,6 +107,6 @@ public class GPOSParser
         }
     }
     return tab;
-  }
+  };
 
 }

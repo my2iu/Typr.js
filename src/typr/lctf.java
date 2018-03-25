@@ -47,7 +47,7 @@ public class lctf
 	return obj;
 }
 
-  @JsMethod public static <U> ArrayOf<LookupTable<U>> readLookupList (Uint8Array data, int offset, Subt<U> subt)
+  @JsIgnore public static <U> ArrayOf<LookupTable<U>> readLookupList (Uint8Array data, int offset, Subt<U> subt)
   {
 //	var bin = Typr._bin;
 	int offset0 = offset;
@@ -69,7 +69,7 @@ public class lctf
     @JsProperty public char flag;
   }
   
-  @JsMethod public static <U> LookupTable<U> readLookupTable (Uint8Array data, int offset, Subt<U> subt)
+  @JsIgnore public static <U> LookupTable<U> readLookupTable (Uint8Array data, int offset, Subt<U> subt)
   {
 	//console.log("Parsing lookup table", offset);
 //	var bin = Typr._bin;
@@ -147,17 +147,23 @@ public class lctf
 	return arr;
   };
 
-  @JsMethod public static native JavaScriptObject readCoverage (Uint8Array data, int offset)
-  /*-{
-	var bin = Typr._bin;
-	var cvg = {};
+  public static class Coverage
+  {
+    @JsProperty public char fmt;
+    @JsProperty public ArrayOfInt tab;
+  }
+  
+  @JsMethod public static Coverage readCoverage (Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
+	Coverage cvg = new Coverage();
 	cvg.fmt   = bin.readUshort(data, offset);  offset+=2;
-	var count = bin.readUshort(data, offset);  offset+=2;
+	int count = bin.readUshort(data, offset);  offset+=2;
 	//console.log("parsing coverage", offset-4, format, count);
 	if(cvg.fmt==1) cvg.tab = bin.readUshorts(data, offset, count); 
 	if(cvg.fmt==2) cvg.tab = bin.readUshorts(data, offset, count*3);
 	return cvg;
-}-*/;
+  }
 
   @JsMethod public static native JavaScriptObject coverageIndex (JavaScriptObject cvg, JavaScriptObject val)
   /*-{
@@ -170,7 +176,7 @@ public class lctf
 	return -1;
 }-*/;
 
-  @JsMethod public static native JavaScriptObject readFeatureList (Uint8Array data, int offset)
+  @JsIgnore public static native JavaScriptObject readFeatureList (Uint8Array data, int offset)
   /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
@@ -200,7 +206,7 @@ public class lctf
 }-*/;
 
 
-  @JsMethod public static native JavaScriptObject readScriptList (Uint8Array data, int offset)
+  @JsIgnore public static native JavaScriptObject readScriptList (Uint8Array data, int offset)
   /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
