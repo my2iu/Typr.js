@@ -11,17 +11,18 @@ import jsinterop.annotations.JsProperty;
 import typr.TyprFont;
 import typr.bin;
 import typr.lctf;
+import typr.lctf.LayoutCommonTable;
 
 public class GPOSParser
 {
-  @JsIgnore public static GPOS parse(Uint8Array data, int offset, int length, TyprFont font) {  return lctf.parse(data, offset, length, font, subtGpos);  }
+  @JsIgnore public static LayoutCommonTable<GPOSTab> parse(Uint8Array data, int offset, int length, TyprFont font) {  return lctf.parse(data, offset, length, font, subtGpos);  }
 
 
-  @JsIgnore public static lctf.Subt subtGpos = (data, ltype, offset) -> { // lookup type
+  @JsIgnore public static lctf.Subt<GPOSTab> subtGpos = (data, ltype, offset) -> { // lookup type
     return subtGpos2(data, ltype, offset);
   }; 
   
-  static class SubtTab
+  public static class GPOSTab
   {
     @JsProperty public char format;
     @JsProperty public JavaScriptObject coverage;
@@ -47,13 +48,13 @@ public class GPOSParser
     @JsProperty public ArrayOfInt val2;
   }
 
-  @JsIgnore public static Object subtGpos2 (Uint8Array data, char ltype, int offset)    
+  @JsIgnore public static GPOSTab subtGpos2 (Uint8Array data, char ltype, int offset)    
   {
     if(ltype!=2) return null;
     
 //  var bin = Typr._bin, 
     int offset0 = offset;
-    SubtTab tab = new SubtTab();
+    GPOSTab tab = new GPOSTab();
     
     tab.format  = bin.readUshort(data, offset);  offset+=2;
     char covOff  = bin.readUshort(data, offset);  offset+=2;
@@ -76,13 +77,10 @@ public class GPOSParser
             for(int j=0; j<pvcount; j++)
             {
                 char gid2 = bin.readUshort(data, psoff);  psoff+=2;
-                ArrayOfInt value1 = null, value2 = null;
-                if(tab.valFmt1!=0) {  value1 = lctf.readValueRecord(data, psoff, tab.valFmt1);  psoff+=ones1*2;  }
-                if(tab.valFmt2!=0) {  value2 = lctf.readValueRecord(data, psoff, tab.valFmt2);  psoff+=ones2*2;  }
                 PairSet pair = new PairSet();
                 pair.gid = gid2;
-                pair.val1 = value1;
-                pair.val2 = value2;
+                if(tab.valFmt1!=0) {  pair.val1 = lctf.readValueRecord(data, psoff, tab.valFmt1);  psoff+=ones1*2;  }
+                if(tab.valFmt2!=0) {  pair.val2 = lctf.readValueRecord(data, psoff, tab.valFmt2);  psoff+=ones2*2;  }
                 arr.push(pair);
             }
             tab.pairsets.push(arr);

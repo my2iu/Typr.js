@@ -3,11 +3,13 @@ package typr;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
 import elemental.util.Collections;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 //OpenType Layout Common Table Formats
@@ -15,65 +17,78 @@ import jsinterop.annotations.JsType;
 @JsType(name="_lctf", namespace="Typr")
 public class lctf
 {
-  @JsFunction public static interface Subt
+  @JsFunction public static interface Subt<T>
   {
-    Object subt (Uint8Array data, char ltype, int offset);
+    T subt (Uint8Array data, char ltype, int offset);
   }
   
-  @JsIgnore public static native <U> U parse (Uint8Array data, int offset, int length, TyprFont font, Subt subt)
-  /*-{
-	var bin = Typr._bin;
-	var obj = {};
-	var offset0 = offset;
-	var tableVersion = bin.readFixed(data, offset);  offset += 4;
+  public static class LayoutCommonTable<T>
+  {
+    @JsProperty public JavaScriptObject scriptList;
+    @JsProperty public JavaScriptObject featureList;
+    @JsProperty public ArrayOf<LookupTable<T>> lookupList;
+  }
+  
+  @JsIgnore public static <U> LayoutCommonTable<U> parse (Uint8Array data, int offset, int length, TyprFont font, Subt<U> subt)
+  {
+//	var bin = Typr._bin;
+	LayoutCommonTable<U> obj = new LayoutCommonTable<>();
+	int offset0 = offset;
+	int tableVersion = bin.readVersion(data, offset);  offset += 4;
 	
-	var offScriptList  = bin.readUshort(data, offset);  offset += 2;
-	var offFeatureList = bin.readUshort(data, offset);  offset += 2;
-	var offLookupList  = bin.readUshort(data, offset);  offset += 2;
+	char offScriptList  = bin.readUshort(data, offset);  offset += 2;
+	char offFeatureList = bin.readUshort(data, offset);  offset += 2;
+	char offLookupList  = bin.readUshort(data, offset);  offset += 2;
 	
-	
-	obj.scriptList  = Typr._lctf.readScriptList (data, offset0 + offScriptList);
-	obj.featureList = Typr._lctf.readFeatureList(data, offset0 + offFeatureList);
-	obj.lookupList  = Typr._lctf.readLookupList (data, offset0 + offLookupList, subt);
+	obj.scriptList  = readScriptList (data, offset0 + offScriptList);
+	obj.featureList = readFeatureList(data, offset0 + offFeatureList);
+	obj.lookupList  = readLookupList (data, offset0 + offLookupList, subt);
 	
 	return obj;
-}-*/;
+}
 
-  @JsMethod public static native JavaScriptObject readLookupList (Uint8Array data, int offset, JavaScriptObject subt)
-  /*-{
-	var bin = Typr._bin;
-	var offset0 = offset;
-	var obj = [];
-	var count = bin.readUshort(data, offset);  offset+=2;
-	for(var i=0; i<count; i++) 
+  @JsMethod public static <U> ArrayOf<LookupTable<U>> readLookupList (Uint8Array data, int offset, Subt<U> subt)
+  {
+//	var bin = Typr._bin;
+	int offset0 = offset;
+	ArrayOf<LookupTable<U>> obj = Collections.arrayOf();
+	char count = bin.readUshort(data, offset);  offset+=2;
+	for(int i=0; i<count; i++) 
 	{
-		var noff = bin.readUshort(data, offset);  offset+=2;
-		var lut = Typr._lctf.readLookupTable(data, offset0 + noff, subt);
+		char noff = bin.readUshort(data, offset);  offset+=2;
+		LookupTable<U> lut = readLookupTable(data, offset0 + noff, subt);
 		obj.push(lut);
 	}
 	return obj;
-}-*/;
+  }
 
-  @JsMethod public static native JavaScriptObject readLookupTable (Uint8Array data, JavaScriptObject offset, JavaScriptObject subt)
-  /*-{
+  public static class LookupTable<T>
+  {
+    @JsProperty public ArrayOf<T> tabs = Collections.arrayOf();
+    @JsProperty public char ltype;
+    @JsProperty public char flag;
+  }
+  
+  @JsMethod public static <U> LookupTable<U> readLookupTable (Uint8Array data, int offset, Subt<U> subt)
+  {
 	//console.log("Parsing lookup table", offset);
-	var bin = Typr._bin;
-	var offset0 = offset;
-	var obj = {tabs:[]};
+//	var bin = Typr._bin;
+	int offset0 = offset;
+	LookupTable<U> obj = new LookupTable<>();
 	
 	obj.ltype = bin.readUshort(data, offset);  offset+=2;
 	obj.flag  = bin.readUshort(data, offset);  offset+=2;
-	var cnt   = bin.readUshort(data, offset);  offset+=2;
+	int cnt   = bin.readUshort(data, offset);  offset+=2;
 	
-	for(var i=0; i<cnt; i++)
+	for(int i=0; i<cnt; i++)
 	{
-		var noff = bin.readUshort(data, offset);  offset+=2;
-		var tab = subt(data, obj.ltype, offset0 + noff);
+		char noff = bin.readUshort(data, offset);  offset+=2;
+		U tab = subt.subt(data, obj.ltype, offset0 + noff);
 		//console.log(obj.type, tab);
 		obj.tabs.push(tab);
 	}
 	return obj;
-}-*/;
+  }
 
   @JsMethod public static int numOfOnes (int n)
   {
@@ -155,7 +170,7 @@ public class lctf
 	return -1;
 }-*/;
 
-  @JsMethod public static native JavaScriptObject readFeatureList (JavaScriptObject data, JavaScriptObject offset)
+  @JsMethod public static native JavaScriptObject readFeatureList (Uint8Array data, int offset)
   /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
@@ -185,7 +200,7 @@ public class lctf
 }-*/;
 
 
-  @JsMethod public static native JavaScriptObject readScriptList (JavaScriptObject data, JavaScriptObject offset)
+  @JsMethod public static native JavaScriptObject readScriptList (Uint8Array data, int offset)
   /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;

@@ -1,9 +1,13 @@
 package typr;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
 import jsinterop.annotations.JsProperty;
+import typr.lctf.LayoutCommonTable;
+import typr.tabs.GPOSParser.GPOSTab;
 
 public class TyprFont
 {
@@ -21,7 +25,7 @@ public class TyprFont
   @JsProperty public ArrayOf<typr.tabs.glyf> glyf;
   @JsProperty public typr.tabs.kern kern;
   @JsProperty public typr.tabs.CFF CFF;
-  @JsProperty public typr.tabs.GPOS GPOS;
-  @JsProperty public typr.tabs.GSUB GSUB;
+  @JsProperty public LayoutCommonTable<GPOSTab> GPOS;
+  @JsProperty public LayoutCommonTable<JavaScriptObject> GSUB;
   @JsProperty public typr.tabs.SVG SVG;
 }

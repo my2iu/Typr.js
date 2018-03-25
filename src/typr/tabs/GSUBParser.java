@@ -8,13 +8,14 @@ import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
 import typr.TyprFont;
 import typr.lctf;
+import typr.lctf.LayoutCommonTable;
 
 @JsType(namespace="Typr")
 public class GSUBParser
 {
-  @JsIgnore public static GSUB parse (Uint8Array data, int offset, int length, TyprFont font) {  return (GSUB)lctf.parse(data, offset, length, font, GSUBParser.subt);  }
+  @JsIgnore public static LayoutCommonTable<JavaScriptObject> parse (Uint8Array data, int offset, int length, TyprFont font) {  return lctf.parse(data, offset, length, font, GSUBParser.subt);  }
 
-  @JsIgnore public static lctf.Subt subt = (data, ltype, offset) -> { // lookup type
+  @JsIgnore public static lctf.Subt<JavaScriptObject> subt = (data, ltype, offset) -> { // lookup type
     return subt2(data, ltype, offset);
   }; 
 
