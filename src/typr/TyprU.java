@@ -3,9 +3,15 @@ package typr;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.html.CanvasRenderingContext2D;
+import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
+import typr.lctf.LookupTable;
+import typr.tabs.GPOSParser.GPOSTab;
+import typr.tabs.GPOSParser.MatrixEntry;
+import typr.tabs.GPOSParser.PairSet;
 import typr.tabs.glyf;
 
 @JsType(namespace="Typr",name="U")
@@ -69,7 +75,7 @@ public class TyprU
 	}
 	else if(font.glyf) {  Typr.U._drawGlyf(gid, font, path);  }
 	return path;
-}-*/;
+  }-*/;
 
   @JsMethod public static native ArrayOfInt getGlyphDimensions (TyprFont font, int gid)
   /*-{
@@ -120,7 +126,7 @@ public class TyprU
 		if(gl.noc>-1) Typr.U._simpleGlyph(gl, path);
 		else          Typr.U._compoGlyph (gl, font, path);
 	}
-}-*/;
+  }-*/;
   @JsMethod public static native JavaScriptObject _simpleGlyph (JavaScriptObject gl, JavaScriptObject p)
   /*-{
 	for(var c=0; c<gl.noc; c++)
@@ -181,68 +187,73 @@ public class TyprU
 		}
 		for(var i=0; i<path.cmds.length; i++) p.cmds.push(path.cmds[i]);
 	}
-}-*/;
+  }-*/;
 
 
-  @JsMethod public static native JavaScriptObject _getGlyphClass (JavaScriptObject g, JavaScriptObject cd)
+  @JsMethod public static native int _getGlyphClass (int g, ArrayOfInt cd)
   /*-{
 	var intr = Typr._lctf.getInterval(cd, g);
 	return intr==-1 ? 0 : cd[intr+2];
 	//for(var i=0; i<cd.start.length; i++) 
 	//	if(cd.start[i]<=g && cd.end[i]>=g) return cd.class[i];
 	//return 0;
-}-*/;
+  }-*/;
 
-  @JsMethod public static native JavaScriptObject getPairAdjustment (JavaScriptObject font, JavaScriptObject g1, JavaScriptObject g2)
-  /*-{
-	if(font.GPOS)
+  @JsMethod public static int getPairAdjustment (TyprFont font, int g1, int g2)
+  {
+	if(font.GPOS != null)
 	{
-		var ltab = null;
-		for(var i=0; i<font.GPOS.featureList.length; i++) 
+		LookupTable<GPOSTab> ltab = null;
+		for(int i=0; i<font.GPOS.featureList.length(); i++) 
 		{
-			var fl = font.GPOS.featureList[i];
+			lctf.FeatureList fl = font.GPOS.featureList.get(i);
 			if(fl.tag=="kern")
-				for(var j=0; j<fl.tab.length; j++) 
-					if(font.GPOS.lookupList[fl.tab[j]].ltype==2) ltab=font.GPOS.lookupList[fl.tab[j]];
+				for(int j=0; j<fl.tab.length(); j++) 
+					if(font.GPOS.lookupList.get(fl.tab.get(j)).ltype==2) ltab=font.GPOS.lookupList.get(fl.tab.get(j));
 		}
-		if(ltab)
+		if(ltab != null)
 		{
-			var adjv = 0;
-			for(var i=0; i<ltab.tabs.length; i++)
+//			var adjv = 0;
+			for(int i=0; i<ltab.tabs.length(); i++)
 			{
-				var tab = ltab.tabs[i];
-				var ind = Typr._lctf.coverageIndex(tab.coverage, g1);
+			    GPOSTab tab = ltab.tabs.get(i);
+				int ind = lctf.coverageIndex(tab.coverage, g1);
 				if(ind==-1) continue;
-				var adj;
+				MatrixEntry adj = null;
 				if(tab.format==1)
 				{
-					var right = tab.pairsets[ind];
-					for(var j=0; j<right.length; j++) if(right[j].gid2==g2) adj = right[j];
+					ArrayOf<PairSet> right = tab.pairsets.get(ind);
+					for(int j=0; j<right.length(); j++) if(right.get(j).gid2==g2) adj = right.get(j);
 					if(adj==null) continue;
 				}
 				else if(tab.format==2)
 				{
-					var c1 = Typr.U._getGlyphClass(g1, tab.classDef1);
-					var c2 = Typr.U._getGlyphClass(g2, tab.classDef2);
-					var adj = tab.matrix[c1][c2];
+					int c1 = _getGlyphClass(g1, tab.classDef1);
+					int c2 = _getGlyphClass(g2, tab.classDef2);
+					adj = tab.matrix.get(c1).get(c2);
 				}
-				return adj.val1[2];
+				return adj.val1.get(2);
 			}
 		}
 	}
-	if(font.kern)
-	{
-		var ind1 = font.kern.glyph1.indexOf(g1);
-		if(ind1!=-1)
-		{
-			var ind2 = font.kern.rval[ind1].glyph2.indexOf(g2);
-			if(ind2!=-1) return font.kern.rval[ind1].vals[ind2];
-		}
-	}
-	
-	return 0;
-}-*/;
+	return getPairAdjustmentFromKern(font, g1, g2);
+  }
+  @JsIgnore private static native int getPairAdjustmentFromKern (TyprFont font, int g1, int g2)
+  /*-{
+    if(font.kern != null)
+    {
+        var ind1 = font.kern.glyph1.indexOf(g1);
+        if(ind1!=-1)
+        {
+            var ind2 = font.kern.rval[ind1].glyph2.indexOf(g2);
+            if(ind2!=-1) return font.kern.rval[ind1].vals[ind2];
+        }
+    }
+    
+    return 0;
+  }-*/;
 
+  
   @JsMethod public static native ArrayOfInt stringToGlyphs (TyprFont font, String str)
   /*-{
 	var gls = [];
@@ -348,7 +359,8 @@ public class TyprU
 	}
 	
 	return gls;
-}-*/;
+  }-*/;
+  
   @JsMethod public static native JavaScriptObject _applyType1 (JavaScriptObject gls, JavaScriptObject ci, JavaScriptObject tab) /*-{
 	var gl = gls[ci];
 	for(var j=0; j<tab.tabs.length; j++) {
@@ -358,7 +370,7 @@ public class TyprU
 		else            gls[ci] = ttab.newg[ind];
 		//console.log(ci, gl, "subst", flist[fi].tag, i, j, ttab.newg[ind]);
 	}
-}-*/;
+  }-*/;
 
   @JsMethod public static native ArrayOfInt glyphsToPositions (TyprFont font, ArrayOfInt gls)
   /*-{	
@@ -406,7 +418,7 @@ public class TyprU
 		if(i<gls.length-1) x += Typr.U.getPairAdjustment(font, gid, gid2);
 	}
 	return tpath;
-}-*/;
+  }-*/;
 
   @JsMethod public static native JavaScriptObject pathToSVG (JavaScriptObject path, JavaScriptObject prec)
   /*-{
@@ -419,7 +431,7 @@ public class TyprU
 		while(co<cn) {  var c = path.crds[co++];  out.push(parseFloat(c.toFixed(prec))+(co==cn?"":" "));  }
 	}
 	return out.join("");
-}-*/;
+  }-*/;
 
   @JsMethod public static native JavaScriptObject pathToContext (TyprPath path, CanvasRenderingContext2D ctx)
   /*-{
@@ -455,7 +467,7 @@ public class TyprU
 			ctx.fill();
 		}
 	}
-}-*/;
+  }-*/;
 
 
   @JsType(namespace="Typr.U",name="P")
@@ -481,8 +493,8 @@ public class TyprU
   }
 
 
-@JsMethod public static native JavaScriptObject _drawCFF (JavaScriptObject cmds, JavaScriptObject state, JavaScriptObject font, JavaScriptObject p)
-/*-{
+  @JsMethod public static native JavaScriptObject _drawCFF (JavaScriptObject cmds, JavaScriptObject state, JavaScriptObject font, JavaScriptObject p)
+  /*-{
 	var stack = state.stack;
 	var nStems = state.nStems, haveWidth=state.haveWidth, width=state.width, open=state.open;
 	var i=0;
@@ -832,5 +844,5 @@ public class TyprU
 	}
 	//console.log(cmds);
 	state.x=x; state.y=y; state.nStems=nStems; state.haveWidth=haveWidth; state.width=width; state.open=open;
-}-*/;
+  }-*/;
 }

@@ -29,14 +29,12 @@ public class GPOSParser
     
   }
   
-  static class PairSet
+  public static class PairSet extends MatrixEntry
   {
-    @JsProperty public char gid;
-    @JsProperty public ArrayOfInt val1;
-    @JsProperty public ArrayOfInt val2;
+    @JsProperty public char gid2;
   }
 
-  static class MatrixEntry
+  public static class MatrixEntry
   {
     @JsProperty public ArrayOfInt val1;
     @JsProperty public ArrayOfInt val2;
@@ -71,7 +69,7 @@ public class GPOSParser
             {
                 char gid2 = bin.readUshort(data, psoff);  psoff+=2;
                 PairSet pair = new PairSet();
-                pair.gid = gid2;
+                pair.gid2 = gid2;
                 if(tab.valFmt1!=0) {  pair.val1 = lctf.readValueRecord(data, psoff, tab.valFmt1);  psoff+=ones1*2;  }
                 if(tab.valFmt2!=0) {  pair.val2 = lctf.readValueRecord(data, psoff, tab.valFmt2);  psoff+=ones2*2;  }
                 arr.push(pair);

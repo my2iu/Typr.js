@@ -25,7 +25,7 @@ public class lctf
   public static class LayoutCommonTable<T>
   {
     @JsProperty public JavaScriptObject scriptList;
-    @JsProperty public JavaScriptObject featureList;
+    @JsProperty public ArrayOf<FeatureList> featureList;
     @JsProperty public ArrayOf<LookupTable<T>> lookupList;
   }
   
@@ -125,15 +125,15 @@ public class lctf
 	}
 	return obj;
   }
-  @JsMethod public static native JavaScriptObject getInterval (JavaScriptObject tab, JavaScriptObject val)
-  /*-{
-	for(var i=0; i<tab.length; i+=3)
+  @JsMethod public static int getInterval (ArrayOfInt tab, int val)
+  {
+	for(int i=0; i<tab.length(); i+=3)
 	{
-		var start = tab[i], end = tab[i+1], index = tab[i+2];
+		int start = tab.get(i), end = tab.get(i+1), index = tab.get(i+2);
 		if(start<=val && val<=end) return i;
 	}
 	return -1;
-}-*/;
+  }
 
   @JsMethod public static ArrayOfInt readValueRecord (Uint8Array data, int offset, char valFmt)
   {
@@ -165,45 +165,60 @@ public class lctf
 	return cvg;
   }
 
-  @JsMethod public static native JavaScriptObject coverageIndex (JavaScriptObject cvg, JavaScriptObject val)
-  /*-{
-	var tab = cvg.tab;
+  @JsMethod public static int coverageIndex (Coverage cvg, int val)
+  {
+	ArrayOfInt tab = cvg.tab;
 	if(cvg.fmt==1) return tab.indexOf(val);
 	if(cvg.fmt==2) {
-		var ind = Typr._lctf.getInterval(tab, val);
-		if(ind!=-1) return tab[ind+2] + (val - tab[ind]);
+		int ind = getInterval(tab, val);
+		if(ind!=-1) return tab.get(ind+2) + (val - tab.get(ind));
 	}
 	return -1;
-}-*/;
+  }
 
-  @JsIgnore public static native JavaScriptObject readFeatureList (Uint8Array data, int offset)
-  /*-{
-	var bin = Typr._bin;
-	var offset0 = offset;
-	var obj = [];
+  public static class FeatureTable
+  {
+    
+  }
+  
+  public static class FeatureList
+  {
+    @JsIgnore FeatureList(String tag, ArrayOfInt table)
+    {
+      
+    }
+    @JsProperty public ArrayOfInt tab;
+    @JsProperty public String tag;
+  }
+  
+  @JsIgnore public static ArrayOf<FeatureList> readFeatureList (Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
+	int offset0 = offset;
+	ArrayOf<FeatureList> obj = Collections.arrayOf();
 	
-	var count = bin.readUshort(data, offset);  offset+=2;
+	char count = bin.readUshort(data, offset);  offset+=2;
 	
-	for(var i=0; i<count; i++)
+	for(int i=0; i<count; i++)
 	{
-		var tag = bin.readASCII(data, offset, 4);  offset+=4;
-		var noff = bin.readUshort(data, offset);  offset+=2;
-		obj.push({tag: tag.trim(), tab:Typr._lctf.readFeatureTable(data, offset0 + noff)});
+		String tag = bin.readASCII(data, offset, 4);  offset+=4;
+		char noff = bin.readUshort(data, offset);  offset+=2;
+		obj.push(new FeatureList(tag.trim(), readFeatureTable(data, offset0 + noff)));
 	}
 	return obj;
-}-*/;
+  }
 
-  @JsMethod public static native JavaScriptObject readFeatureTable (JavaScriptObject data, JavaScriptObject offset)
-  /*-{
-	var bin = Typr._bin;
+  @JsIgnore public static ArrayOfInt readFeatureTable (Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
 	
-	var featureParams = bin.readUshort(data, offset);  offset+=2;	// = 0
-	var lookupCount = bin.readUshort(data, offset);  offset+=2;
+	char featureParams = bin.readUshort(data, offset);  offset+=2;	// = 0
+	char lookupCount = bin.readUshort(data, offset);  offset+=2;
 	
-	var indices = [];
-	for(var i=0; i<lookupCount; i++) indices.push(bin.readUshort(data, offset+2*i));
+	ArrayOfInt indices = Collections.arrayOfInt();
+	for(int i=0; i<lookupCount; i++) indices.push(bin.readUshort(data, offset+2*i));
 	return indices;
-}-*/;
+  }
 
 
   @JsIgnore public static native JavaScriptObject readScriptList (Uint8Array data, int offset)
