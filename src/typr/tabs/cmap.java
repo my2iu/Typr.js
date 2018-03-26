@@ -1,15 +1,15 @@
 package typr.tabs;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
+import elemental.client.Browser;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
+import elemental.util.Collections;
 import elemental.util.MapFromStringToInt;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+import typr.bin;
 
 @JsType(namespace="Typr")
 public class cmap
@@ -36,59 +36,58 @@ public class cmap
     @JsProperty(name="groups") public ArrayOf<ArrayOfInt> groups();
   }
   
-  
-  @JsIgnore public static native cmap parse(Uint8Array data, int offset, int length)
-  /*-{
-	data = new Uint8Array(data.buffer, offset, length);
+  @JsIgnore public static cmap parse(Uint8Array data, int offset, int length)
+  {
+	data = Browser.getWindow().newUint8Array(data.getBuffer(), offset, length);
 	offset = 0;
 
-	var offset0 = offset;
-	var bin = Typr._bin;
-	var obj = {};
-	var version   = bin.readUshort(data, offset);  offset += 2;
-	var numTables = bin.readUshort(data, offset);  offset += 2;
+	int offset0 = offset;
+//	var bin = Typr._bin;
+	cmap obj = new cmap();
+	char version   = bin.readUshort(data, offset);  offset += 2;
+	char numTables = bin.readUshort(data, offset);  offset += 2;
 	
 	//console.log(version, numTables);
 	
-	var offs = [];
-	obj.tables = [];
-	obj.platformEncodingMap = {};
+	ArrayOfInt offs = Collections.arrayOfInt();
+	obj.tables = Collections.arrayOf();
+	obj.platformEncodingMap = Collections.mapFromStringToInt();
 	
 	
-	for(var i=0; i<numTables; i++)
+	for(int i=0; i<numTables; i++)
 	{
-		var platformID = bin.readUshort(data, offset);  offset += 2;
-		var encodingID = bin.readUshort(data, offset);  offset += 2;
-		var noffset = bin.readUint(data, offset);       offset += 4;
+		int platformID = bin.readUshort(data, offset);  offset += 2;
+		int encodingID = bin.readUshort(data, offset);  offset += 2;
+		int noffset = bin.readUint(data, offset);       offset += 4;
 		
-		var id = "p"+platformID+"e"+encodingID;
+		String id = "p"+platformID+"e"+encodingID;
 		
 		//console.log("cmap subtable", platformID, encodingID, noffset);
 		
 		
-		var tind = offs.indexOf(noffset);
+		int tind = offs.indexOf(noffset);
 		
 		if(tind==-1)
 		{
-			tind = obj.tables.length;
-			var subt;
+			tind = obj.tables.length();
+			Table subt = null;
 			offs.push(noffset);
-			var format = bin.readUshort(data, noffset);
-			if     (format== 0) subt = Typr.cmap.parse0(data, noffset);
-			else if(format== 4) subt = Typr.cmap.parse4(data, noffset);
-			else if(format== 6) subt = Typr.cmap.parse6(data, noffset);
-			else if(format==12) subt = Typr.cmap.parse12(data,noffset);
-			else console.log("unknown format: "+format, platformID, encodingID, noffset);
+			int format = bin.readUshort(data, noffset);
+			if     (format== 0) subt = parse0(data, noffset);
+			else if(format== 4) subt = parse4(data, noffset);
+			else if(format== 6) subt = parse6(data, noffset);
+			else if(format==12) subt = parse12(data,noffset);
+			else Browser.getWindow().getConsole().log("unknown format: "+format + " "+ platformID+ " "+ encodingID + " " + noffset);
 			obj.tables.push(subt);
 		}
 		
-		if(obj.platformEncodingMap[id]!=null) throw "multiple tables for one platform+encoding";
-		obj.platformEncodingMap[id] = tind;
+		if(obj.platformEncodingMap.hasKey(id)) throw new IllegalArgumentException("multiple tables for one platform+encoding");
+		obj.platformEncodingMap.put(id, tind);
 	}
 	return obj;
-}-*/;
+  }
 
-  @JsMethod public static native JavaScriptObject parse0 (JavaScriptObject data, int offset)
+  @JsIgnore public static native Table parse0 (Uint8Array data, int offset)
   /*-{
 	var bin = Typr._bin;
 	var obj = {};
@@ -98,9 +97,9 @@ public class cmap
 	obj.map = [];
 	for(var i=0; i<len-6; i++) obj.map.push(data[offset+i]);
 	return obj;
-}-*/;
+  }-*/;
 
-  @JsMethod public static native JavaScriptObject parse4 (JavaScriptObject data, int offset)
+  @JsIgnore public static native Table parse4 (Uint8Array data, int offset)
   /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
@@ -123,9 +122,9 @@ public class cmap
 	obj.glyphIdArray = [];
 	while(offset< offset0+length) {obj.glyphIdArray.push(bin.readUshort(data, offset));  offset+=2;}
 	return obj;
-}-*/;
+  }-*/;
 
-  @JsMethod public static native JavaScriptObject parse6 (JavaScriptObject data, int offset)
+  @JsIgnore public static native Table parse6 (Uint8Array data, int offset)
   /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
@@ -140,9 +139,9 @@ public class cmap
 	for(var i=0; i<entryCount; i++) {obj.glyphIdArray.push(bin.readUshort(data, offset));  offset+=2;}
 	
 	return obj;
-}-*/;
+  }-*/;
 
-  @JsMethod public static native JavaScriptObject parse12 (JavaScriptObject data, int offset)
+  @JsIgnore public static native Table parse12 (Uint8Array data, int offset)
   /*-{
 	var bin = Typr._bin;
 	var offset0 = offset;
@@ -164,5 +163,5 @@ public class cmap
 		obj.groups.push([  startCharCode, endCharCode, startGlyphID  ]);
 	}
 	return obj;
-}-*/;
+  }-*/;
 }
