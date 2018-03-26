@@ -1,5 +1,6 @@
 package typr.tabs;
 
+import elemental.client.Browser;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
@@ -42,6 +43,7 @@ public class GPOSParser
 
   public static lctf.Subt<GPOSTab> subtGpos = (data, ltype, offset) -> { // lookup type
     if(ltype!=2) return null;
+    Browser.getWindow().getConsole().log("gpossubt");
     
 //  var bin = Typr._bin, 
     int offset0 = offset;
@@ -61,7 +63,7 @@ public class GPOSParser
         
         for(int i=0; i<count; i++)
         {
-            char psoff = bin.readUshort(data, offset);  offset+=2;
+            int psoff = bin.readUshort(data, offset);  offset+=2;
             psoff += offset0;
             char pvcount = bin.readUshort(data, psoff);  psoff+=2;
             ArrayOf<PairSet> arr = Collections.arrayOf();
