@@ -1,8 +1,10 @@
 package typr.tabs;
 
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOfInt;
+import elemental.util.Collections;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import typr.bin;
 
@@ -24,9 +26,55 @@ public class OS2
 	return obj;
   }
 
-  @JsMethod private static native int version0 (Uint8Array data, int offset, OS2 obj)
-  /*-{
-	var bin = Typr._bin;
+  // Version 0 properties
+  @JsProperty public short xAvgCharWidth;
+  @JsProperty public char usWeightClass;
+  @JsProperty public char usWidthClass;
+  @JsProperty public char fsType;
+  @JsProperty public short ySubscriptXSize;
+  @JsProperty public short ySubscriptYSize;
+  @JsProperty public short ySubscriptXOffset;
+  @JsProperty public short ySubscriptYOffset;
+  @JsProperty public short ySuperscriptXSize;
+  @JsProperty public short ySuperscriptYSize;
+  @JsProperty public short ySuperscriptXOffset;
+  @JsProperty public short ySuperscriptYOffset;
+  @JsProperty public short yStrikeoutSize;
+  @JsProperty public short yStrikeoutPosition;
+  @JsProperty public short sFamilyClass;
+  @JsProperty public ArrayOfInt panose;
+  @JsProperty public int ulUnicodeRange1;
+  @JsProperty public int ulUnicodeRange2;
+  @JsProperty public int offset;
+  @JsProperty public int ulUnioffsetnge3;
+  @JsProperty public ArrayOfInt achVendID;
+  @JsProperty public char fsSelection;
+  @JsProperty public char usFirstCharIndex;
+  @JsProperty public char usLastCharIndex;
+  @JsProperty public short sTypoAscender;
+  @JsProperty public short sTypoDescender;
+  @JsProperty public short sTypoLineGap;
+  @JsProperty public char usWinAscent;
+  @JsProperty public char usWinDescent;
+
+  // Version 1 Properties
+  @JsProperty public Integer ulCodePageRange1;
+  @JsProperty public Integer ulCodePageRange2;
+
+  // Version 2 Properties
+  @JsProperty public Short sxHeight;
+  @JsProperty public Short sCapHeight;
+  @JsProperty public Character usDefault;
+  @JsProperty public Character usBreak;
+  @JsProperty public Character usMaxContext;
+  
+  // Version 5 Properties
+  @JsProperty public Character usLowerOpticalPointSize;
+  @JsProperty public Character usUpperOpticalPointSize;
+  
+  @JsIgnore private static int version0 (Uint8Array data, int offset, OS2 obj)
+  {
+//	var bin = Typr._bin;
 	obj.xAvgCharWidth = bin.readShort(data, offset); offset += 2;
 	obj.usWeightClass = bin.readUshort(data, offset); offset += 2;
 	obj.usWidthClass  = bin.readUshort(data, offset); offset += 2;
@@ -45,9 +93,14 @@ public class OS2
 	obj.panose = bin.readBytes(data, offset, 10);  offset += 10;
 	obj.ulUnicodeRange1	= bin.readUint(data, offset);  offset += 4;
 	obj.ulUnicodeRange2	= bin.readUint(data, offset);  offset += 4;
-	obj.ulUnicodeRange3	= bin.readUint(data, offset);  offset += 4;
-	obj.ulUnicodeRange4	= bin.readUint(data, offset);  offset += 4;
-	obj.achVendID = [bin.readInt8(data, offset), bin.readInt8(data, offset+1),bin.readInt8(data, offset+2),bin.readInt8(data, offset+3)];  offset += 4;
+	obj.ulUnioffsetnge3	= bin.readUint(data, offset);  offset += 4;
+	obj.offset	= bin.readUint(data, offset);  offset += 4;
+	obj.achVendID = Collections.arrayOfInt();
+	obj.achVendID.push(bin.readInt8(data, offset));
+	obj.achVendID.push(bin.readInt8(data, offset+1));
+	obj.achVendID.push(bin.readInt8(data, offset+2));
+	obj.achVendID.push(bin.readInt8(data, offset+3));
+	offset += 4;
 	obj.fsSelection	 = bin.readUshort(data, offset); offset += 2;
 	obj.usFirstCharIndex = bin.readUshort(data, offset); offset += 2;
 	obj.usLastCharIndex = bin.readUshort(data, offset); offset += 2;
@@ -57,22 +110,22 @@ public class OS2
 	obj.usWinAscent = bin.readUshort(data, offset); offset += 2;
 	obj.usWinDescent = bin.readUshort(data, offset); offset += 2;
 	return offset;
-  }-*/;
+  }
 
-  @JsMethod private static native int version1 (Uint8Array data, int offset, OS2 obj)
-  /*-{
-	var bin = Typr._bin;
-	offset = Typr.OS2.version0(data, offset, obj);
+  @JsIgnore private static int version1 (Uint8Array data, int offset, OS2 obj)
+  {
+//	var bin = Typr._bin;
+	offset = version0(data, offset, obj);
 	
 	obj.ulCodePageRange1 = bin.readUint(data, offset); offset += 4;
 	obj.ulCodePageRange2 = bin.readUint(data, offset); offset += 4;
 	return offset;
-  }-*/;
+  }
 
-  @JsMethod private static native int version2 (Uint8Array data, int offset, OS2 obj)
-  /*-{
-	var bin = Typr._bin;
-	offset = Typr.OS2.version1(data, offset, obj);
+  @JsIgnore private static int version2 (Uint8Array data, int offset, OS2 obj)
+  {
+//	var bin = Typr._bin;
+	offset = version1(data, offset, obj);
 	
 	obj.sxHeight = bin.readShort(data, offset); offset += 2;
 	obj.sCapHeight = bin.readShort(data, offset); offset += 2;
@@ -80,15 +133,15 @@ public class OS2
 	obj.usBreak = bin.readUshort(data, offset); offset += 2;
 	obj.usMaxContext = bin.readUshort(data, offset); offset += 2;
 	return offset;
-  }-*/;
+  }
 
-  @JsMethod private static native int version5 (Uint8Array data, int offset, OS2 obj)
-  /*-{
-	var bin = Typr._bin;
-	offset = Typr.OS2.version2(data, offset, obj);
+  @JsIgnore private static int version5 (Uint8Array data, int offset, OS2 obj)
+  {
+//	var bin = Typr._bin;
+	offset = version2(data, offset, obj);
 
 	obj.usLowerOpticalPointSize = bin.readUshort(data, offset); offset += 2;
 	obj.usUpperOpticalPointSize = bin.readUshort(data, offset); offset += 2;
 	return offset;
-  }-*/;
+  }
 }
