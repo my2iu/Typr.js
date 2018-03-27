@@ -13,7 +13,7 @@ public class TyprJava
    * Read the offset table at the start of the file and then the
    * table records describing what font tables are in the file.
    */
-  static Map<String, TableRecord> readTableRecords(Uint8Array data)
+  public static Map<String, TableRecord> readTableRecords(Uint8Array data)
   {
     int offset = 0;
     
@@ -51,12 +51,12 @@ public class TyprJava
     return tableRecords;
   }
 
-  static class TableRecord
+  public static class TableRecord
   {
-    int tag;
-    int checkSum;
-    int offset;
-    int length;
+    public int tag;
+    public int checkSum;
+    public int offset;
+    public int length;
     public String tagAsString()
     {
       String s = "";
