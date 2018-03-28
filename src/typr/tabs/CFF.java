@@ -2,102 +2,158 @@ package typr.tabs;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import elemental.client.Browser;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
+import elemental.util.ArrayOfString;
 import elemental.util.Collections;
 import elemental.util.MapFromStringTo;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import typr.bin;
 
 @JsType(namespace="Typr")
 public class CFF
 {
-  @JsIgnore public static native CFF parse (Uint8Array data, int offset, int length)
-  /*-{
-        var bin = Typr._bin;
+  @JsIgnore public static CFF parse (Uint8Array data, int offset, int length)
+  {
+//        var bin = Typr._bin;
         
-        data = new Uint8Array(data.buffer, offset, length);
+        data = Browser.getWindow().newUint8Array(data.getBuffer(), offset, length);
         offset = 0;
         
         // Header
-        var major = data[offset];  offset++;
-        var minor = data[offset];  offset++;
-        var hdrSize = data[offset];  offset++;
-        var offsize = data[offset];  offset++;
+        int major = data.intAt(offset);  offset++;
+        int minor = data.intAt(offset);  offset++;
+        int hdrSize = data.intAt(offset);  offset++;
+        int offsize = data.intAt(offset);  offset++;
         //console.log(major, minor, hdrSize, offsize);
         
         // Name INDEX
-        var ninds = [];
-        offset = Typr.CFF.readIndex(data, offset, ninds);
-        var names = [];
+        ArrayOfInt ninds = Collections.arrayOfInt();
+        offset = readIndex(data, offset, ninds);
+        ArrayOfString names = Collections.arrayOfString();
         
-        for(var i=0; i<ninds.length-1; i++) names.push(bin.readASCII(data, offset+ninds[i], ninds[i+1]-ninds[i]));
+        for(int i=0; i<ninds.length()-1; i++) names.push(bin.readASCII(data, offset+ninds.get(i), ninds.get(i+1)-ninds.get(i)));
         //console.log(names);
-        offset += ninds[ninds.length-1];
+        offset += ninds.get(ninds.length()-1);
         
         
         // Top DICT INDEX
-        var tdinds = [];
-        offset = Typr.CFF.readIndex(data, offset, tdinds);
+        ArrayOfInt tdinds = Collections.arrayOfInt();
+        offset = readIndex(data, offset, tdinds);
         // Top DICT Data
-        var topDicts = [];
-        for(var i=0; i<tdinds.length-1; i++) topDicts.push( Typr.CFF.readDict(data, offset+tdinds[i], offset+tdinds[i+1]) );
-        offset += tdinds[tdinds.length-1];
-        var topdict = topDicts[0];
+        ArrayOf<JavaScriptObject> topDicts = Collections.arrayOf();
+        for(int i=0; i<tdinds.length()-1; i++) topDicts.push( readDict(data, offset+tdinds.get(i), offset+tdinds.get(i+1)) );
+        offset += tdinds.get(tdinds.length()-1);
+        MapFromStringTo<JavaScriptObject> topdict = (MapFromStringTo<JavaScriptObject>)topDicts.get(0);
         //console.log(topdict);
         
         // String INDEX
-        var sinds = [];
-        offset = Typr.CFF.readIndex(data, offset, sinds);
+        ArrayOfInt sinds = Collections.arrayOfInt();
+        offset = readIndex(data, offset, sinds);
         // String Data
-        var strings = [];
-        for(var i=0; i<sinds.length-1; i++) strings.push(bin.readASCII(data, offset+sinds[i], sinds[i+1]-sinds[i]));
-        offset += sinds[sinds.length-1];
+        ArrayOfString strings = Collections.arrayOfString();
+        for(int i=0; i<sinds.length()-1; i++) strings.push(bin.readASCII(data, offset+sinds.get(i), sinds.get(i+1)-sinds.get(i)));
+        offset += sinds.get(sinds.length()-1);
         
         // Global Subr INDEX  (subroutines)     
-        Typr.CFF.readSubrs(data, offset, topdict);
+        readSubrs(data, offset, topdict);
         
+        return parseMore(topdict, data, offset, strings);
+  }
+  @JsProperty public ArrayOf<ArrayOfInt> CharStrings;
+  @JsProperty public JavaScriptObject Encoding;
+  @JsProperty public JavaScriptObject charset;
+  @JsProperty public MapFromStringTo<JavaScriptObject> Private;
+  
+  @JsIgnore static CFF parseMore(MapFromStringTo<JavaScriptObject> topdict, Uint8Array data, int offset, ArrayOfString strings)
+  {
+        CFF obj = new CFF();
+
         // charstrings
-        if(topdict.CharStrings)
+        if(topdict.hasKey("CharStrings"))
         {
-            offset = topdict.CharStrings;
-            var sinds = [];
-            offset = Typr.CFF.readIndex(data, offset, sinds);
+            offset = getDictInt(topdict, "CharStrings");
+            ArrayOfInt sinds = Collections.arrayOfInt();
+            offset = readIndex(data, offset, sinds);
             
-            var cstr = [];
-            for(var i=0; i<sinds.length-1; i++) cstr.push(bin.readBytes(data, offset+sinds[i], sinds[i+1]-sinds[i]));
+            ArrayOf<ArrayOfInt> cstr = Collections.arrayOf();
+            for(int i=0; i<sinds.length()-1; i++) cstr.push(bin.readBytes(data, offset+sinds.get(i), sinds.get(i+1)-sinds.get(i)));
             //offset += sinds[sinds.length-1];
-            topdict.CharStrings = cstr;
+            obj.CharStrings = cstr;
             //console.log(topdict.CharStrings);
         }
         
         // Encoding
-        if(topdict.Encoding) topdict.Encoding = Typr.CFF.readEncoding(data, topdict.Encoding, topdict.CharStrings.length);
-        
-        // charset
-        if(topdict.charset ) topdict.charset  = Typr.CFF.readCharset (data, topdict.charset , topdict.CharStrings.length);
-        
-        if(topdict.Private)
+        if(topdict.hasKey("Encoding")) 
         {
-            offset = topdict.Private[1];
-            topdict.Private = Typr.CFF.readDict(data, offset, offset+topdict.Private[0]);
-            if(topdict.Private.Subrs)  Typr.CFF.readSubrs(data, offset+topdict.Private.Subrs, topdict.Private);
+          obj.Encoding = readEncoding(data, getDictInt(topdict,"Encoding"), obj.CharStrings.length());
         }
         
-        var obj = {};
-        for(var p in topdict)
+        // charset
+        if(topdict.hasKey("charset"))
         {
-            if(["FamilyName", "FullName", "Notice", "version", "Copyright"].indexOf(p) != -1)  obj[p] = strings[topdict[p] -426 + 35 ];
-            else obj[p] = topdict[p];
+          obj.charset = readCharset (data, getDictInt(topdict, "charset") , obj.CharStrings.length());
+        }
+        
+        if(topdict.hasKey("Private"))
+        {
+            offset = getDictArrayOfInt(topdict, "Private").get(1);
+            obj.Private = (MapFromStringTo<JavaScriptObject>)readDict(data, offset, offset+getDictArrayOfInt(topdict, "Private").get(0));
+            if(obj.Private.hasKey("Subrs"))  readSubrs(data, offset+getDictInt(obj.Private, "Subrs"), obj.Private);
+        }
+        
+
+        ArrayOfString topdictKeys = topdict.keys();
+        for (int i = 0; i < topdict.keys().length(); i++)
+        {
+          String p = topdictKeys.get(i);
+          switch(p)
+          {
+          case "FamilyName":
+          case "FullName":
+          case "Notice":
+          case "version":
+          case "Copyright":
+            setCFFString(obj, p, strings.get(getDictInt(topdict, p) -426 + 35 ));
+            break;
+          case "CharStrings":
+          case "Encoding":
+          case "charset":
+          case "Private":
+            // Already handled elsewhere
+            break;
+          default:
+            setCFFJSObj(obj, p, topdict.get(p));
+          }
         }
         //console.log(obj);
         return obj;
-    }-*/;
-    
-  @JsMethod public static void readSubrs(Uint8Array data, int offset, MapFromStringTo<JavaScriptObject> obj)
+    }
+
+  @JsIgnore private static native void setCFFString(CFF cff, String key, String val)
+  /*-{
+    return cff[key] = val;    
+  }-*/;
+  @JsIgnore private static native void setCFFJSObj(CFF cff, String key, JavaScriptObject val)
+  /*-{
+    return cff[key] = val;    
+  }-*/;
+  @JsIgnore private static native int getDictInt(MapFromStringTo<JavaScriptObject> dict, String key)
+  /*-{
+    return dict[key];    
+  }-*/;
+
+  @JsIgnore private static native ArrayOfInt getDictArrayOfInt(MapFromStringTo<JavaScriptObject> dict, String key)
+  /*-{
+    return dict[key];    
+  }-*/;
+
+  @JsIgnore private static void readSubrs(Uint8Array data, int offset, MapFromStringTo<JavaScriptObject> obj)
   {
 //        var bin = Typr._bin;
         ArrayOfInt gsubinds = Collections.arrayOfInt();
@@ -167,7 +223,7 @@ public class CFF
         return CFF.glyphByUnicode(cff, CFF.tableSE[charcode]);        
     }
     
-    @JsMethod public static native JavaScriptObject readEncoding (JavaScriptObject data, int offset, int num)
+    @JsIgnore private static native JavaScriptObject readEncoding (Uint8Array data, int offset, int num)
         /*-{
         var bin = Typr._bin;
         
@@ -197,7 +253,7 @@ public class CFF
         return array;
     }-*/;
 
-    @JsMethod public static native JavaScriptObject readCharset (JavaScriptObject data, int offset, int num)
+    @JsIgnore private static native JavaScriptObject readCharset (Uint8Array data, int offset, int num)
         /*-{
         var bin = Typr._bin;
         
@@ -228,7 +284,7 @@ public class CFF
         return charset;
     }-*/;
 
-    @JsMethod public static int readIndex (Uint8Array data, int offset, ArrayOfInt inds)
+    @JsIgnore private static int readIndex (Uint8Array data, int offset, ArrayOfInt inds)
     {
 //        var bin = Typr._bin;
         
@@ -267,41 +323,41 @@ public class CFF
         o.size = vs;
     }-*/;
     
-    @JsMethod public static native JavaScriptObject readCharString (JavaScriptObject data, int offset, int length)
-        /*-{
-        var end = offset + length;
-        var bin = Typr._bin;
-        var arr = [];
-        
-        while(offset<end)
-        {
-            var b0 = data[offset], b1 = data[offset+1], b2 = data[offset+2], b3 = data[offset+3], b4=data[offset+4];
-            var vs = 1;
-            var op=null, val=null;
-            // operand
-            if(b0<=20) { op = b0;  vs=1;  }
-            if(b0==12) { op = b0*100+b1;  vs=2;  }
-            if(b0==19 || b0==20) { op = b0;  vs=2; } // if(b0==19 || b0==20) { op = b0/ *+" "+b1* /;  vs=2; }
-            
-            if(21 <=b0 && b0<= 27) { op = b0;  vs=1; }
-            if(b0==28) { val = bin.readShort(data,offset+1);  vs=3; }
-            if(29 <=b0 && b0<= 31) { op = b0;  vs=1; }
-            if(32 <=b0 && b0<=246) { val = b0-139;  vs=1; }
-            if(247<=b0 && b0<=250) { val = (b0-247)*256+b1+108;  vs=2; }
-            if(251<=b0 && b0<=254) { val =-(b0-251)*256-b1-108;  vs=2; }
-            if(b0==255) {  val = bin.readInt(data, offset+1)/0xffff;  vs=5;   }
-            
-            arr.push(val!=null ? val : "o"+op);
-            offset += vs;   
+//    @JsMethod public static native JavaScriptObject readCharString (JavaScriptObject data, int offset, int length)
+//        /*-{
+//        var end = offset + length;
+//        var bin = Typr._bin;
+//        var arr = [];
+//        
+//        while(offset<end)
+//        {
+//            var b0 = data[offset], b1 = data[offset+1], b2 = data[offset+2], b3 = data[offset+3], b4=data[offset+4];
+//            var vs = 1;
+//            var op=null, val=null;
+//            // operand
+//            if(b0<=20) { op = b0;  vs=1;  }
+//            if(b0==12) { op = b0*100+b1;  vs=2;  }
+//            if(b0==19 || b0==20) { op = b0;  vs=2; } // if(b0==19 || b0==20) { op = b0/ *+" "+b1* /;  vs=2; }
+//            
+//            if(21 <=b0 && b0<= 27) { op = b0;  vs=1; }
+//            if(b0==28) { val = bin.readShort(data,offset+1);  vs=3; }
+//            if(29 <=b0 && b0<= 31) { op = b0;  vs=1; }
+//            if(32 <=b0 && b0<=246) { val = b0-139;  vs=1; }
+//            if(247<=b0 && b0<=250) { val = (b0-247)*256+b1+108;  vs=2; }
+//            if(251<=b0 && b0<=254) { val =-(b0-251)*256-b1-108;  vs=2; }
+//            if(b0==255) {  val = bin.readInt(data, offset+1)/0xffff;  vs=5;   }
+//            
+//            arr.push(val!=null ? val : "o"+op);
+//            offset += vs;   
+//
+//            //var cv = arr[arr.length-1];
+//            //if(cv==undefined) throw "error";
+//            //console.log()
+//        }   
+//        return arr;
+//    }-*/;
 
-            //var cv = arr[arr.length-1];
-            //if(cv==undefined) throw "error";
-            //console.log()
-        }   
-        return arr;
-    }-*/;
-
-    @JsMethod public static native JavaScriptObject readDict (JavaScriptObject data, int offset, int end)
+    @JsIgnore private static native JavaScriptObject readDict (Uint8Array data, int offset, int end)
         /*-{
         var bin = Typr._bin;
         //var dict = [];
