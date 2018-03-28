@@ -77,7 +77,7 @@ public class TyprU
 	      var fd = font.CFF.FDArray[fdIdx];
 	      Private = fd.Private;
 	    }
-		var state = {x:0,y:0,stack:[],nStems:0,haveWidth:false,width: font.CFF.Private ? font.CFF.Private.defaultWidthX : 0,open:false};
+		var state = {x:0,y:0,stack:[],nStems:0,haveWidth:false,width: Private ? Private.defaultWidthX : 0,open:false};
 		Typr.U._drawCFF(font.CFF.CharStrings[gid], state, font.CFF, path, Private);
 	}
 	else if(font.glyf) {  Typr.U._drawGlyf(gid, font, path);  }
