@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import elemental.client.Browser;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
+import elemental.util.ArrayOfBoolean;
 import elemental.util.ArrayOfInt;
 import elemental.util.ArrayOfString;
 import elemental.util.Collections;
@@ -47,7 +48,15 @@ public class CFF
         offset = readIndex(data, offset, tdinds);
         // Top DICT Data
         ArrayOf<JavaScriptObject> topDicts = Collections.arrayOf();
-        for(int i=0; i<tdinds.length()-1; i++) topDicts.push( readDict(data, offset+tdinds.get(i), offset+tdinds.get(i+1)) );
+        boolean isCIDFont = false;
+        for(int i=0; i<tdinds.length()-1; i++)
+        {
+          ArrayOfBoolean firstIsROS = Collections.arrayOfBoolean();
+          firstIsROS.push(false);
+          topDicts.push( readDict(data, offset+tdinds.get(i), offset+tdinds.get(i+1), firstIsROS) );
+          if (i == 0 && firstIsROS.get(0))
+            isCIDFont = true;
+        }
         offset += tdinds.get(tdinds.length()-1);
         MapFromStringTo<JavaScriptObject> topdict = (MapFromStringTo<JavaScriptObject>)topDicts.get(0);
         //console.log(topdict);
@@ -63,14 +72,17 @@ public class CFF
         // Global Subr INDEX  (subroutines)     
         readSubrs(data, offset, topdict);
         
-        return parseMore(topdict, data, offset, strings);
+        return parseMore(topdict, data, offset, strings, isCIDFont);
   }
   @JsProperty public ArrayOf<ArrayOfInt> CharStrings;
   @JsProperty public JavaScriptObject Encoding;
   @JsProperty public JavaScriptObject charset;
   @JsProperty public MapFromStringTo<JavaScriptObject> Private;
+  @JsProperty public ArrayOf<JavaScriptObject> FDArray;
+  @JsProperty public FDSelect FDSelect;
+  @JsProperty public boolean isCIDFont = false;
   
-  @JsIgnore static CFF parseMore(MapFromStringTo<JavaScriptObject> topdict, Uint8Array data, int offset, ArrayOfString strings)
+  @JsIgnore static CFF parseMore(MapFromStringTo<JavaScriptObject> topdict, Uint8Array data, int offset, ArrayOfString strings, boolean isCIDFont)
   {
         CFF obj = new CFF();
 
@@ -103,10 +115,43 @@ public class CFF
         if(topdict.hasKey("Private"))
         {
             offset = getDictArrayOfInt(topdict, "Private").get(1);
-            obj.Private = (MapFromStringTo<JavaScriptObject>)readDict(data, offset, offset+getDictArrayOfInt(topdict, "Private").get(0));
+            ArrayOfBoolean firstIsROS = Collections.arrayOfBoolean();
+            firstIsROS.push(false);
+            obj.Private = (MapFromStringTo<JavaScriptObject>)readDict(data, offset, offset+getDictArrayOfInt(topdict, "Private").get(0), firstIsROS);
             if(obj.Private.hasKey("Subrs"))  readSubrs(data, offset+getDictInt(obj.Private, "Subrs"), obj.Private);
         }
         
+        if (isCIDFont)
+        {
+          obj.isCIDFont = true;
+          int fdArrayOffset = getDictInt(topdict, "FDArray");
+          int fdSelectOffset = getDictInt(topdict, "FDSelect");
+          // Read indices of the various dictionaries
+          ArrayOfInt fdArrIndices = Collections.arrayOfInt();
+          offset = readIndex(data, fdArrayOffset, fdArrIndices);
+          // Read in the font dictionaries now
+          ArrayOf<JavaScriptObject> cidFontDicts = Collections.arrayOf();
+          for(int i=0; i<fdArrIndices.length()-1; i++)
+          {
+            ArrayOfBoolean dummyFirstIsROS = Collections.arrayOfBoolean();
+            dummyFirstIsROS.push(false);
+            MapFromStringTo<JavaScriptObject> fontDict = (MapFromStringTo<JavaScriptObject>)readDict(data, offset+fdArrIndices.get(i), offset+fdArrIndices.get(i+1), dummyFirstIsROS);
+            // Might as well parse the Private data for each font dictionary too
+            if (fontDict.hasKey("Private"))
+            {
+              int privateOffset = getDictArrayOfInt(fontDict, "Private").get(1);
+              MapFromStringTo<JavaScriptObject> parsedPrivate = (MapFromStringTo<JavaScriptObject>)readDict(data, privateOffset, privateOffset+getDictArrayOfInt(fontDict, "Private").get(0), dummyFirstIsROS);
+              fontDict.put("Private", (JavaScriptObject)parsedPrivate);
+              if(parsedPrivate.hasKey("Subrs"))  
+                readSubrs(data, privateOffset+getDictInt(parsedPrivate, "Subrs"), parsedPrivate);
+            }
+            cidFontDicts.push( (JavaScriptObject)fontDict );
+          }
+          obj.FDArray = cidFontDicts;
+          offset += fdArrIndices.get(fdArrIndices.length()-1);
+          // Read in the data for selecting which FontDict to use for each glyph
+          obj.FDSelect = readFDSelect(data, fdSelectOffset, obj.CharStrings.length());
+        }
 
         ArrayOfString topdictKeys = topdict.keys();
         for (int i = 0; i < topdict.keys().length(); i++)
@@ -127,21 +172,108 @@ public class CFF
           case "Private":
             // Already handled elsewhere
             break;
+          case "FDArray":
+          case "FDSelect":
+            if (isCIDFont) break;
+            // Fall through if not a CID font (should not be possible)
           default:
-            setCFFJSObj(obj, p, topdict.get(p));
+            copyCFFJSObj(obj, p, topdict);
           }
         }
         //console.log(obj);
         return obj;
     }
 
+  static public abstract class FDSelect
+  {
+    public int format;
+    @JsMethod public abstract int getFd(int glyphId);
+  }
+  static public class FDSelect0 extends FDSelect
+  {
+    ArrayOfInt fds;
+    @Override @JsMethod public int getFd(int glyphId)
+    {
+      return fds.get(glyphId);
+    }
+  }
+  static public class FDSelect3 extends FDSelect
+  {
+    ArrayOf<FDSelectRange3> range3;
+    @Override @JsMethod public int getFd(int glyphId)
+    {
+      if (glyphId >= range3.get(range3.length() - 1).first)
+        throw new IllegalArgumentException("Glyph outside of FD range");
+      if (glyphId < range3.get(0).first)
+        throw new IllegalArgumentException("Glyph outside of FD range");
+      return getFd(glyphId, 0, range3.length() - 1);
+    }
+    private int getFd(int glyphId, int min, int max)
+    {
+      if (max - min < 2)
+        return range3.get(min).fd;
+      int mid = (min + max) / 2;
+      if (range3.get(mid).first > glyphId)
+        return getFd(glyphId, min, mid);
+      else
+        return getFd(glyphId, mid, max);
+    }
+  }
+  static public class FDSelectRange3
+  {
+    char first;
+    int fd;
+  }
+
+  private static FDSelect readFDSelect(Uint8Array data,
+      int offset, int numGlyphs)
+  {
+    int format = data.intAt(offset);
+    offset++;
+
+    if (format == 0)
+    {
+      // Untested branch
+      FDSelect0 select = new FDSelect0();
+      select.fds = Collections.arrayOfInt();
+      for (int n = 0; n < numGlyphs; n++)
+      {
+        select.fds.push(data.intAt(offset));
+        offset++;
+      }
+      return select;
+    }
+    else if (format == 3)
+    {
+      int numRanges = bin.readUshort(data, offset);
+      offset += 2;
+      FDSelect3 select = new FDSelect3();
+      select.range3 = Collections.arrayOf();
+      for (int i = 0; i < numRanges; i++)
+      {
+        FDSelectRange3 r = new FDSelectRange3();
+        r.first = bin.readUshort(data, offset);
+        offset += 2;
+        r.fd = data.intAt(offset);
+        offset++;
+        select.range3.push(r);
+      }
+      FDSelectRange3 sentinel = new FDSelectRange3();
+      sentinel.first = bin.readUshort(data, offset);
+      select.range3.push(sentinel);
+      return select;
+    }
+    else
+      throw new IllegalArgumentException("Unknown FDSelect type " + format);
+  }
+
   @JsIgnore private static native void setCFFString(CFF cff, String key, String val)
   /*-{
     return cff[key] = val;    
   }-*/;
-  @JsIgnore private static native void setCFFJSObj(CFF cff, String key, JavaScriptObject val)
+  @JsIgnore private static native void copyCFFJSObj(CFF cff, String key, MapFromStringTo<JavaScriptObject> dict)
   /*-{
-    return cff[key] = val;    
+    return cff[key] = dict[key];    
   }-*/;
   @JsIgnore private static native int getDictInt(MapFromStringTo<JavaScriptObject> dict, String key)
   /*-{
@@ -294,7 +426,7 @@ public class CFF
         if     (offsize==1) for(int i=0; i<count+1; i++) inds.push( data.intAt(offset+i) );
         else if(offsize==2) for(int i=0; i<count+1; i++) inds.push( bin.readUshort(data, offset+i*2) );
         else if(offsize==3) for(int i=0; i<count+1; i++) inds.push( bin.readUint  (data, offset+i*3 - 1) & 0x00ffffff );
-        else if(count!=0) throw new IllegalArgumentException("unsupported offset size: " + offsize + ", count: " + count);
+        else if(count!=0) throw new IllegalArgumentException("unsupported offset size: " + offsize + ", count: " + (int)count);
         
         offset += (count+1)*offsize;
         return offset-1;
@@ -357,12 +489,13 @@ public class CFF
 //        return arr;
 //    }-*/;
 
-    @JsIgnore private static native JavaScriptObject readDict (Uint8Array data, int offset, int end)
+    @JsIgnore private static native JavaScriptObject readDict (Uint8Array data, int offset, int end, ArrayOfBoolean firstIsROS)
         /*-{
         var bin = Typr._bin;
         //var dict = [];
         var dict = {};
         var carr = [];
+        var firstKey = true;
         
         while(offset<end)
         {
@@ -407,8 +540,11 @@ public class CFF
                     "BlueShift", "BlueFuzz", "StemSnapH", "StemSnapV", "ForceBold", 0,0, "LanguageGroup", "ExpansionFactor", "initialRandomSeed",
                     "SyntheticBase", "PostScript", "BaseFontName", "BaseFontBlend", 0,0,0,0,0,0, 
                     "ROS", "CIDFontVersion", "CIDFontRevision", "CIDFontType", "CIDCount", "UIDBase", "FDArray", "FDSelect", "FontName"];
-                    key = keys[b1];  vs=2; 
+                    key = keys[b1];  vs=2;
+                    if (firstKey && b1 == 30)
+                        firstIsROS[0] = true;
                 }
+                firstKey = false;
             }
             
             if(key!=null) {  dict[key] = carr.length==1 ? carr[0] : carr;  carr=[]; }

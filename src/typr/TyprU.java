@@ -70,8 +70,15 @@ public class TyprU
 		return p;
 	}
 	else if(font.CFF) {
+	    var Private = font.CFF.Private;
+	    if (font.CFF.isCIDFont)
+	    {
+	      var fdIdx = font.CFF.FDSelect.getFd(gid);
+	      var fd = font.CFF.FDArray[fdIdx];
+	      Private = fd.Private;
+	    }
 		var state = {x:0,y:0,stack:[],nStems:0,haveWidth:false,width: font.CFF.Private ? font.CFF.Private.defaultWidthX : 0,open:false};
-		Typr.U._drawCFF(font.CFF.CharStrings[gid], state, font.CFF, path);
+		Typr.U._drawCFF(font.CFF.CharStrings[gid], state, font.CFF, path, Private);
 	}
 	else if(font.glyf) {  Typr.U._drawGlyf(gid, font, path);  }
 	return path;
@@ -493,7 +500,7 @@ public class TyprU
   }
 
 
-  @JsMethod public static native JavaScriptObject _drawCFF (JavaScriptObject cmds, JavaScriptObject state, JavaScriptObject font, JavaScriptObject p)
+  @JsMethod public static native JavaScriptObject _drawCFF (JavaScriptObject cmds, JavaScriptObject state, JavaScriptObject font, JavaScriptObject p, JavaScriptObject Private)
   /*-{
 	var stack = state.stack;
 	var nStems = state.nStems, haveWidth=state.haveWidth, width=state.width, open=state.open;
@@ -517,7 +524,7 @@ public class TyprU
 			// If the value is uneven, that means a width is specified.
 			hasWidthArg = stack.length % 2 !== 0;
 			if (hasWidthArg && !haveWidth) {
-				width = stack.shift() + font.Private.nominalWidthX;
+				width = stack.shift() + Private.nominalWidthX;
 			}
 
 			nStems += stack.length >> 1;
@@ -532,7 +539,7 @@ public class TyprU
 			// If the value is uneven, that means a width is specified.
 			hasWidthArg = stack.length % 2 !== 0;
 			if (hasWidthArg && !haveWidth) {
-				width = stack.shift() + font.Private.nominalWidthX;
+				width = stack.shift() + Private.nominalWidthX;
 			}
 
 			nStems += stack.length >> 1;
@@ -542,7 +549,7 @@ public class TyprU
 		else if(v=="o4")
 		{
 			if (stack.length > 1 && !haveWidth) {
-                        width = stack.shift() + font.Private.nominalWidthX;
+                        width = stack.shift() + Private.nominalWidthX;
                         haveWidth = true;
                     }
 			if(open) Typr.U.P.closePath(p);
@@ -690,9 +697,9 @@ public class TyprU
 				//console.log(achar, aind);
 				//state.x=x; state.y=y; state.nStems=nStems; state.haveWidth=haveWidth; state.width=width;  state.open=open;
 				
-				Typr.U._drawCFF(font.CharStrings[bind], state,font,p);
+				Typr.U._drawCFF(font.CharStrings[bind], state,font,p,Private);
 				state.x = adx; state.y = ady;
-				Typr.U._drawCFF(font.CharStrings[aind], state,font,p);
+				Typr.U._drawCFF(font.CharStrings[aind], state,font,p,Private);
 				
 				//x=state.x; y=state.y; nStems=state.nStems; haveWidth=state.haveWidth; width=state.width;  open=state.open;
 			}
@@ -706,7 +713,7 @@ public class TyprU
 			// If the value is uneven, that means a width is specified.
 			hasWidthArg = stack.length % 2 !== 0;
 			if (hasWidthArg && !haveWidth) {
-				width = stack.shift() + font.Private.nominalWidthX;
+				width = stack.shift() + Private.nominalWidthX;
 			}
 
 			nStems += stack.length >> 1;
@@ -718,7 +725,7 @@ public class TyprU
 		
 		else if(v=="o21") {
 			if (stack.length > 2 && !haveWidth) {
-                        width = stack.shift() + font.Private.nominalWidthX;
+                        width = stack.shift() + Private.nominalWidthX;
                         haveWidth = true;
                     }
 
@@ -731,7 +738,7 @@ public class TyprU
 		else if(v=="o22")
 		{
 			 if (stack.length > 1 && !haveWidth) {
-                        width = stack.shift() + font.Private.nominalWidthX;
+                        width = stack.shift() + Private.nominalWidthX;
                         haveWidth = true;
                     }
 					
@@ -791,13 +798,13 @@ public class TyprU
 		}
 		else if(v=="o10" || v=="o29")	// callsubr || callgsubr
 		{
-			var obj = (v=="o10" ? font.Private : font);
+			var obj = (v=="o10" ? Private : font);
 			if(stack.length==0) { console.log("error: empty stack");  }
 			else {
 				var ind = stack.pop();
 				var subr = obj.Subrs[ ind + obj.Bias ];
 				state.x=x; state.y=y; state.nStems=nStems; state.haveWidth=haveWidth; state.width=width;  state.open=open;
-				Typr.U._drawCFF(subr, state,font,p);
+				Typr.U._drawCFF(subr, state,font,p,Private);
 				x=state.x; y=state.y; nStems=state.nStems; haveWidth=state.haveWidth; width=state.width;  open=state.open;
 			}
 		}
