@@ -43,7 +43,7 @@ public class name
     
     if (platformLangNameMap.hasKey("p0"))
     {
-      MapFromIntTo<MapFromIntToString> langNameMap = platformLangNameMap.get("p1");
+      MapFromIntTo<MapFromIntToString> langNameMap = platformLangNameMap.get("p0");
       if (langNameMap.hasKey(0))  // Default
         return langNameMap.get(0);
       if (langNameMap.hasKey(0xffff))  // Default
