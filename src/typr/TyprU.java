@@ -2,6 +2,7 @@ package typr;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import elemental.client.Browser;
 import elemental.html.CanvasRenderingContext2D;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
@@ -23,11 +24,13 @@ public class TyprU
 	
     int tind = -1;
     if(cmap.platformEncodingMap.hasKey("p0e4")) tind = cmap.platformEncodingMap.get("p0e4");
+    else if(cmap.platformEncodingMap.hasKey("p0e1")) tind = cmap.platformEncodingMap.get("p0e1");
+    else if(cmap.platformEncodingMap.hasKey("p0e3")) tind = cmap.platformEncodingMap.get("p0e3");
     else if(cmap.platformEncodingMap.hasKey("p3e1")) tind = cmap.platformEncodingMap.get("p3e1");
     else if(cmap.platformEncodingMap.hasKey("p1e0")) tind = cmap.platformEncodingMap.get("p1e0");
-    else if(cmap.platformEncodingMap.hasKey("p0e1")) tind = cmap.platformEncodingMap.get("p0e1");
 	
-	if(tind==-1) throw new IllegalArgumentException("no familiar platform and encoding!");
+	if(tind==-1)
+	   throw new IllegalArgumentException("no familiar platform and encoding!");
 	
 	typr.tabs.cmap.Table tab = cmap.tables.get(tind);
 	

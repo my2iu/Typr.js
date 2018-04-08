@@ -85,7 +85,7 @@ public class cmap
 			obj.tables.push(subt);
 		}
 		
-		if(obj.platformEncodingMap.hasKey(id)) throw new IllegalArgumentException("multiple tables for one platform+encoding");
+		if(obj.platformEncodingMap.hasKey(id)) throw new IllegalArgumentException("multiple tables for one platform+encoding: " + id);
 		obj.platformEncodingMap.put(id, tind);
 	}
 	return obj;
