@@ -30,10 +30,7 @@ public class TyprU
     else if(cmap.platformEncodingMap.hasKey("p1e0")) tind = cmap.platformEncodingMap.get("p1e0");
 	
 	if(tind==-1)
-	   {
-	   Browser.getWindow().getConsole().log(cmap.platformEncodingMap.keys());
 	   throw new IllegalArgumentException("no familiar platform and encoding!");
-	   }
 	
 	typr.tabs.cmap.Table tab = cmap.tables.get(tind);
 	
