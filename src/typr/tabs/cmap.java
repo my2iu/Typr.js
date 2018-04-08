@@ -84,8 +84,18 @@ public class cmap
 			obj.tables.push(subt);
 		}
 		
-		if(obj.platformEncodingMap.hasKey(id)) throw new IllegalArgumentException("multiple tables for one platform+encoding: " + id);
-		obj.platformEncodingMap.put(id, tind);
+		if(obj.platformEncodingMap.hasKey(id))
+		{
+		  if (platformID != 0 && platformID != 1)
+		    throw new IllegalArgumentException("multiple tables for one platform+encoding: " + id);
+		  // If multiple platform encoding maps are encountered for the Unicode platform
+		  // where the type is not 14, then we can just ignore the extra ones according to the
+		  // Apple Truetype spec (not sure why they're there).
+		  // I'll also do the same with Macintosh platform IDs, which also seem to be
+		  // show up more than once (though use of that platform in fonts is considered deprecated)
+		}
+		else
+		  obj.platformEncodingMap.put(id, tind);
 	}
 	return obj;
   }
