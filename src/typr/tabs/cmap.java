@@ -8,7 +8,6 @@ import elemental.util.Collections;
 import elemental.util.MapFromStringToInt;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 import typr.bin;
 
 public class cmap
@@ -42,8 +41,8 @@ public class cmap
   
   @JsIgnore public static cmap parse(Uint8Array data, int offset, int length)
   {
-	data = Browser.getWindow().newUint8Array(data.getBuffer(), offset, length);
-	offset = 0;
+//	data = Browser.getWindow().newUint8Array(data.getBuffer(), offset, length);
+//	offset = 0;
 
 	int offset0 = offset;
 //	var bin = Typr._bin;
@@ -76,11 +75,11 @@ public class cmap
 			tind = obj.tables.length();
 			Table subt = null;
 			offs.push(noffset);
-			int format = bin.readUshort(data, noffset);
-			if     (format== 0) subt = parse0(data, noffset);
-			else if(format== 4) subt = parse4(data, noffset);
-			else if(format== 6) subt = parse6(data, noffset);
-			else if(format==12) subt = parse12(data,noffset);
+			int format = bin.readUshort(data, offset0 + noffset);
+			if     (format== 0) subt = parse0(data, offset0 + noffset);
+			else if(format== 4) subt = parse4(data, offset0 + noffset);
+			else if(format== 6) subt = parse6(data, offset0 + noffset);
+			else if(format==12) subt = parse12(data,offset0 + noffset);
 			else Browser.getWindow().getConsole().log("unknown format: "+format + " "+ platformID+ " "+ encodingID + " " + noffset);
 			obj.tables.push(subt);
 		}
