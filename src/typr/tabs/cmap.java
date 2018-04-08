@@ -11,29 +11,33 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import typr.bin;
 
-@JsType(namespace="Typr")
 public class cmap
 {
   @JsProperty public MapFromStringToInt platformEncodingMap;
   
   @JsProperty public ArrayOf<Table> tables;
-  @JsType(isNative=true)
-  public static interface Table
+  public static class Table
   {
-    @JsProperty(name="format") public int format();
+    @JsProperty(name="format") public int format;
     
     // parse0
-    @JsProperty(name="map") public ArrayOfInt map();
+    @JsProperty(name="map") public ArrayOfInt map;
     
     // parse4
-    @JsProperty(name="startCount") public ArrayOfInt startCount();
-    @JsProperty(name="endCount") public ArrayOfInt endCount();
-    @JsProperty(name="idRangeOffset") public ArrayOfInt idRangeOffset();
-    @JsProperty(name="glyphIdArray") public ArrayOfInt glyphIdArray();
-    @JsProperty(name="idDelta") public ArrayOfInt idDelta();
+    @JsProperty(name="startCount") public ArrayOfInt startCount;
+    @JsProperty(name="endCount") public ArrayOfInt endCount;
+    @JsProperty(name="idRangeOffset") public ArrayOfInt idRangeOffset;
+    @JsProperty(name="glyphIdArray") public ArrayOfInt glyphIdArray;
+    @JsProperty(name="idDelta") public ArrayOfInt idDelta;
+    @JsProperty(name="searchRange") public char searchRange;
+    @JsProperty(name="entrySelector") public char entrySelector;
+    @JsProperty(name="rangeShift") public char rangeShift;
+
+    // parse6
+    @JsProperty(name="firstCode") public char firstCode;
     
     // parse12
-    @JsProperty(name="groups") public ArrayOf<ArrayOfInt> groups();
+    @JsProperty(name="groups") public ArrayOf<ArrayOfInt> groups;
   }
   
   @JsIgnore public static cmap parse(Uint8Array data, int offset, int length)
@@ -87,81 +91,85 @@ public class cmap
 	return obj;
   }
 
-  @JsIgnore public static native Table parse0 (Uint8Array data, int offset)
-  /*-{
-	var bin = Typr._bin;
-	var obj = {};
-	obj.format = bin.readUshort(data, offset);  offset += 2;
-	var len    = bin.readUshort(data, offset);  offset += 2;
-	var lang   = bin.readUshort(data, offset);  offset += 2;
-	obj.map = [];
-	for(var i=0; i<len-6; i++) obj.map.push(data[offset+i]);
+  @JsIgnore public static Table parse0 (Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
+	Table obj = new Table();
+    obj.format = bin.readUshort(data, offset);  offset += 2;
+	char len    = bin.readUshort(data, offset);  offset += 2;
+	char lang   = bin.readUshort(data, offset);  offset += 2;
+	obj.map = Collections.arrayOfInt();
+	for(int i=0; i<len-6; i++) obj.map.push(data.intAt(offset+i));
 	return obj;
-  }-*/;
+  }
 
-  @JsIgnore public static native Table parse4 (Uint8Array data, int offset)
-  /*-{
-	var bin = Typr._bin;
-	var offset0 = offset;
-	var obj = {};
+  @JsIgnore public static Table parse4 (Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
+	int offset0 = offset;
+    Table obj = new Table();
 	
-	obj.format = bin.readUshort(data, offset);  offset+=2;
-	var length = bin.readUshort(data, offset);  offset+=2;
-	var language = bin.readUshort(data, offset);  offset+=2;
-	var segCountX2 = bin.readUshort(data, offset);  offset+=2;
-	var segCount = segCountX2/2;
-	obj.searchRange = bin.readUshort(data, offset);  offset+=2;
-	obj.entrySelector = bin.readUshort(data, offset);  offset+=2;
-	obj.rangeShift = bin.readUshort(data, offset);  offset+=2;
-	obj.endCount   = bin.readUshorts(data, offset, segCount);  offset += segCount*2;
+    obj.format = bin.readUshort(data, offset);  offset+=2;
+	char length = bin.readUshort(data, offset);  offset+=2;
+	char language = bin.readUshort(data, offset);  offset+=2;
+	char segCountX2 = bin.readUshort(data, offset);  offset+=2;
+	int segCount = segCountX2/2;
+    obj.searchRange = bin.readUshort(data, offset);  offset+=2;
+    obj.entrySelector = bin.readUshort(data, offset);  offset+=2;
+    obj.rangeShift = bin.readUshort(data, offset);  offset+=2;
+    obj.endCount   = bin.readUshorts(data, offset, segCount);  offset += segCount*2;
 	offset+=2;
-	obj.startCount = bin.readUshorts(data, offset, segCount);  offset += segCount*2;
-	obj.idDelta = [];
-	for(var i=0; i<segCount; i++) {obj.idDelta.push(bin.readShort(data, offset));  offset+=2;}
-	obj.idRangeOffset = bin.readUshorts(data, offset, segCount);  offset += segCount*2;
-	obj.glyphIdArray = [];
+    obj.startCount = bin.readUshorts(data, offset, segCount);  offset += segCount*2;
+	obj.idDelta = Collections.arrayOfInt();
+	for(int i=0; i<segCount; i++) {obj.idDelta.push(bin.readShort(data, offset));  offset+=2;}
+    obj.idRangeOffset = bin.readUshorts(data, offset, segCount);  offset += segCount*2;
+	obj.glyphIdArray = Collections.arrayOfInt();
 	while(offset< offset0+length) {obj.glyphIdArray.push(bin.readUshort(data, offset));  offset+=2;}
 	return obj;
-  }-*/;
+  }
 
-  @JsIgnore public static native Table parse6 (Uint8Array data, int offset)
-  /*-{
-	var bin = Typr._bin;
-	var offset0 = offset;
-	var obj = {};
+  @JsIgnore public static Table parse6 (Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
+	int offset0 = offset;
+    Table obj = new Table();
 	
-	obj.format = bin.readUshort(data, offset);  offset+=2;
-	var length = bin.readUshort(data, offset);  offset+=2;
-	var language = bin.readUshort(data, offset);  offset+=2;
-	obj.firstCode = bin.readUshort(data, offset);  offset+=2;
-	var entryCount = bin.readUshort(data, offset);  offset+=2;
-	obj.glyphIdArray = [];
-	for(var i=0; i<entryCount; i++) {obj.glyphIdArray.push(bin.readUshort(data, offset));  offset+=2;}
+    obj.format = bin.readUshort(data, offset);  offset+=2;
+	char length = bin.readUshort(data, offset);  offset+=2;
+	char language = bin.readUshort(data, offset);  offset+=2;
+    obj.firstCode = bin.readUshort(data, offset);  offset+=2;
+	char entryCount = bin.readUshort(data, offset);  offset+=2;
+	obj.glyphIdArray = Collections.arrayOfInt();
+	for(int i=0; i<entryCount; i++) {obj.glyphIdArray.push(bin.readUshort(data, offset));  offset+=2;}
 	
 	return obj;
-  }-*/;
+  }
 
-  @JsIgnore public static native Table parse12 (Uint8Array data, int offset)
-  /*-{
-	var bin = Typr._bin;
-	var offset0 = offset;
-	var obj = {};
+  @JsIgnore public static Table parse12 (Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
+	int offset0 = offset;
+    Table obj = new Table();
 	
-	obj.format = bin.readUshort(data, offset);  offset+=2;
+    obj.format = bin.readUshort(data, offset);  offset+=2;
 	offset += 2;
-	var length = bin.readUint(data, offset);  offset+=4;
-	var lang   = bin.readUint(data, offset);  offset+=4;
-	var nGroups= bin.readUint(data, offset);  offset+=4;
-	obj.groups = [];
+	int length = bin.readUint(data, offset);  offset+=4;
+	int lang   = bin.readUint(data, offset);  offset+=4;
+	int nGroups= bin.readUint(data, offset);  offset+=4;
+	obj.groups = Collections.arrayOf();
 	
-	for(var i=0; i<nGroups; i++)  
+	for(int i=0; i<nGroups; i++)  
 	{
-		var off = offset + i * 12;
-		var startCharCode = bin.readUint(data, off+0);
-		var endCharCode   = bin.readUint(data, off+4);
-		var startGlyphID  = bin.readUint(data, off+8);
-		obj.groups.push([  startCharCode, endCharCode, startGlyphID  ]);
+		int off = offset + i * 12;
+		int startCharCode = bin.readUint(data, off+0);
+		int endCharCode   = bin.readUint(data, off+4);
+		int startGlyphID  = bin.readUint(data, off+8);
+		ArrayOfInt entry = Collections.arrayOfInt();
+		entry.push(startCharCode);
+		entry.push(endCharCode);
+		entry.push(startGlyphID);
+		obj.groups.push(entry);
 	}
 	return obj;
-  }-*/;
+  }
 }
