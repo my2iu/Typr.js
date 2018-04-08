@@ -1,6 +1,8 @@
 package typr;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import elemental.html.Uint8Array;
@@ -13,10 +15,8 @@ public class TyprJava
    * Read the offset table at the start of the file and then the
    * table records describing what font tables are in the file.
    */
-  public static Map<String, TableRecord> readTableRecords(Uint8Array data)
+  public static Map<String, TableRecord> readTableRecords(Uint8Array data, int offset)
   {
-    int offset = 0;
-    
     int sfnt_version = bin.readVersion(data, offset);
     offset += 4;
     int numTables = bin.readUshort(data, offset);
@@ -72,10 +72,38 @@ public class TyprJava
     }
   }
   
+  /**
+   * Checks if a file is a Truetype font collection
+   */
+  public static boolean checkIsTtcf(Uint8Array data)
+  {
+    int offset = 0;
+    int ttcTag = bin.readVersion(data, offset);
+    return ttcTag == 0x74746366; // ttcf
+  }
+  
+  public static List<Integer> readTtcfFontOffsets(Uint8Array data)
+  {
+    int offset = 0;
+    int ttcTag = bin.readVersion(data, offset);
+    if (ttcTag != 0x74746366) throw new IllegalArgumentException("Not a truetype font collection");
+    offset += 4;
+    char majorVersion = bin.readUshort(data, offset); offset += 2;
+    char minorVersion = bin.readUshort(data, offset); offset += 2;
+    if (majorVersion != 1 && majorVersion != 2) throw new IllegalArgumentException("Unknown TTC Header");
+    int numFonts = bin.readUint(data, offset); offset += 4;
+    List<Integer> fontOffsets = new ArrayList<>();
+    for (int n = 0; n < numFonts; n++)
+    {
+      fontOffsets.add(bin.readUint(data,  offset)); offset += 4;
+    }
+    return fontOffsets;
+  }
+  
   public static MapFromIntToString parseHeaderAndNames(Uint8Array data)
   {
     try {
-      Map<String, TableRecord> tables = readTableRecords(data);
+      Map<String, TableRecord> tables = readTableRecords(data, 0);
       if (tables.containsKey("name"))
       {
         name nameTable = name.parse(data, tables.get("name").offset, tables.get("name").length);

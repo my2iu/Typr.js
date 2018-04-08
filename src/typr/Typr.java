@@ -1,5 +1,6 @@
 package typr;
 
+import java.util.List;
 import java.util.Map;
 
 import elemental.client.Browser;
@@ -29,15 +30,29 @@ import typr.tabs.post;
 @JsType(namespace=JsPackage.GLOBAL)
 public class Typr
 {
-  @JsMethod public static TyprFont parse (ArrayBuffer buff)
+  @JsMethod public static TyprFont parse(ArrayBuffer buff)
+  {
+    return parseIndex(buff, 0);
+  }
+  
+  @JsMethod public static TyprFont parseIndex (ArrayBuffer buff, int fontIndex)
   {
 //	var bin = Typr._bin;
     try {
-  	Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
+      
+      Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
+      boolean isTtcf = TyprJava.checkIsTtcf(data);
       TyprFont obj = new TyprFont();
-      obj._data = data;
+//      obj._data = data;
   	
-  	Map<String, TableRecord> tableRecords = TyprJava.readTableRecords(data);
+      int fontOffset = 0;
+      if (isTtcf)
+      {
+        List<Integer> fontOffsetList = TyprJava.readTtcfFontOffsets(data);
+        fontOffset = fontOffsetList.get(fontIndex);
+      }
+      
+      Map<String, TableRecord> tableRecords = TyprJava.readTableRecords(data, fontOffset);
   
   	   String []tags = new String[] {
   	        "cmap",
@@ -121,7 +136,8 @@ public class Typr
       obj.loca = loca.parse(data, offset, length, obj);
       break;
     case "glyf":
-      obj.glyf = glyf.parse(data, offset, length, obj);
+      obj._rawGlyfTableData = Browser.getWindow().newUint8Array(data.getBuffer().slice(offset, offset + length), 0, length);
+      obj.glyf = glyf.parse(obj._rawGlyfTableData, 0, length, obj);
       break;
     case "kern":
       obj.kern = kern.parse(data, offset, length, obj);
@@ -165,21 +181,21 @@ public class Typr
   }-*/;
 
   
-  @JsMethod public static int _tabOffset (Uint8Array data, String tab)
-  {
-//	var bin = Typr._bin;
-	int numTables = bin.readUshort(data, 4);
-	int offset = 12;
-	for(int i=0; i<numTables; i++)
-	{
-		String tag = bin.readASCII(data, offset, 4);   offset += 4;
-		int checkSum = bin.readUint(data, offset);  offset += 4;
-		int toffset = bin.readUint(data, offset);   offset += 4;
-		int length = bin.readUint(data, offset);    offset += 4;
-		if(tag.equals(tab)) return toffset;
-	}
-	return 0;
-  }
+//  @JsMethod public static int _tabOffset (Uint8Array data, String tab)
+//  {
+////	var bin = Typr._bin;
+//	int numTables = bin.readUshort(data, 4);
+//	int offset = 12;
+//	for(int i=0; i<numTables; i++)
+//	{
+//		String tag = bin.readASCII(data, offset, 4);   offset += 4;
+//		int checkSum = bin.readUint(data, offset);  offset += 4;
+//		int toffset = bin.readUint(data, offset);   offset += 4;
+//		int length = bin.readUint(data, offset);    offset += 4;
+//		if(tag.equals(tab)) return toffset;
+//	}
+//	return 0;
+//  }
 
 
 

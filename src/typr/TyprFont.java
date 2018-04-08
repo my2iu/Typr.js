@@ -11,7 +11,9 @@ import typr.tabs.GPOSParser.GPOSTab;
 
 public class TyprFont
 {
-  @JsProperty public Uint8Array _data;
+//  @JsProperty public Uint8Array _data;
+  @JsProperty public Uint8Array _rawGlyfTableData;  // Glyf table only parsed when needed
+
   
   @JsProperty public typr.tabs.cmap cmap;
   @JsProperty public typr.tabs.head head;

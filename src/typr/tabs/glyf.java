@@ -6,7 +6,6 @@ import elemental.util.ArrayOfInt;
 import elemental.util.Collections;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
-import typr.Typr;
 import typr.TyprFont;
 import typr.bin;
 
@@ -55,9 +54,9 @@ public class glyf
   @JsIgnore public static glyf _parseGlyf (TyprFont font, int g)
   {
 //	var bin = Typr._bin;
-	Uint8Array data = font._data;
+	Uint8Array data = font._rawGlyfTableData;
 	
-	int offset = Typr._tabOffset(data, "glyf") + font.loca.get(g);
+	int offset = font.loca.get(g);
 		
 	if(font.loca.get(g)==font.loca.get(g+1)) return null;
 		

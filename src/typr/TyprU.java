@@ -25,6 +25,7 @@ public class TyprU
     if(cmap.platformEncodingMap.hasKey("p0e4")) tind = cmap.platformEncodingMap.get("p0e4");
     else if(cmap.platformEncodingMap.hasKey("p3e1")) tind = cmap.platformEncodingMap.get("p3e1");
     else if(cmap.platformEncodingMap.hasKey("p1e0")) tind = cmap.platformEncodingMap.get("p1e0");
+    else if(cmap.platformEncodingMap.hasKey("p0e1")) tind = cmap.platformEncodingMap.get("p0e1");
 	
 	if(tind==-1) throw new IllegalArgumentException("no familiar platform and encoding!");
 	
