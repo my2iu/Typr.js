@@ -37,10 +37,16 @@ public class Typr
   
   @JsMethod public static TyprFont parseIndex (ArrayBuffer buff, int fontIndex)
   {
+    Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
+    return parseIndex(data, fontIndex);
+  }
+  
+  @JsIgnore public static TyprFont parseIndex (Uint8Array data, int fontIndex)
+  {
 //	var bin = Typr._bin;
     try {
       
-      Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
+      
       boolean isTtcf = TyprJava.checkIsTtcf(data);
       TyprFont obj = new TyprFont();
 //      obj._data = data;
@@ -96,7 +102,7 @@ public class Typr
     }
     catch (Throwable t)
     {
-       Browser.getWindow().getConsole().log(t);
+      TyprMisc.consoleLog(t);
       return null;
     }
   }
@@ -136,7 +142,7 @@ public class Typr
       obj.loca = loca.parse(data, offset, length, obj);
       break;
     case "glyf":
-      obj._rawGlyfTableData = Browser.getWindow().newUint8Array(data.getBuffer().slice(offset, offset + length), 0, length);
+      obj._rawGlyfTableData = TyprMisc.slicedUint8Array(data, offset, length);
       obj.glyf = glyf.parse(obj._rawGlyfTableData, 0, length, obj);
       break;
     case "kern":

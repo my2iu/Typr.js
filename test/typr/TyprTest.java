@@ -1,6 +1,7 @@
 package typr;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -40,5 +41,14 @@ public class TyprTest
     cmap.Table table = c.tables.get(c.platformEncodingMap.get("p0e3"));
     assertEquals(32, table.startCount.get(0));
     assertEquals(234, table.glyphIdArray.get(0));
+  }
+  
+  @Test
+  public void testParseWholeFile() throws IOException
+  {
+    TyprMisc.init();
+    FileUint8Array file = new FileUint8Array(new File("demo/LiberationSans-Bold.ttf"));    
+    TyprFont font = Typr.parseIndex(file, 0);
+    assertNotNull(font);
   }
 }
