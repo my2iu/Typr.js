@@ -98,7 +98,7 @@ public class TyprU
   @JsIgnore static native void glyphToPathCFF(TyprFont font, int gid, TyprPath path, MapFromStringTo<JavaScriptObject> Private)
   /*-{
         var state = {x:0,y:0,stack:[],nStems:0,haveWidth:false,width: Private ? Private.defaultWidthX : 0,open:false};
-        _drawCFF(font.CFF.CharStrings[gid], state, font.CFF, path, Private);
+        Typr.U._drawCFF(font.CFF.CharStrings[gid], state, font.CFF, path, Private);
     
   }-*/;
 

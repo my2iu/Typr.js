@@ -45,7 +45,7 @@ public class GwtTestEntryPoint implements com.google.gwt.core.client.EntryPoint
   {
     TyprMisc.init();
     CanvasElement canvas = (CanvasElement)Browser.getDocument().querySelector("canvas");
-    loadXmlHttpArrayBuffer("../demo/LiberationSans-Bold.ttf", (arrbuf) -> {
+    loadXmlHttpArrayBuffer("../demo/Cabin-Bold.otf", (arrbuf) -> {
       // TODO: handle what happens if loading fails
       TyprFont font = Typr.parseIndex(arrbuf, 0);
       ArrayOfInt glyphs = TyprU.stringToGlyphs(font, "hi");
