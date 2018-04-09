@@ -14,6 +14,7 @@ import typr.lctf.LookupTable;
 import typr.tabs.GPOSParser.GPOSTab;
 import typr.tabs.GPOSParser.MatrixEntry;
 import typr.tabs.GPOSParser.PairSet;
+import typr.tabs.GSUBParser.GSUBTab;
 import typr.tabs.glyf;
 import typr.tabs.glyf.Part;
 import typr.tabs.glyf.PartInternal;
@@ -389,16 +390,16 @@ public class TyprU
 	return gls;
   }-*/;
   
-  @JsMethod public static native JavaScriptObject _applyType1 (JavaScriptObject gls, JavaScriptObject ci, JavaScriptObject tab) /*-{
-	var gl = gls[ci];
-	for(var j=0; j<tab.tabs.length; j++) {
-		var ttab = tab.tabs[j];
-		var ind = Typr._lctf.coverageIndex(ttab.coverage,gl);  if(ind==-1) continue;  
-		if(ttab.fmt==1) gls[ci] = gls[ci]+ttab.delta;
-		else            gls[ci] = ttab.newg[ind];
+  @JsMethod public static void _applyType1 (ArrayOfInt gls, int ci, LookupTable<GSUBTab> tab) {
+	int gl = gls.get(ci);
+	for(int j=0; j<tab.tabs.length(); j++) {
+		GSUBTab ttab = tab.tabs.get(j);
+		int ind = lctf.coverageIndex(ttab.coverage,gl);  if(ind==-1) continue;  
+		if(ttab.fmt==1) gls.set(ci, gls.get(ci)+ttab.delta);
+		else            gls.set(ci, ttab.newg.get(ind));
 		//console.log(ci, gl, "subst", flist[fi].tag, i, j, ttab.newg[ind]);
 	}
-  }-*/;
+  }
 
   @JsMethod public static ArrayOfInt glyphsToPositions (TyprFont font, ArrayOfInt gls)
   {	
@@ -422,31 +423,31 @@ public class TyprU
     return glyphsToPath(font, gls, null);
   }
 
-  @JsMethod public static native TyprPath glyphsToPath (TyprFont font, ArrayOfInt gls, String clr)
-  /*-{	
+  @JsMethod public static TyprPath glyphsToPath (TyprFont font, ArrayOfInt gls, String clr)
+  {	
 	//gls = gls.reverse();//gls.slice(0,12).concat(gls.slice(12).reverse());
 	
-	var tpath = {cmds:[], crds:[]};
-	var x = 0;
+	TyprPath tpath = new TyprPath();
+	double x = 0;
 	
-	for(var i=0; i<gls.length; i++)
+	for(int i=0; i<gls.length(); i++)
 	{
-		var gid = gls[i];  if(gid==-1) continue;
-		var gid2 = (i<gls.length-1 && gls[i+1]!=-1)  ? gls[i+1] : 0;
-		var path = Typr.U.glyphToPath(font, gid);
-		for(var j=0; j<path.crds.length; j+=2)
+		int gid = gls.get(i);  if(gid==-1) continue;
+		int gid2 = (i<gls.length()-1 && gls.get(i+1)!=-1)  ? gls.get(i+1) : 0;
+		TyprPath path = glyphToPath(font, gid);
+		for(int j=0; j<path.crds.length(); j+=2)
 		{
-			tpath.crds.push(path.crds[j] + x);
-			tpath.crds.push(path.crds[j+1]);
+			tpath.crds.push(path.crds.get(j) + x);
+			tpath.crds.push(path.crds.get(j+1));
 		}
-		if(clr) tpath.cmds.push(clr);
-		for(var j=0; j<path.cmds.length; j++) tpath.cmds.push(path.cmds[j]);
-		if(clr) tpath.cmds.push("X");
-		x += font.hmtx.aWidth[gid];// - font.hmtx.lsBearing[gid];
-		if(i<gls.length-1) x += Typr.U.getPairAdjustment(font, gid, gid2);
+		if(clr != null) tpath.cmds.push(clr);
+		for(int j=0; j<path.cmds.length(); j++) tpath.cmds.push(path.cmds.get(j));
+		if(clr != null) tpath.cmds.push("X");
+		x += font.hmtx.aWidth.get(gid);// - font.hmtx.lsBearing[gid];
+		if(i<gls.length()-1) x += getPairAdjustment(font, gid, gid2);
 	}
 	return tpath;
-  }-*/;
+  }
 
   @JsMethod public static native JavaScriptObject pathToSVG (JavaScriptObject path, JavaScriptObject prec)
   /*-{
