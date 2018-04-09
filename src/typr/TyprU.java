@@ -7,6 +7,7 @@ import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
 import elemental.util.ArrayOfNumber;
 import elemental.util.Collections;
+import elemental.util.MapFromStringTo;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
@@ -15,6 +16,7 @@ import typr.tabs.GPOSParser.GPOSTab;
 import typr.tabs.GPOSParser.MatrixEntry;
 import typr.tabs.GPOSParser.PairSet;
 import typr.tabs.GSUBParser.GSUBTab;
+import typr.tabs.SVG;
 import typr.tabs.glyf;
 import typr.tabs.glyf.Part;
 import typr.tabs.glyf.PartInternal;
@@ -69,27 +71,35 @@ public class TyprU
   }
 
 
-  @JsMethod public static native TyprPath glyphToPath (TyprFont font, int gid)
-  /*-{
-	var path = { cmds:[], crds:[] };
-	if(font.SVG && font.SVG.entries[gid]) {
-		var p = font.SVG.entries[gid];  if(p==null) return path;
-		if(typeof p == "string") {  p = Typr.SVG.toPath(p);  font.SVG.entries[gid]=p;  }
-		return p;
+  @JsMethod public static TyprPath glyphToPath (TyprFont font, int gid)
+  {
+    TyprPath path = new TyprPath();
+	if(font.SVG != null && font.SVG.entries.hasKey(gid)) {
+	  if (font.SVG.parsedEntries.hasKey(gid)) return font.SVG.parsedEntries.get(gid); 
+		String p = font.SVG.entries.get(gid);  if(p==null) return path;
+		TyprPath pth = SVG.toPath(p);  
+		font.SVG.parsedEntries.put(gid, pth);
+		return pth;
 	}
-	else if(font.CFF) {
-	    var Private = font.CFF.Private;
+	else if(font.CFF != null) {
+	    MapFromStringTo<JavaScriptObject> Private = font.CFF.Private;
 	    if (font.CFF.isCIDFont)
 	    {
-	      var fdIdx = font.CFF.FDSelect.getFd(gid);
-	      var fd = font.CFF.FDArray[fdIdx];
-	      Private = fd.Private;
+	      int fdIdx = font.CFF.FDSelect.getFd(gid);
+	      JavaScriptObject fd = font.CFF.FDArray.get(fdIdx);
+	      Private = (MapFromStringTo<JavaScriptObject>)((MapFromStringTo<JavaScriptObject>)fd).get("Private");
 	    }
-		var state = {x:0,y:0,stack:[],nStems:0,haveWidth:false,width: Private ? Private.defaultWidthX : 0,open:false};
-		Typr.U._drawCFF(font.CFF.CharStrings[gid], state, font.CFF, path, Private);
+	    glyphToPathCFF(font, gid, path, Private);
 	}
-	else if(font.glyf) {  Typr.U._drawGlyf(gid, font, path);  }
+	else if(font.glyf != null) {  _drawGlyf(gid, font, path);  }
 	return path;
+  }
+  
+  @JsIgnore static native void glyphToPathCFF(TyprFont font, int gid, TyprPath path, MapFromStringTo<JavaScriptObject> Private)
+  /*-{
+        var state = {x:0,y:0,stack:[],nStems:0,haveWidth:false,width: Private ? Private.defaultWidthX : 0,open:false};
+        _drawCFF(font.CFF.CharStrings[gid], state, font.CFF, path, Private);
+    
   }-*/;
 
   @JsMethod public static ArrayOfInt getGlyphDimensions (TyprFont font, int gid)

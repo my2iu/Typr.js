@@ -10,12 +10,14 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+import typr.TyprPath;
 import typr.bin;
 
 @JsType(namespace="Typr")
 public class SVG
 {
   @JsProperty public MapFromIntTo<String> entries;
+  @JsProperty public MapFromIntTo<TyprPath> parsedEntries;
   
   @JsIgnore public static SVG parse (Uint8Array data, int offset, int length)
   {
@@ -50,7 +52,7 @@ public class SVG
 	return obj;
   }
 
-  @JsMethod public static native JavaScriptObject toPath (String str)
+  @JsMethod public static native TyprPath toPath (String str)
   /*-{
 	var pth = {cmds:[], crds:[]};
 	if(str==null) return pth;
