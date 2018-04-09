@@ -2,10 +2,11 @@ package typr;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-import elemental.client.Browser;
 import elemental.html.CanvasRenderingContext2D;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
+import elemental.util.ArrayOfNumber;
+import elemental.util.Collections;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
@@ -14,6 +15,8 @@ import typr.tabs.GPOSParser.GPOSTab;
 import typr.tabs.GPOSParser.MatrixEntry;
 import typr.tabs.GPOSParser.PairSet;
 import typr.tabs.glyf;
+import typr.tabs.glyf.Part;
+import typr.tabs.glyf.PartInternal;
 
 @JsType(namespace="Typr",name="U")
 public class TyprU
@@ -88,37 +91,51 @@ public class TyprU
 	return path;
   }-*/;
 
-  @JsMethod public static native ArrayOfInt getGlyphDimensions (TyprFont font, int gid)
-  /*-{
-    if((font.SVG != null && font.SVG.entries[gid]) || font.CFF != null) 
+  @JsMethod public static ArrayOfInt getGlyphDimensions (TyprFont font, int gid)
+  {
+    if((font.SVG != null && font.SVG.entries.hasKey(gid)) || font.CFF != null) 
     {
-      var path = Typr.U.glyphToPath(font, gid);
+      TyprPath path = glyphToPath(font, gid);
       // Calculate some bounds from the path since no bounding box is available
-      if (path != null && path.crds.length >= 2)
+      if (path != null && path.crds.length() >= 2)
       {
-        var xMin = xMax = path.crds[0]; 
-        var yMin = yMax = path.crds[1]; 
-        for (var i = 2; i < path.crds.length; i+=2)
+        int xMin, xMax; 
+        xMin = xMax = (int)path.crds.get(0);
+        int yMin, yMax; 
+        yMin = yMax = (int)path.crds.get(1);
+        for (int i = 2; i < path.crds.length(); i+=2)
         {
-          var x = path.crds[i];
-          var y = path.crds[i + 1];
+          int x = (int)path.crds.get(i);
+          int y = (int)path.crds.get(i + 1);
           if (x < xMin) xMin = x;
           if (x > xMax) xMax = x;
           if (y < yMin) yMin = y;
           if (y > yMax) yMax = y;
         }
-        return [xMin, yMin, xMax, yMax];
+        ArrayOfInt toReturn = Collections.arrayOfInt();
+        toReturn.push(xMin);
+        toReturn.push(yMin);
+        toReturn.push(xMax);
+        toReturn.push(yMax);
+        return toReturn;
       }
     }
     else if(font.glyf != null) 
     {  
-      var gl = Typr.U._getGlyf(gid, font);
+      glyf gl = _getGlyf(gid, font);
       if (gl != null)
-        return [gl.xMin, gl.yMin, gl.xMax, gl.yMax];
+      {
+        ArrayOfInt toReturn = Collections.arrayOfInt();
+        toReturn.push(gl.xMin);
+        toReturn.push(gl.yMin);
+        toReturn.push(gl.xMax);
+        toReturn.push(gl.yMax);
+        return toReturn;
+      }
     }
     
 	return null;
-  }-*/;
+  }
   
   @JsMethod public static glyf _getGlyf (int gid, TyprFont font)
   {
@@ -130,85 +147,85 @@ public class TyprU
 	}
 	return gl;
   }
-  @JsMethod public static native JavaScriptObject _drawGlyf (JavaScriptObject gid, JavaScriptObject font, JavaScriptObject path)
-  /*-{
-	var gl = Typr.U._getGlyf(gid, font);
+  @JsMethod public static void _drawGlyf (int gid, TyprFont font, TyprPath path)
+  {
+	glyf gl = _getGlyf(gid, font);
 	if(gl!=null){
-		if(gl.noc>-1) Typr.U._simpleGlyph(gl, path);
-		else          Typr.U._compoGlyph (gl, font, path);
+		if(gl.noc>-1) _simpleGlyph(gl, path);
+		else          _compoGlyph (gl, font, path);
 	}
-  }-*/;
-  @JsMethod public static native JavaScriptObject _simpleGlyph (JavaScriptObject gl, JavaScriptObject p)
-  /*-{
-	for(var c=0; c<gl.noc; c++)
+  }
+  @JsMethod public static void _simpleGlyph (glyf gl, TyprPath p)
+  {
+	for(int c=0; c<gl.noc; c++)
 	{
-		var i0 = (c==0) ? 0 : (gl.endPts[c-1] + 1);
-		var il = gl.endPts[c];
+		int i0 = (c==0) ? 0 : (gl.endPts.get(c-1) + 1);
+		int il = gl.endPts.get(c);
 		
-		for(var i=i0; i<=il; i++)
+		for(int i=i0; i<=il; i++)
 		{
-			var pr = (i==i0)?il:(i-1);
-			var nx = (i==il)?i0:(i+1);
-			var onCurve = gl.flags[i]&1;
-			var prOnCurve = gl.flags[pr]&1;
-			var nxOnCurve = gl.flags[nx]&1;
+		    int pr = (i==i0)?il:(i-1);
+		    int nx = (i==il)?i0:(i+1);
+			boolean onCurve = ((gl.flags.get(i)&1) != 0);
+			boolean prOnCurve = ((gl.flags.get(pr)&1) != 0);
+			boolean nxOnCurve = ((gl.flags.get(nx)&1) != 0);
 			
-			var x = gl.xs[i], y = gl.ys[i];
+			int x = gl.xs.get(i), y = gl.ys.get(i);
 			
 			if(i==i0) { 
 				if(onCurve)  
 				{
-					if(prOnCurve) Typr.U.P.moveTo(p, gl.xs[pr], gl.ys[pr]); 
-					else          {  Typr.U.P.moveTo(p,x,y);  continue;  //  will do curveTo at il    
+					if(prOnCurve) TyprUP.moveTo(p, gl.xs.get(pr), gl.ys.get(pr)); 
+					else          {  TyprUP.moveTo(p,x,y);  continue;  //  will do curveTo at il    
   }
 				}
 				else        
 				{
-					if(prOnCurve) Typr.U.P.moveTo(p,  gl.xs[pr],       gl.ys[pr]        );
-					else          Typr.U.P.moveTo(p, (gl.xs[pr]+x)/2, (gl.ys[pr]+y)/2   ); 
+					if(prOnCurve) TyprUP.moveTo(p,  gl.xs.get(pr),       gl.ys.get(pr)        );
+					else          TyprUP.moveTo(p, (gl.xs.get(pr)+x)/2, (gl.ys.get(pr)+y)/2   ); 
 				}
 			}
 			if(onCurve)
 			{
-				if(prOnCurve) Typr.U.P.lineTo(p,x,y);
+				if(prOnCurve) TyprUP.lineTo(p,x,y);
 			}
 			else
 			{
-				if(nxOnCurve) Typr.U.P.qcurveTo(p, x, y, gl.xs[nx], gl.ys[nx]); 
-				else          Typr.U.P.qcurveTo(p, x, y, (x+gl.xs[nx])/2, (y+gl.ys[nx])/2); 
+				if(nxOnCurve) TyprUP.qcurveTo(p, x, y, gl.xs.get(nx), gl.ys.get(nx)); 
+				else          TyprUP.qcurveTo(p, x, y, (x+gl.xs.get(nx))/2, (y+gl.ys.get(nx))/2); 
 			}
 		}
-		Typr.U.P.closePath(p);
+		TyprUP.closePath(p);
 	}
-  }-*/;
-  @JsMethod public static native JavaScriptObject _compoGlyph (JavaScriptObject gl, JavaScriptObject font, JavaScriptObject p)
-  /*-{
-	for(var j=0; j<gl.parts.length; j++)
+  }
+  @JsMethod public static void _compoGlyph (glyf gl, TyprFont font, TyprPath p)
+  {
+	for(int j=0; j<gl.parts.length(); j++)
 	{
-		var path = { cmds:[], crds:[] };
-		var prt = gl.parts[j];
-		Typr.U._drawGlyf(prt.glyphIndex, font, path);
+		TyprPath path = new TyprPath();
+		Part prt = gl.parts.get(j);
+		_drawGlyf(prt.glyphIndex, font, path);
 		
-		var m = prt.m;
-		for(var i=0; i<path.crds.length; i+=2)
+		PartInternal m = prt.m;
+		for(int i=0; i<path.crds.length(); i+=2)
 		{
-			var x = path.crds[i  ], y = path.crds[i+1];
+			double x = path.crds.get(i), y = path.crds.get(i+1);
 			p.crds.push(x*m.a + y*m.b + m.tx);
 			p.crds.push(x*m.c + y*m.d + m.ty);
 		}
-		for(var i=0; i<path.cmds.length; i++) p.cmds.push(path.cmds[i]);
+		for(int i=0; i<path.cmds.length(); i++) p.cmds.push(path.cmds.get(i));
 	}
-  }-*/;
+  }
 
 
-  @JsMethod public static native int _getGlyphClass (int g, ArrayOfInt cd)
-  /*-{
-	var intr = Typr._lctf.getInterval(cd, g);
-	return intr==-1 ? 0 : cd[intr+2];
+  @JsMethod public static int _getGlyphClass (int g, ArrayOfInt cd)
+  {
+	int intr = lctf.getInterval(cd, g);
+	return intr==-1 ? 0 : cd.get(intr+2);
 	//for(var i=0; i<cd.start.length; i++) 
 	//	if(cd.start[i]<=g && cd.end[i]>=g) return cd.class[i];
 	//return 0;
-  }-*/;
+  }
 
   @JsMethod public static int getPairAdjustment (TyprFont font, int g1, int g2)
   {
@@ -249,20 +266,20 @@ public class TyprU
 	}
 	return getPairAdjustmentFromKern(font, g1, g2);
   }
-  @JsIgnore private static native int getPairAdjustmentFromKern (TyprFont font, int g1, int g2)
-  /*-{
+  @JsIgnore private static int getPairAdjustmentFromKern (TyprFont font, int g1, int g2)
+  {
     if(font.kern != null)
     {
-        var ind1 = font.kern.glyph1.indexOf(g1);
+        int ind1 = font.kern.glyph1.indexOf(g1);
         if(ind1!=-1)
         {
-            var ind2 = font.kern.rval[ind1].glyph2.indexOf(g2);
-            if(ind2!=-1) return font.kern.rval[ind1].vals[ind2];
+            int ind2 = font.kern.rval.get(ind1).glyph2.indexOf(g2);
+            if(ind2!=-1) return font.kern.rval.get(ind1).vals.get(ind2);
         }
     }
     
     return 0;
-  }-*/;
+  }
 
   
   @JsMethod public static native ArrayOfInt stringToGlyphs (TyprFont font, String str)
@@ -383,22 +400,22 @@ public class TyprU
 	}
   }-*/;
 
-  @JsMethod public static native ArrayOfInt glyphsToPositions (TyprFont font, ArrayOfInt gls)
-  /*-{	
-	var pos = [];
-	var x = 0;
+  @JsMethod public static ArrayOfInt glyphsToPositions (TyprFont font, ArrayOfInt gls)
+  {	
+	ArrayOfInt pos = Collections.arrayOfInt();
+	int x = 0;
 	pos.push(0);
 	
-	for(var i=0; i<gls.length; i++)
+	for(int i=0; i<gls.length(); i++)
 	{
-		var gid = gls[i];  if(gid==-1) continue;
-		var gid2 = (i<gls.length-1 && gls[i+1]!=-1)  ? gls[i+1] : 0;
-		x += font.hmtx.aWidth[gid];
-		if(i<gls.length-1) x += Typr.U.getPairAdjustment(font, gid, gid2);
+		int gid = gls.get(i);  if(gid==-1) continue;
+		int gid2 = (i<gls.length()-1 && gls.get(i+1)!=-1)  ? gls.get(i+1) : 0;
+		x += font.hmtx.aWidth.get(gid);
+		if(i<gls.length()-1) x += getPairAdjustment(font, gid, gid2);
 		pos.push(x);
 	}
 	return pos;
-}-*/;
+  }
 
   @JsMethod(name="glyphsToPathOverloaded") public static TyprPath glyphsToPath (TyprFont font, ArrayOfInt gls)
   {
@@ -444,32 +461,33 @@ public class TyprU
 	return out.join("");
   }-*/;
 
-  @JsMethod public static native JavaScriptObject pathToContext (TyprPath path, CanvasRenderingContext2D ctx)
-  /*-{
-	var c = 0, crds = path.crds;
+  @JsMethod public static void pathToContext (TyprPath path, CanvasRenderingContext2D ctx)
+  {
+	int c = 0;
+	ArrayOfNumber crds = path.crds;
 	
-	for(var j=0; j<path.cmds.length; j++)
+	for(int j=0; j<path.cmds.length(); j++)
 	{
-		var cmd = path.cmds[j];
-		if     (cmd=="M") {
-			ctx.moveTo(crds[c], crds[c+1]);
+		String cmd = path.cmds.get(j);
+		if     (cmd.equals("M")) {
+			ctx.moveTo((float)crds.get(c), (float)crds.get(c+1));
 			c+=2;
 		}
 		else if(cmd=="L") {
-			ctx.lineTo(crds[c], crds[c+1]);
+			ctx.lineTo((float)crds.get(c), (float)crds.get(c+1));
 			c+=2;
 		}
 		else if(cmd=="C") {
-			ctx.bezierCurveTo(crds[c], crds[c+1], crds[c+2], crds[c+3], crds[c+4], crds[c+5]);
+			ctx.bezierCurveTo((float)crds.get(c), (float)crds.get(c+1), (float)crds.get(c+2), (float)crds.get(c+3), (float)crds.get(c+4), (float)crds.get(c+5));
 			c+=6;
 		}
 		else if(cmd=="Q") {
-			ctx.quadraticCurveTo(crds[c], crds[c+1], crds[c+2], crds[c+3]);
+			ctx.quadraticCurveTo((float)crds.get(c), (float)crds.get(c+1), (float)crds.get(c+2), (float)crds.get(c+3));
 			c+=4;
 		}
-		else if(cmd.charAt(0)=="#") {
+		else if(cmd.charAt(0)=='#') {
 			ctx.beginPath();
-			ctx.fillStyle = cmd;
+			ctx.setFillStyle(cmd);
 		}
 		else if(cmd=="Z") {
 			ctx.closePath();
@@ -478,7 +496,7 @@ public class TyprU
 			ctx.fill();
 		}
 	}
-  }-*/;
+  }
 
 
   @JsType(namespace="Typr.U",name="P")

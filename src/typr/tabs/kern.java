@@ -6,7 +6,6 @@ import elemental.util.ArrayOfInt;
 import elemental.util.Collections;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 import typr.TyprFont;
 import typr.bin;
 

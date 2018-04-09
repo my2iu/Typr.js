@@ -1,33 +1,48 @@
 package typr.tabs;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
+import elemental.client.Browser;
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOf;
+import elemental.util.ArrayOfInt;
+import elemental.util.Collections;
+import elemental.util.MapFromStringTo;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import typr.TyprFont;
+import typr.bin;
 import typr.lctf;
+import typr.lctf.Coverage;
 import typr.lctf.LayoutCommonTable;
 
 @JsType(namespace="Typr")
 public class GSUBParser
 {
-  @JsIgnore public static LayoutCommonTable<JavaScriptObject> parse (Uint8Array data, int offset, int length, TyprFont font) {  return lctf.parse(data, offset, length, font, GSUBParser.subt);  }
+  @JsIgnore public static LayoutCommonTable<GSUBTab> parse (Uint8Array data, int offset, int length, TyprFont font) {  return lctf.parse(data, offset, length, font, GSUBParser.subt);  }
 
-  @JsIgnore public static lctf.Subt<JavaScriptObject> subt = (data, ltype, offset) -> { // lookup type
-    return subt2(data, ltype, offset);
-  }; 
+  public static class GSUBTab
+  {
 
-  @JsIgnore public static native JavaScriptObject subt2 (Uint8Array data, char ltype, int offset)   // lookup type
-  /*-{
-    var bin = Typr._bin, offset0 = offset, tab = {};
+    @JsProperty public char fmt;
+    @JsProperty public Coverage coverage;
+    @JsProperty public short delta;
+    @JsProperty public ArrayOfInt newg;
+    @JsProperty public ArrayOf<ArrayOf<Ligature>> vals;
+    @JsProperty public ArrayOfInt cDef;
+    @JsProperty public ArrayOf<ArrayOf<SubClassRule>> scset;
+  }
+  
+  @JsIgnore public static lctf.Subt<GSUBTab> subt = (data, ltype, offset) -> { // lookup type
+//    var bin = Typr._bin;
+    int offset0 = offset;
+    GSUBTab tab = new GSUBTab();
     
     if(ltype!=1 && ltype!=4 && ltype!=5) return null;
     
     tab.fmt  = bin.readUshort(data, offset);  offset+=2;
-    var covOff  = bin.readUshort(data, offset);  offset+=2;
-    tab.coverage = Typr._lctf.readCoverage(data, covOff+offset0);   // not always is coverage here
+    char covOff  = bin.readUshort(data, offset);  offset+=2;
+    tab.coverage = lctf.readCoverage(data, covOff+offset0);   // not always is coverage here
     
     if(false) {}
     //  Single Substitution Subtable
@@ -36,17 +51,17 @@ public class GSUBParser
             tab.delta = bin.readShort(data, offset);  offset+=2;
         }
         else if(tab.fmt==2) {
-            var cnt = bin.readUshort(data, offset);  offset+=2;
-            tab.newg = bin.readUshorts(data, offset, cnt);  offset+=tab.newg.length*2;
+            char cnt = bin.readUshort(data, offset);  offset+=2;
+            tab.newg = bin.readUshorts(data, offset, cnt);  offset+=tab.newg.length()*2;
         }
     }
     //  Ligature Substitution Subtable
     else if(ltype==4) {
-        tab.vals = [];
-        var cnt = bin.readUshort(data, offset);  offset+=2;
-        for(var i=0; i<cnt; i++) {
-            var loff = bin.readUshort(data, offset);  offset+=2;
-            tab.vals.push(Typr.GSUBParser.readLigatureSet(data, offset0+loff));
+        tab.vals = Collections.arrayOf();
+        char cnt = bin.readUshort(data, offset);  offset+=2;
+        for(int i=0; i<cnt; i++) {
+            char loff = bin.readUshort(data, offset);  offset+=2;
+            tab.vals.push(readLigatureSet(data, offset0+loff));
         }
         //console.log(tab.coverage);
         //console.log(tab.vals);
@@ -54,17 +69,17 @@ public class GSUBParser
     //  Contextual Substitution Subtable
     else if(ltype==5) {
         if(tab.fmt==2) {
-            var cDefOffset = bin.readUshort(data, offset);  offset+=2;
-            tab.cDef = Typr._lctf.readClassDef(data, offset0 + cDefOffset);
-            tab.scset = [];
-            var subClassSetCount = bin.readUshort(data, offset);  offset+=2;
-            for(var i=0; i<subClassSetCount; i++)
+            char cDefOffset = bin.readUshort(data, offset);  offset+=2;
+            tab.cDef = lctf.readClassDef(data, offset0 + cDefOffset);
+            tab.scset = Collections.arrayOf();
+            char subClassSetCount = bin.readUshort(data, offset);  offset+=2;
+            for(int i=0; i<subClassSetCount; i++)
             {
-                var scsOff = bin.readUshort(data, offset);  offset+=2;
-                tab.scset.push(  scsOff==0 ? null : Typr.GSUBParser.readSubClassSet(data, offset0 + scsOff)  );
+                char scsOff = bin.readUshort(data, offset);  offset+=2;
+                tab.scset.push(  scsOff==0 ? null : readSubClassSet(data, offset0 + scsOff)  );
             }
         }
-        else console.log("unknown table format", tab.fmt);
+        else Browser.getWindow().getConsole().log("unknown table format"+ (int)tab.fmt);
     }
     
 //  else if(ltype==6) {
@@ -88,77 +103,103 @@ public class GSUBParser
     //if(tab.coverage.indexOf(3)!=-1) console.log(ltype, fmt, tab);
     
     return tab;
-}-*/;
+  };
 
-  @JsMethod public static native JavaScriptObject readSubClassSet (JavaScriptObject data, int offset)
-  /*-{
-    var rUs = Typr._bin.readUshort, offset0 = offset, lset = [];
-    var cnt = rUs(data, offset);  offset+=2;
-    for(var i=0; i<cnt; i++) {
-        var loff = rUs(data, offset);  offset+=2;
-        lset.push(Typr.GSUBParser.readSubClassRule(data, offset0+loff));
+  @JsMethod public static ArrayOf<SubClassRule> readSubClassSet (Uint8Array data, int offset)
+  {
+//    var rUs = Typr._bin.readUshort, ;
+    int offset0 = offset;
+    ArrayOf<SubClassRule> lset = Collections.arrayOf();
+    char cnt = bin.readUshort(data, offset);  offset+=2;
+    for(int i=0; i<cnt; i++) {
+        char loff = bin.readUshort(data, offset);  offset+=2;
+        lset.push(readSubClassRule(data, offset0+loff));
     }
     return lset;
-}-*/;
-  @JsMethod public static native JavaScriptObject readSubClassRule(JavaScriptObject data, int offset)
-  /*-{
-    var rUs = Typr._bin.readUshort, offset0 = offset, rule = {};
-    var gcount = rUs(data, offset);  offset+=2;
-    var scount = rUs(data, offset);  offset+=2;
-    rule.input = [];
-    for(var i=0; i<gcount-1; i++) {
-        rule.input.push(rUs(data, offset));  offset+=2;
+  }
+  
+  static class SubClassRule
+  {
+    @JsProperty public ArrayOfInt input;
+    @JsProperty public ArrayOfInt substLookupRecords;
+  }
+  @JsIgnore public static SubClassRule readSubClassRule(Uint8Array data, int offset)
+  {
+//    var rUs = Typr._bin.readUshort, ;
+    int offset0 = offset;
+    SubClassRule rule = new SubClassRule();
+    char gcount = bin.readUshort(data, offset);  offset+=2;
+    char scount = bin.readUshort(data, offset);  offset+=2;
+    rule.input = Collections.arrayOfInt();
+    for(int i=0; i<gcount-1; i++) {
+        rule.input.push(bin.readUshort(data, offset));  offset+=2;
     }
-    rule.substLookupRecords = Typr.GSUBParser.readSubstLookupRecords(data, offset, scount);
+    rule.substLookupRecords = readSubstLookupRecords(data, offset, scount);
     return rule;
-}-*/;
-  @JsMethod public static native JavaScriptObject readSubstLookupRecords (JavaScriptObject data, int offset, int cnt)
-  /*-{
-    var rUs = Typr._bin.readUshort;
-    var out = [];
-    for(var i=0; i<cnt; i++) {  out.push(rUs(data, offset), rUs(data, offset+2));  offset+=4;  }
+  }
+  @JsIgnore public static ArrayOfInt readSubstLookupRecords (Uint8Array data, int offset, int cnt)
+  {
+//    var rUs = Typr._bin.readUshort;
+    ArrayOfInt out = Collections.arrayOfInt();
+    for(int i=0; i<cnt; i++) {  out.push(bin.readUshort(data, offset)); out.push(bin.readUshort(data, offset+2));  offset+=4;  }
     return out;
-}-*/;
+  }
 
-  @JsMethod public static native JavaScriptObject readChainSubClassSet (JavaScriptObject data, int offset)
-  /*-{
-    var bin = Typr._bin, offset0 = offset, lset = [];
-    var cnt = bin.readUshort(data, offset);  offset+=2;
-    for(var i=0; i<cnt; i++) {
-        var loff = bin.readUshort(data, offset);  offset+=2;
-        lset.push(Typr.GSUBParser.readChainSubClassRule(data, offset0+loff));
+  @JsMethod public static ArrayOf<MapFromStringTo<ArrayOfInt>> readChainSubClassSet (Uint8Array data, int offset)
+  {
+//    var bin = Typr._bin, 
+    int offset0 = offset;
+    ArrayOf<MapFromStringTo<ArrayOfInt>> lset = Collections.arrayOf();
+    char cnt = bin.readUshort(data, offset);  offset+=2;
+    for(int i=0; i<cnt; i++) {
+        char loff = bin.readUshort(data, offset);  offset+=2;
+        lset.push(readChainSubClassRule(data, offset0+loff));
     }
     return lset;
-}-*/;
-  @JsMethod public static native JavaScriptObject readChainSubClassRule(JavaScriptObject data, int offset)
-  /*-{
-    var bin = Typr._bin, offset0 = offset, rule = {};
-    var pps = ["backtrack", "input", "lookahead"];
-    for(var pi=0; pi<pps.length; pi++) {
-        var cnt = bin.readUshort(data, offset);  offset+=2;  if(pi==1) cnt--;
-        rule[pps[pi]]=bin.readUshorts(data, offset, cnt);  offset+= rule[pps[pi]].length*2;
+  }
+  
+  @JsIgnore public static MapFromStringTo<ArrayOfInt> readChainSubClassRule(Uint8Array data, int offset)
+  {
+//    var bin = Typr._bin;
+    int offset0 = offset;
+    MapFromStringTo<ArrayOfInt> rule = Collections.mapFromStringTo();
+    String [] pps = new String[] {"backtrack", "input", "lookahead"};
+    for(int pi=0; pi<pps.length; pi++) {
+        char cnt = bin.readUshort(data, offset);  offset+=2;  if(pi==1) cnt--;
+        rule.put(pps[pi], bin.readUshorts(data, offset, cnt));  offset+= rule.get(pps[pi]).length()*2;
     }
-    var cnt = bin.readUshort(data, offset);  offset+=2;
-    rule.subst = bin.readUshorts(data, offset, cnt*2);  offset += rule.subst.length*2;
+    char cnt = bin.readUshort(data, offset);  offset+=2;
+    rule.put("subst", bin.readUshorts(data, offset, cnt*2));  offset += rule.get("subst").length()*2;
     return rule;
-}-*/;
+  }
 
-  @JsMethod public static native JavaScriptObject readLigatureSet (JavaScriptObject data, int offset)
-  /*-{
-    var bin = Typr._bin, offset0 = offset, lset = [];
-    var lcnt = bin.readUshort(data, offset);  offset+=2;
-    for(var j=0; j<lcnt; j++) {
-        var loff = bin.readUshort(data, offset);  offset+=2;
-        lset.push(Typr.GSUBParser.readLigature(data, offset0+loff));
+  @JsMethod public static ArrayOf<Ligature> readLigatureSet (Uint8Array data, int offset)
+  {
+//    var bin = Typr._bin, 
+    int offset0 = offset;
+    ArrayOf<Ligature> lset = Collections.arrayOf();
+    char lcnt = bin.readUshort(data, offset);  offset+=2;
+    for(int j=0; j<lcnt; j++) {
+        char loff = bin.readUshort(data, offset);  offset+=2;
+        lset.push(readLigature(data, offset0+loff));
     }
     return lset;
-}-*/;
-  @JsMethod public static native JavaScriptObject readLigature (JavaScriptObject data, int offset)
-  /*-{
-    var bin = Typr._bin, lig = {chain:[]};
+  }
+  
+  static class Ligature
+  {
+    @JsProperty public ArrayOfInt chain;
+    @JsProperty public int nglyph;
+  }
+  
+  @JsIgnore public static Ligature readLigature (Uint8Array data, int offset)
+  {
+//    var bin = Typr._bin, 
+    Ligature lig = new Ligature();
+    lig.chain = Collections.arrayOfInt();
     lig.nglyph = bin.readUshort(data, offset);  offset+=2;
-    var ccnt = bin.readUshort(data, offset);  offset+=2;
-    for(var k=0; k<ccnt-1; k++) {  lig.chain.push(bin.readUshort(data, offset));  offset+=2;  }
+    char ccnt = bin.readUshort(data, offset);  offset+=2;
+    for(int k=0; k<ccnt-1; k++) {  lig.chain.push(bin.readUshort(data, offset));  offset+=2;  }
     return lig;
-}-*/;
+  }
 }

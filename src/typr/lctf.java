@@ -1,11 +1,10 @@
 package typr;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
 import elemental.util.Collections;
+import elemental.util.MapFromStringTo;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
@@ -24,7 +23,7 @@ public class lctf
   
   public static class LayoutCommonTable<T>
   {
-    @JsProperty public JavaScriptObject scriptList;
+    @JsProperty public MapFromStringTo<MapFromStringTo<LangSysTable>> scriptList;
     @JsProperty public ArrayOf<FeatureList> featureList;
     @JsProperty public ArrayOf<LookupTable<T>> lookupList;
   }
@@ -221,57 +220,63 @@ public class lctf
   }
 
 
-  @JsIgnore public static native JavaScriptObject readScriptList (Uint8Array data, int offset)
-  /*-{
-	var bin = Typr._bin;
-	var offset0 = offset;
-	var obj = {};
+  @JsIgnore public static MapFromStringTo<MapFromStringTo<LangSysTable>> readScriptList (Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
+	int offset0 = offset;
+	MapFromStringTo<MapFromStringTo<LangSysTable>> obj = Collections.mapFromStringTo();
 	
-	var count = bin.readUshort(data, offset);  offset+=2;
+	char count = bin.readUshort(data, offset);  offset+=2;
 	
-	for(var i=0; i<count; i++)
+	for(int i=0; i<count; i++)
 	{
-		var tag = bin.readASCII(data, offset, 4);  offset+=4;
-		var noff = bin.readUshort(data, offset);  offset+=2;
-		obj[tag.trim()] = Typr._lctf.readScriptTable(data, offset0 + noff);
+		String tag = bin.readASCII(data, offset, 4);  offset+=4;
+		char noff = bin.readUshort(data, offset);  offset+=2;
+		obj.put(tag.trim(), readScriptTable(data, offset0 + noff));
 	}
 	return obj;
-}-*/;
+  }
 
-  @JsMethod public static native JavaScriptObject readScriptTable (JavaScriptObject data, JavaScriptObject offset)
-  /*-{
-	var bin = Typr._bin;
-	var offset0 = offset;
-	var obj = {};
+  @JsMethod public static MapFromStringTo<LangSysTable> readScriptTable (Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
+	int offset0 = offset;
+	MapFromStringTo<LangSysTable> obj = Collections.mapFromStringTo();
 	
-	var defLangSysOff = bin.readUshort(data, offset);  offset+=2;
-	obj['default'] = Typr._lctf.readLangSysTable(data, offset0 + defLangSysOff);
+	char defLangSysOff = bin.readUshort(data, offset);  offset+=2;
+	obj.put("default", readLangSysTable(data, offset0 + defLangSysOff));
 	
-	var langSysCount = bin.readUshort(data, offset);  offset+=2;
+	char langSysCount = bin.readUshort(data, offset);  offset+=2;
 	
-	for(var i=0; i<langSysCount; i++)
+	for(int i=0; i<langSysCount; i++)
 	{
-		var tag = bin.readASCII(data, offset, 4);  offset+=4;
-		var langSysOff = bin.readUshort(data, offset);  offset+=2;
-		obj[tag.trim()] = Typr._lctf.readLangSysTable(data, offset0 + langSysOff);
+		String tag = bin.readASCII(data, offset, 4);  offset+=4;
+		char langSysOff = bin.readUshort(data, offset);  offset+=2;
+		obj.put(tag.trim(), readLangSysTable(data, offset0 + langSysOff));
 	}
 	return obj;
-}-*/;
+  }
+  
+  static class LangSysTable
+  {
+    @JsProperty public char reqFeature;
+    @JsProperty public ArrayOfInt features;
+  }
 
-  @JsMethod public static native JavaScriptObject readLangSysTable (JavaScriptObject data, JavaScriptObject offset)
-  /*-{
-	var bin = Typr._bin;
-	var obj = {};
+  @JsMethod public static LangSysTable readLangSysTable (Uint8Array data, int offset)
+  {
+//	var bin = Typr._bin;
+    LangSysTable obj = new LangSysTable();
 	
-	var lookupOrder = bin.readUshort(data, offset);  offset+=2;
+	char lookupOrder = bin.readUshort(data, offset);  offset+=2;
 	//if(lookupOrder!=0)  throw "lookupOrder not 0";
 	obj.reqFeature = bin.readUshort(data, offset);  offset+=2;
 	//if(obj.reqFeature != 0xffff) throw "reqFeatureIndex != 0xffff";
 	
 	//console.log(lookupOrder, obj.reqFeature);
 	
-	var featureCount = bin.readUshort(data, offset);  offset+=2;
+	char featureCount = bin.readUshort(data, offset);  offset+=2;
 	obj.features = bin.readUshorts(data, offset, featureCount);
 	return obj;
-  }-*/;
+  }
 }

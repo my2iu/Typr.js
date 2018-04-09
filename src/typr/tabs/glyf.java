@@ -32,7 +32,7 @@ public class glyf
   @JsProperty public ArrayOf<Part> parts;
 
   
-  static class PartInternal
+  public static class PartInternal
   {
     @JsProperty public double a=1;
     @JsProperty public double b=0;
@@ -42,7 +42,7 @@ public class glyf
     @JsProperty public int ty=0;
   }
   
-  static class Part
+  public static class Part
   {
     @JsProperty public PartInternal m = new PartInternal();
     @JsProperty public int p1 = -1;

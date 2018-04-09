@@ -10,8 +10,8 @@ import typr.bin;
 
 public class hmtx
 {
-  @JsProperty ArrayOfInt aWidth;
-  @JsProperty ArrayOfInt lsBearing;
+  @JsProperty public ArrayOfInt aWidth;
+  @JsProperty public ArrayOfInt lsBearing;
   
   @JsIgnore  public static hmtx parse (Uint8Array data, int offset, int length, TyprFont font)
   {

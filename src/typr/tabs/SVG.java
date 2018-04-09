@@ -2,45 +2,53 @@ package typr.tabs;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import elemental.client.Browser;
 import elemental.html.Uint8Array;
+import elemental.util.Collections;
+import elemental.util.MapFromIntTo;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+import typr.bin;
 
 @JsType(namespace="Typr")
 public class SVG
 {
-  @JsIgnore public static native SVG parse (Uint8Array data, int offset, int length)
-  /*-{
-	var bin = Typr._bin;
-	var obj = { entries: []};
+  @JsProperty public MapFromIntTo<String> entries;
+  
+  @JsIgnore public static SVG parse (Uint8Array data, int offset, int length)
+  {
+//	var bin = Typr._bin;
+	SVG obj = new SVG();
+	obj.entries = Collections.mapFromIntTo();
 
-	var offset0 = offset;
+	int offset0 = offset;
 
-	var tableVersion = bin.readUshort(data, offset);	offset += 2;
-	var svgDocIndexOffset = bin.readUint(data, offset);	offset += 4;
-	var reserved = bin.readUint(data, offset); offset += 4;
+	char tableVersion = bin.readUshort(data, offset);	offset += 2;
+	int svgDocIndexOffset = bin.readUint(data, offset);	offset += 4;
+	int reserved = bin.readUint(data, offset); offset += 4;
 
 	offset = svgDocIndexOffset + offset0;
 
-	var numEntries = bin.readUshort(data, offset);	offset += 2;
+	char numEntries = bin.readUshort(data, offset);	offset += 2;
 
-	for(var i=0; i<numEntries; i++)
+	for(int i=0; i<numEntries; i++)
 	{
-		var startGlyphID = bin.readUshort(data, offset);  offset += 2;
-		var endGlyphID   = bin.readUshort(data, offset);  offset += 2;
-		var svgDocOffset = bin.readUint  (data, offset);  offset += 4;
-		var svgDocLength = bin.readUint  (data, offset);  offset += 4;
+		char startGlyphID = bin.readUshort(data, offset);  offset += 2;
+		char endGlyphID   = bin.readUshort(data, offset);  offset += 2;
+		int svgDocOffset = bin.readUint  (data, offset);  offset += 4;
+		int svgDocLength = bin.readUint  (data, offset);  offset += 4;
 
-		var sbuf = new Uint8Array(data.buffer, offset0 + svgDocOffset + svgDocIndexOffset, svgDocLength);
-		var svg = bin.readUTF8(sbuf, 0, sbuf.length);
+		Uint8Array sbuf = Browser.getWindow().newUint8Array(data.getBuffer(), offset0 + svgDocOffset + svgDocIndexOffset, svgDocLength);
+		String svg = bin.readUTF8(sbuf, 0, sbuf.length());
 		
-		for(var f=startGlyphID; f<=endGlyphID; f++) {
-			obj.entries[f] = svg;
+		for(int f=startGlyphID; f<=endGlyphID; f++) {
+			obj.entries.put(f, svg);
 		}
 	}
 	return obj;
-}-*/;
+  }
 
   @JsMethod public static native JavaScriptObject toPath (String str)
   /*-{
