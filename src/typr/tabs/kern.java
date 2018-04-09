@@ -1,80 +1,125 @@
 package typr.tabs;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOf;
+import elemental.util.ArrayOfInt;
+import elemental.util.Collections;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import typr.TyprFont;
+import typr.bin;
 
-@JsType(namespace="Typr")
 public class kern
 {
-  @JsIgnore public static native kern parse (Uint8Array data, int offset, int length, TyprFont font)
-      /*-{
-	var bin = Typr._bin;
-	
-	var version = bin.readUshort(data, offset);  offset+=2;
-	if(version==1) return Typr.kern.parseV1(data, offset-2, length, font);
-	var nTables = bin.readUshort(data, offset);  offset+=2;
-	
-	var map = {glyph1: [], rval:[]};
-	for(var i=0; i<nTables; i++)
-	{
-		offset+=2;	// skip version
-		var length  = bin.readUshort(data, offset);  offset+=2;
-		var coverage = bin.readUshort(data, offset);  offset+=2;
-		var format = coverage>>>8;
-		// I have seen format 128 once, that's why I do  
-  format &= 0xf;
-		if(format==0) offset = Typr.kern.readFormat0(data, offset, map);
-		else throw "unknown kern table format: "+format;
-	}
-	return map;
-  }-*/;
+  @JsProperty public ArrayOfInt glyph1;
+  @JsProperty public ArrayOf<KernRval> rval;
 
-  @JsMethod public static native JavaScriptObject parseV1 (JavaScriptObject data, int offset, int length, JavaScriptObject font)
-      /*-{
-	var bin = Typr._bin;
-	
-	var version = bin.readFixed(data, offset);  offset+=4;
-	var nTables = bin.readUint(data, offset);  offset+=4;
-	
-	var map = {glyph1: [], rval:[]};
-	for(var i=0; i<nTables; i++)
-	{
-		var length = bin.readUint(data, offset);   offset+=4;
-		var coverage = bin.readUshort(data, offset);  offset+=2;
-		var tupleIndex = bin.readUshort(data, offset);  offset+=2;
-		var format = coverage>>>8;
-//		 I have seen format 128 once, that's why I do  
+  public static class KernRval
+  {
+    @JsProperty public ArrayOfInt glyph2;
+    @JsProperty public ArrayOfInt vals;
+  }
+  
+  @JsIgnore
+  public static kern parse(Uint8Array data, int offset, int length,
+      TyprFont font)
+  {
+    // var bin = Typr._bin;
+
+    char version = bin.readUshort(data, offset);
+    offset += 2;
+    if (version == 1) return parseV1(data, offset - 2, length, font);
+    char nTables = bin.readUshort(data, offset);
+    offset += 2;
+
+    kern map = new kern();
+    map.glyph1 = Collections.arrayOfInt();
+    map.rval = Collections.arrayOf();
+    for (int i = 0; i < nTables; i++)
+    {
+      offset += 2; // skip version
+      char lengthDiscard = bin.readUshort(data, offset);
+      offset += 2;
+      char coverage = bin.readUshort(data, offset);
+      offset += 2;
+      int format = coverage >>> 8;
+      // I have seen format 128 once, that's why I do
       format &= 0xf;
-		if(format==0) offset = Typr.kern.readFormat0(data, offset, map);
-		else throw "unknown kern table format: "+format;
-	}
-	return map;
-  }-*/;
+      if (format == 0)
+        offset = readFormat0(data, offset, map);
+      else
+        throw new IllegalArgumentException(
+            "unknown kern table format: " + (int) format);
+    }
+    return map;
+  }
 
-  @JsMethod public static native JavaScriptObject readFormat0 (JavaScriptObject data, int offset, JavaScriptObject map)
-  /*-{
-	var bin = Typr._bin;
-	var pleft = -1;
-	var nPairs        = bin.readUshort(data, offset);  offset+=2;
-	var searchRange   = bin.readUshort(data, offset);  offset+=2;
-	var entrySelector = bin.readUshort(data, offset);  offset+=2;
-	var rangeShift    = bin.readUshort(data, offset);  offset+=2;
-	for(var j=0; j<nPairs; j++)
-	{
-		var left  = bin.readUshort(data, offset);  offset+=2;
-		var right = bin.readUshort(data, offset);  offset+=2;
-		var value = bin.readShort (data, offset);  offset+=2;
-		if(left!=pleft) { map.glyph1.push(left);  map.rval.push({ glyph2:[], vals:[] }) }
-		var rval = map.rval[map.rval.length-1];
-		rval.glyph2.push(right);   rval.vals.push(value);
-		pleft = left;
-	}
-	return offset;
-}-*/;
+  @JsIgnore
+  public static kern parseV1(Uint8Array data, int offset, int length,
+      TyprFont font)
+  {
+//		var bin = Typr._bin;
+
+		int version = bin.readVersion(data, offset);
+		offset += 4;
+		int nTables = bin.readUint(data, offset);
+		offset += 4;
+
+		kern map = new kern();
+	    map.glyph1 = Collections.arrayOfInt();
+	    map.rval = Collections.arrayOf();
+		for (int i = 0; i < nTables; i++) {
+			int lengthDiscard = bin.readUint(data, offset);
+			offset += 4;
+			char coverage = bin.readUshort(data, offset);
+			offset += 2;
+			char tupleIndex = bin.readUshort(data, offset);
+			offset += 2;
+			int format = coverage >>> 8;
+			//		 I have seen format 128 once, that's why I do  
+			format &= 0xf;
+			if (format == 0)
+				offset = readFormat0(data, offset, map);
+			else
+				throw new IllegalArgumentException("unknown kern table format: " + format);
+		}
+		return map;
+  }
+
+  @JsIgnore
+  public static int readFormat0(Uint8Array data, int offset, kern map)
+  {
+//		var bin = Typr._bin;
+		int pleft = -1;
+		char nPairs = bin.readUshort(data, offset);
+		offset += 2;
+		char searchRange = bin.readUshort(data, offset);
+		offset += 2;
+		char entrySelector = bin.readUshort(data, offset);
+		offset += 2;
+		char rangeShift = bin.readUshort(data, offset);
+		offset += 2;
+		for (int j = 0; j < nPairs; j++) {
+			char left = bin.readUshort(data, offset);
+			offset += 2;
+			char right = bin.readUshort(data, offset);
+			offset += 2;
+			short value = bin.readShort(data, offset);
+			offset += 2;
+			if (left != pleft) {
+				map.glyph1.push(left);
+				KernRval rval = new KernRval();
+				rval.glyph2 = Collections.arrayOfInt();
+                rval.vals = Collections.arrayOfInt();
+				map.rval.push(rval);
+			}
+			KernRval rval = map.rval.get(map.rval.length() - 1);
+			rval.glyph2.push(right);
+			rval.vals.push(value);
+			pleft = left;
+		}
+		return offset;
+  }
 
 }
