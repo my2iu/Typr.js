@@ -19,7 +19,7 @@ public class TyprTest
   @Test
   public void testHeaderReading() throws IOException
   {
-    bin.t = new JreUnion();
+    TyprMisc.init();
     FileUint8Array file = new FileUint8Array(new File("demo/Cabin-Bold.otf"));    
     MapFromIntToString names = TyprJava.parseHeaderAndNames(file);
     assertEquals("Cabin", names.get(name.NameType.FONT_FAMILY.ordinal()));
@@ -29,7 +29,7 @@ public class TyprTest
   @Test
   public void testCmapReading() throws IOException
   {
-    bin.t = new JreUnion();
+    TyprMisc.init();
     FileUint8Array file = new FileUint8Array(new File("demo/Cabin-Bold.otf"));
     Map<String, TableRecord> tables = TyprJava.readTableRecords(file, 0);
     cmap c = cmap.parse(file, tables.get("cmap").offset, tables.get("cmap").length);

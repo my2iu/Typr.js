@@ -9,7 +9,7 @@ import com.google.gwt.core.shared.GwtIncompatible;
 import elemental.html.Uint8Array;
 import typr.bin.Union;
 
-@GwtIncompatible public class JreUnion extends Union
+public class JreUnion extends Union
 {
   byte [] data = new byte[8];
   ByteBuffer buffer = ByteBuffer.wrap(data);

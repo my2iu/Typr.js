@@ -5,7 +5,6 @@ import elemental.util.ArrayOfInt;
 import elemental.util.ArrayOfString;
 import elemental.util.Collections;
 import jsinterop.annotations.JsMethod;
-import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace="Typr",name="_bin")
@@ -121,5 +120,5 @@ public class bin
     abstract int readInt16();
     abstract String readUTF8 (Uint8Array buff, int p, int l);
   }
-  @JsProperty public static Union t;
+  public static Union t;
 }

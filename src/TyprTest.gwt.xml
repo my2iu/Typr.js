@@ -12,7 +12,7 @@
 
   <!-- Specify the paths for translatable code                    -->
   <source path='typr'/>
-  
+  <super-source path="super"/>
   
   <add-linker name="xsiframe"/>
   <set-configuration-property name="devModeRedirectEnabled" value="true"/>

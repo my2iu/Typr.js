@@ -167,20 +167,7 @@ public class Typr
     
   }
 
-  /**
-   * Call this once in order to make sure Typr classes are accessible
-   * both from the main window and also the GWT iframe
-   */
-  @JsIgnore public static void init()
-  {
-    remapTypr();
-    bin.t = new JsUnion();
-  }
-  @JsIgnore private static native void remapTypr() /*-{
-    window.Typr = $wnd.Typr;
-  }-*/;
-
-  
+ 
 //  @JsMethod public static int _tabOffset (Uint8Array data, String tab)
 //  {
 ////	var bin = Typr._bin;
