@@ -1,7 +1,10 @@
 package typr;
 
+import java.util.function.Consumer;
+
 import com.google.gwt.core.client.JavaScriptObject;
 
+import elemental.client.Browser;
 import elemental.html.CanvasRenderingContext2D;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
@@ -14,6 +17,7 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import typr.lctf.LookupTable;
 import typr.tabs.CFF;
+import typr.tabs.CFF.GetCharStringOutput;
 import typr.tabs.GPOSParser.GPOSTab;
 import typr.tabs.GPOSParser.MatrixEntry;
 import typr.tabs.GPOSParser.PairSet;
@@ -100,16 +104,15 @@ public class TyprU
   @JsType
   public static class CFFPathState
   {
-    @JsProperty int x = 0;
-    @JsProperty int y = 0;
-    @JsProperty ArrayOfInt stack;
+    @JsProperty double x = 0;  // maybe an int?
+    @JsProperty double y = 0;  // maybe an int?
+    @JsProperty ArrayOfNumber stack = Collections.arrayOfNumber();  // Array of ?
     @JsProperty int nStems = 0;
     @JsProperty boolean haveWidth = false;
-    @JsProperty int width;
+    @JsProperty double width;   // maybe an int?
     @JsProperty boolean open = false;
     @JsMethod native void init(MapFromStringTo<JavaScriptObject> Private)
     /*-{
-      this.stack = [];
       this.width = (Private != null ? Private.defaultWidthX : 0);
     }-*/;
   }
@@ -118,7 +121,7 @@ public class TyprU
   {
     CFFPathState state = new CFFPathState();
     state.init(Private);
-    _drawCFF(font.CFF.CharStrings.get(gid), state, font.CFF, path, Private);
+    _drawCFF(font.CFF.CharStrings.get(gid), state, font.CFF, path, Private, (str) -> {Browser.getWindow().getConsole().log(str);} );
   }
   
   @JsMethod public static ArrayOfInt getGlyphDimensions (TyprFont font, int gid)
@@ -529,114 +532,138 @@ public class TyprU
   }
 
 
-  @JsType(namespace="Typr.U",name="P")
   public static class TyprUP
   {
-    @JsMethod public static void moveTo (TyprPath p, double x, double y)
+    public static void moveTo (TyprPath p, double x, double y)
     {
       p.cmds.push("M");  p.crds.push(x); p.crds.push(y);
     }
-    @JsMethod public static void lineTo (TyprPath p, double x, double y)
+    public static void lineTo (TyprPath p, double x, double y)
     {
 	p.cmds.push("L");  p.crds.push(x); p.crds.push(y);
     }
-    @JsMethod public static void curveTo (TyprPath p, double a,double b,double c,double d,double e,double f)
+    public static void curveTo (TyprPath p, double a,double b,double c,double d,double e,double f)
     {
 	p.cmds.push("C");  p.crds.push(a); p.crds.push(b); p.crds.push(c); p.crds.push(d); p.crds.push(e); p.crds.push(f);
     }
-    @JsMethod public static void qcurveTo (TyprPath p, double a,double b,double c,double d)
+    public static void qcurveTo (TyprPath p, double a,double b,double c,double d)
     {
 	p.cmds.push("Q");  p.crds.push(a); p.crds.push(b); p.crds.push(c); p.crds.push(d);
     }
-    @JsMethod public static void closePath (TyprPath p) {  p.cmds.push("Z");}
+    public static void closePath (TyprPath p) {  p.cmds.push("Z");}
   }
 
 
-  @JsMethod public static native JavaScriptObject _drawCFF (ArrayOfInt cmds, CFFPathState state, CFF font, TyprPath p, MapFromStringTo<JavaScriptObject> Private)
+  @JsIgnore public static native double getPrivateNominalWidthX(MapFromStringTo<JavaScriptObject> Private)
   /*-{
-// {
-	var stack = state.stack;
-	var nStems = state.nStems, haveWidth=state.haveWidth, width=state.width, open=state.open;
-	var i=0;
-	var x=state.x, y=state.y, c1x=0, c1y=0, c2x=0, c2y=0, c3x=0, c3y=0, c4x=0, c4y=0, jpx=0, jpy=0;
+    return Private.nominalWidthX;
+  }-*/;
+
+  @JsIgnore public static native double getCFFNominalWidthX(CFF font)
+  /*-{
+    return font.nominalWidthX
+  }-*/;
+
+  @JsIgnore public static native ArrayOfInt getPrivateSubrs(MapFromStringTo<JavaScriptObject> obj, int ind)
+  /*-{
+  return obj.Subrs[ ind + obj.Bias ];
+  }-*/;
+
+  @JsIgnore public static native ArrayOfInt getCFFSubrs(CFF obj, int ind)
+  /*-{
+  return obj.Subrs[ ind + obj.Bias ];
+  }-*/;
+
+  
+  @JsIgnore public static void _drawCFF (ArrayOfInt cmds, CFFPathState state, CFF font, TyprPath p, MapFromStringTo<JavaScriptObject> Private, Consumer<String> consoleLog)
+ {
+	ArrayOfNumber stack = state.stack;
+	int nStems = state.nStems;
+	boolean haveWidth=state.haveWidth;
+	double width=state.width;
+	boolean open=state.open;
+	int i=0;
+	double x=state.x, y=state.y, c1x=0, c1y=0, c2x=0, c2y=0, c3x=0, c3y=0, c4x=0, c4y=0, jpx=0, jpy=0;
 	
 	//var o = {val:0,size:0};
-	var o = new Typr.GetCharStringOutput();
+	GetCharStringOutput o = new GetCharStringOutput();
 	//console.log(cmds);
-	while(i<cmds.length)
+	while(i<cmds.length())
 	{
-		Typr.CFF.getCharString(cmds, i, o);
-		var v = o.val;
-		var vint = o.intVal;
+		CFF.getCharString(cmds, i, o);
+		String v = o.val;
+		double vnum = o.numVal;
 		i += o.size;
 			
-		if(false) {}
-		else if(v=="o1" || v=="o18")  //  hstem || hstemhm
+		if(v == null) {
+	        stack.push(vnum);
+		}
+		else if(v.equals("o1") || v.equals("o18"))  //  hstem || hstemhm
 		{
-			var hasWidthArg;
+			boolean hasWidthArg;
 
 			// The number of stem operators on the stack is always even.
 			// If the value is uneven, that means a width is specified.
-			hasWidthArg = stack.length % 2 !== 0;
+			hasWidthArg = (stack.length() % 2 != 0);
 			if (hasWidthArg && !haveWidth) {
-				width = stack.shift() + Private.nominalWidthX;
+				width = stack.shift() + getPrivateNominalWidthX(Private);
 			}
 
-			nStems += stack.length >> 1;
-			stack.length = 0;
+			nStems += stack.length() >> 1;
+			stack.setLength(0);
 			haveWidth = true;
 		}
-		else if(v=="o3" || v=="o23")  // vstem || vstemhm
+		else if(v.equals("o3") || v.equals("o23"))  // vstem || vstemhm
 		{
-			var hasWidthArg;
+			boolean hasWidthArg;
 
 			// The number of stem operators on the stack is always even.
 			// If the value is uneven, that means a width is specified.
-			hasWidthArg = stack.length % 2 !== 0;
+			hasWidthArg = (stack.length() % 2 != 0);
 			if (hasWidthArg && !haveWidth) {
-				width = stack.shift() + Private.nominalWidthX;
+				width = stack.shift() + getPrivateNominalWidthX(Private);
 			}
 
-			nStems += stack.length >> 1;
-			stack.length = 0;
+			nStems += stack.length() >> 1;
+			stack.setLength(0);
 			haveWidth = true;
 		}
-		else if(v=="o4")
+		else if(v.equals("o4"))
 		{
-			if (stack.length > 1 && !haveWidth) {
-                        width = stack.shift() + Private.nominalWidthX;
+			if (stack.length() > 1 && !haveWidth) {
+                        width = stack.shift() + getPrivateNominalWidthX(Private);
                         haveWidth = true;
                     }
-			if(open) Typr.U.P.closePath(p);
+			if(open) TyprUP.closePath(p);
 
                     y += stack.pop();
-					Typr.U.P.moveTo(p,x,y);   open=true;
+					TyprUP.moveTo(p,x,y);   open=true;
 		}
-		else if(v=="o5")
+		else if(v.equals("o5"))
 		{
-			while (stack.length > 0) {
+			while (stack.length() > 0) {
                         x += stack.shift();
                         y += stack.shift();
-                        Typr.U.P.lineTo(p, x, y);
+                        TyprUP.lineTo(p, x, y);
                     }
 		}
-		else if(v=="o6" || v=="o7")  // hlineto || vlineto
+		else if(v.equals("o6") || v.equals("o7"))  // hlineto || vlineto
 		{
-			var count = stack.length;
-			var isX = (v == "o6");
+			int count = stack.length();
+			boolean isX = (v == "o6");
 			
-			for(var j=0; j<count; j++) {
-				var sval = stack.shift();
+			for(int j=0; j<count; j++) {
+				double sval = stack.shift();
 				
 				if(isX) x += sval;  else  y += sval;
 				isX = !isX;
-				Typr.U.P.lineTo(p, x, y);
+				TyprUP.lineTo(p, x, y);
 			}
 		}
-		else if(v=="o8" || v=="o24")	// rrcurveto || rcurveline
+		else if(v.equals("o8") || v.equals("o24"))	// rrcurveto || rcurveline
 		{
-			var count = stack.length;
-			var index = 0;
+			int count = stack.length();
+			int index = 0;
 			while(index+6 <= count) {
 				c1x = x + stack.shift();
 				c1y = y + stack.shift();
@@ -644,20 +671,20 @@ public class TyprU
 				c2y = c1y + stack.shift();
 				x = c2x + stack.shift();
 				y = c2y + stack.shift();
-				Typr.U.P.curveTo(p, c1x, c1y, c2x, c2y, x, y);
+				TyprUP.curveTo(p, c1x, c1y, c2x, c2y, x, y);
 				index+=6;
 			}
-			if(v=="o24")
+			if(v.equals("o24"))
 			{
 				x += stack.shift();
 				y += stack.shift();
-				Typr.U.P.lineTo(p, x, y);
+				TyprUP.lineTo(p, x, y);
 			}
 		}
-		else if(v=="o11")  break;
-		else if(v=="o1234" || v=="o1235" || v=="o1236" || v=="o1237")//if((v+"").slice(0,3)=="o12")
+		else if(v.equals("o11"))  break;
+		else if(v.equals("o1234") || v.equals("o1235") || v.equals("o1236") || v.equals("o1237"))//if((v+"").slice(0,3)=="o12")
 		{
-			if(v=="o1234")
+			if(v.equals("o1234"))
 			{
 				c1x = x   + stack.shift();    // dx1
                 c1y = y;                      // dy1
@@ -670,11 +697,11 @@ public class TyprU
 				c4x = c3x + stack.shift();    // dx5
 				c4y = y;                      // dy5
 				x = c4x + stack.shift();      // dx6
-				Typr.U.P.curveTo(p, c1x, c1y, c2x, c2y, jpx, jpy);
-				Typr.U.P.curveTo(p, c3x, c3y, c4x, c4y, x, y);
+				TyprUP.curveTo(p, c1x, c1y, c2x, c2y, jpx, jpy);
+				TyprUP.curveTo(p, c3x, c3y, c4x, c4y, x, y);
 				
 			}
-			if(v=="o1235")
+			if(v.equals("o1235"))
 			{
 				c1x = x   + stack.shift();    // dx1
 				c1y = y   + stack.shift();    // dy1
@@ -689,10 +716,10 @@ public class TyprU
 				x = c4x + stack.shift();      // dx6
 				y = c4y + stack.shift();      // dy6
 				stack.shift();                // flex depth
-				Typr.U.P.curveTo(p, c1x, c1y, c2x, c2y, jpx, jpy);
-				Typr.U.P.curveTo(p, c3x, c3y, c4x, c4y, x, y);
+				TyprUP.curveTo(p, c1x, c1y, c2x, c2y, jpx, jpy);
+				TyprUP.curveTo(p, c3x, c3y, c4x, c4y, x, y);
 			}
-			if(v=="o1236")
+			if(v.equals("o1236"))
 			{
 				c1x = x   + stack.shift();    // dx1
 				c1y = y   + stack.shift();    // dy1
@@ -705,10 +732,10 @@ public class TyprU
 				c4x = c3x + stack.shift();    // dx5
 				c4y = c3y + stack.shift();    // dy5
 				x = c4x + stack.shift();      // dx6
-				Typr.U.P.curveTo(p, c1x, c1y, c2x, c2y, jpx, jpy);
-				Typr.U.P.curveTo(p, c3x, c3y, c4x, c4y, x, y);
+				TyprUP.curveTo(p, c1x, c1y, c2x, c2y, jpx, jpy);
+				TyprUP.curveTo(p, c3x, c3y, c4x, c4y, x, y);
 			}
-			if(v=="o1237")
+			if(v.equals("o1237"))
 			{
 				c1x = x   + stack.shift();    // dx1
 				c1y = y   + stack.shift();    // dy1
@@ -725,89 +752,89 @@ public class TyprU
 				} else {
 				    y = c4y + stack.shift();
 				}
-				Typr.U.P.curveTo(p, c1x, c1y, c2x, c2y, jpx, jpy);
-				Typr.U.P.curveTo(p, c3x, c3y, c4x, c4y, x, y);
+				TyprUP.curveTo(p, c1x, c1y, c2x, c2y, jpx, jpy);
+				TyprUP.curveTo(p, c3x, c3y, c4x, c4y, x, y);
 			}
 		}
-		else if(v=="o14")
+		else if(v.equals("o14"))
 		{
-			if (stack.length > 0 && !haveWidth) {
-                        width = stack.shift() + font.nominalWidthX;
+			if (stack.length() > 0 && !haveWidth) {
+                        width = stack.shift() + getCFFNominalWidthX(font);
                         haveWidth = true;
                     }
-			if(stack.length==4) // seac = standard encoding accented character
+			if(stack.length()==4) // seac = standard encoding accented character
 			{
 			
-				var asb = 0;
-				var adx = stack.shift();
-				var ady = stack.shift();
-				var bchar = stack.shift();
-				var achar = stack.shift();
+				double asb = 0;
+				double adx = stack.shift();
+				double ady = stack.shift();
+				int bchar = (int)stack.shift();
+				int achar = (int)stack.shift();
 			
 				
-				var bind = Typr.CFF.glyphBySE(font, bchar);
-				var aind = Typr.CFF.glyphBySE(font, achar);
+				int bind = CFF.glyphBySE(font, bchar);
+				int aind = CFF.glyphBySE(font, achar);
 				
 				//console.log(bchar, bind);
 				//console.log(achar, aind);
 				//state.x=x; state.y=y; state.nStems=nStems; state.haveWidth=haveWidth; state.width=width;  state.open=open;
 				
-				Typr.U._drawCFF(font.CharStrings[bind], state,font,p,Private);
+				_drawCFF(font.CharStrings.get(bind), state,font,p,Private, consoleLog);
 				state.x = adx; state.y = ady;
-				Typr.U._drawCFF(font.CharStrings[aind], state,font,p,Private);
+				_drawCFF(font.CharStrings.get(aind), state,font,p,Private, consoleLog);
 				
 				//x=state.x; y=state.y; nStems=state.nStems; haveWidth=state.haveWidth; width=state.width;  open=state.open;
 			}
-			if(open) {  Typr.U.P.closePath(p);  open=false;  }
+			if(open) {  TyprUP.closePath(p);  open=false;  }
 		}		
-		else if(v=="o19" || v=="o20") 
+		else if(v.equals("o19") || v.equals("o20")) 
 		{ 
-			var hasWidthArg;
+			boolean hasWidthArg;
 
 			// The number of stem operators on the stack is always even.
 			// If the value is uneven, that means a width is specified.
-			hasWidthArg = stack.length % 2 !== 0;
+			hasWidthArg = (stack.length() % 2 != 0);
 			if (hasWidthArg && !haveWidth) {
-				width = stack.shift() + Private.nominalWidthX;
+				width = stack.shift() + getPrivateNominalWidthX(Private);
 			}
 
-			nStems += stack.length >> 1;
-			stack.length = 0;
+			nStems += stack.length() >> 1;
+			stack.setLength(0);
 			haveWidth = true;
 			
 			i += (nStems + 7) >> 3;
 		}
 		
-		else if(v=="o21") {
-			if (stack.length > 2 && !haveWidth) {
-                        width = stack.shift() + Private.nominalWidthX;
+		else if(v.equals("o21")) {
+			if (stack.length() > 2 && !haveWidth) {
+                        width = stack.shift() + getPrivateNominalWidthX(Private);
                         haveWidth = true;
                     }
 
                     y += stack.pop();
                     x += stack.pop();
 					
-					if(open) Typr.U.P.closePath(p);
-                    Typr.U.P.moveTo(p,x,y);   open=true;
+					if(open) TyprUP.closePath(p);
+                    TyprUP.moveTo(p,x,y);   open=true;
 		}
-		else if(v=="o22")
+		else if(v.equals("o22"))
 		{
-			 if (stack.length > 1 && !haveWidth) {
-                        width = stack.shift() + Private.nominalWidthX;
+			 if (stack.length() > 1 && !haveWidth) {
+                        width = stack.shift() + getPrivateNominalWidthX(Private);
                         haveWidth = true;
                     }
 					
                     x += stack.pop();
 					
-					if(open) Typr.U.P.closePath(p);
-					Typr.U.P.moveTo(p,x,y);   open=true;                    
+					if(open) TyprUP.closePath(p);
+					TyprUP.moveTo(p,x,y);   open=true;                    
 		}
-		else if(v=="o25")
+		else if(v.equals("o25"))
 		{
-			while (stack.length > 6) {
+			while (stack.length() > 6) {
                         x += stack.shift();
                         y += stack.shift();
-                        Typr.U.P.lineTo(p, x, y);
+                        TyprUP.lineTo(p, x, y);
                     }
 
                     c1x = x + stack.shift();
@@ -816,58 +843,61 @@ public class TyprU
                     c2y = c1y + stack.shift();
                     x = c2x + stack.shift();
                     y = c2y + stack.shift();
-                    Typr.U.P.curveTo(p, c1x, c1y, c2x, c2y, x, y);
+                    TyprUP.curveTo(p, c1x, c1y, c2x, c2y, x, y);
 		}
-		else if(v=="o26") 
+		else if(v.equals("o26")) 
 		{
-			if (stack.length % 2) {
+			if ((stack.length() % 2) != 0) {
                         x += stack.shift();
                     }
 
-                    while (stack.length > 0) {
+                    while (stack.length() > 0) {
                         c1x = x;
                         c1y = y + stack.shift();
                         c2x = c1x + stack.shift();
                         c2y = c1y + stack.shift();
                         x = c2x;
                         y = c2y + stack.shift();
-                        Typr.U.P.curveTo(p, c1x, c1y, c2x, c2y, x, y);
+                        TyprUP.curveTo(p, c1x, c1y, c2x, c2y, x, y);
                     }
 
 		}
-		else if(v=="o27")
+		else if(v.equals("o27"))
 		{
-			if (stack.length % 2) {
+			if ((stack.length() % 2) != 0) {
                         y += stack.shift();
                     }
 
-                    while (stack.length > 0) {
+                    while (stack.length() > 0) {
                         c1x = x + stack.shift();
                         c1y = y;
                         c2x = c1x + stack.shift();
                         c2y = c1y + stack.shift();
                         x = c2x + stack.shift();
                         y = c2y;
-                        Typr.U.P.curveTo(p, c1x, c1y, c2x, c2y, x, y);
+                        TyprUP.curveTo(p, c1x, c1y, c2x, c2y, x, y);
                     }
 		}
-		else if(v=="o10" || v=="o29")	// callsubr || callgsubr
+		else if(v.equals("o10") || v.equals("o29"))	// callsubr || callgsubr
 		{
-			var obj = (v=="o10" ? Private : font);
-			if(stack.length==0) { console.log("error: empty stack");  }
+			if(stack.length()==0) { consoleLog.accept("error: empty stack");  }
 			else {
-				var ind = stack.pop();
-				var subr = obj.Subrs[ ind + obj.Bias ];
+				int ind = (int)stack.pop();
+				ArrayOfInt subr;
+				if (v.equals("o10"))
+	                subr = getPrivateSubrs(Private, ind);
+				else
+                  subr = getCFFSubrs(font, ind);
 				state.x=x; state.y=y; state.nStems=nStems; state.haveWidth=haveWidth; state.width=width;  state.open=open;
-				Typr.U._drawCFF(subr, state,font,p,Private);
+				_drawCFF(subr, state,font,p,Private, consoleLog);
 				x=state.x; y=state.y; nStems=state.nStems; haveWidth=state.haveWidth; width=state.width;  open=state.open;
 			}
 		}
-		else if(v=="o30" || v=="o31")   // vhcurveto || hvcurveto
+		else if(v.equals("o30") || v.equals("o31"))   // vhcurveto || hvcurveto
 		{
-			var count, count1 = stack.length;
-			var index = 0;
-			var alternate = v == "o31";
+			int count, count1 = stack.length();
+			int index = 0;
+			boolean alternate = (v == "o31");
 			
 			count  = count1 & ~2;
 			index += count1 - count;
@@ -896,17 +926,14 @@ public class TyprU
 					else y = c2y;
 					alternate = true;
 				}
-                Typr.U.P.curveTo(p, c1x, c1y, c2x, c2y, x, y);
+                TyprUP.curveTo(p, c1x, c1y, c2x, c2y, x, y);
 				index += 4;
 			}
 		}
 		
-		else if(v != null) {   console.log("Unknown operation: "+v, cmds); throw v;  }
-		else stack.push(vint);
+		else  {   consoleLog.accept("Unknown operation: "+v + " " + cmds); throw new IllegalArgumentException();  }
 	}
 	//console.log(cmds);
 	state.x=x; state.y=y; state.nStems=nStems; state.haveWidth=haveWidth; state.width=width; state.open=open;
-//  }
-  }-*/;
-
+  }
 }

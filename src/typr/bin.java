@@ -4,6 +4,7 @@ import elemental.html.Uint8Array;
 import elemental.util.ArrayOfInt;
 import elemental.util.ArrayOfString;
 import elemental.util.Collections;
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
 
@@ -35,6 +36,15 @@ public class bin
       t.writeUint8(3, (byte)buff.intAt(p));
       return t.readInt32();
 	}
+    @JsIgnore public static int readInt (ArrayOfInt buff, int p)
+    {
+        //if(p>=buff.length) throw "error";
+      t.writeUint8(0, (byte)buff.get(p+3));
+      t.writeUint8(1, (byte)buff.get(p+2));
+      t.writeUint8(2, (byte)buff.get(p+1));
+      t.writeUint8(3, (byte)buff.get(p));
+      return t.readInt32();
+    }
 	
 	@JsMethod public static byte readInt8 (Uint8Array buff, int p)
 	{
@@ -49,6 +59,13 @@ public class bin
 		t.writeUint8(0, (byte)buff.intAt(p+1));
 		return (short)t.readInt16();
 	}
+    @JsIgnore public static short readShort (ArrayOfInt buff, int p)
+    {
+        //if(p>=buff.length) throw "error";
+        t.writeUint8(1, (byte)buff.get(p));
+        t.writeUint8(0, (byte)buff.get(p+1));
+        return (short)t.readInt16();
+    }
 	@JsMethod public static char readUshort (Uint8Array buff, int p)
 	{
 		//if(p>=buff.length) throw "error";

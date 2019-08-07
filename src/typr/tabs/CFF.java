@@ -343,13 +343,13 @@ public class CFF
     146, 147, 148, 149,   0,   0,   0,   0
     };
   
-    @JsMethod public static native int glyphByUnicode (JavaScriptObject cff, int code)
+    @JsMethod public static native int glyphByUnicode (CFF cff, int code)
         /*-{
         for(var i=0; i<cff.charset.length; i++) if(cff.charset[i]==code) return i;
         return -1;
     }-*/;
     
-    @JsMethod public static int glyphBySE(JavaScriptObject cff, int charcode)  // glyph by standard encoding
+    @JsMethod public static int glyphBySE(CFF cff, int charcode)  // glyph by standard encoding
     {
         if ( charcode < 0 || charcode > 255 ) return -1;
         return CFF.glyphByUnicode(cff, CFF.tableSE[charcode]);        
@@ -433,42 +433,41 @@ public class CFF
     }
     
 
-    @JsType(namespace="Typr")
     public static class GetCharStringOutput
     {
-      @JsProperty String val = null;
-      @JsProperty int intVal;
-      @JsProperty int size;
+      public String val = null;
+      public double numVal;
+      public int size;
     }
     
-    @JsMethod public static void getCharString (Uint8Array data, int offset, GetCharStringOutput o)
+    @JsIgnore public static void getCharString (ArrayOfInt data, int offset, GetCharStringOutput o)
     {
-        int b0 = data.intAt(offset), b1 = data.intAt(offset+1), b2 = data.intAt(offset+2), b3 = data.intAt(offset+3), b4=data.intAt(offset+4);
+        int b0 = data.get(offset), b1 = data.get(offset+1), b2 = data.get(offset+2), b3 = data.get(offset+3), b4=data.get(offset+4);
         int vs = 1;
         boolean valSet = false;
-        int intVal = 0;
+        double numVal = 0;
         int op = 0;
         // operand
         if(b0<=20) { op = b0;  vs=1;  }
         if(b0==12) { op = b0*100+b1;  vs=2;  }
         //if(b0==19 || b0==20) { op = b0/ *+" "+b1* /;  vs=2; }
         if(21 <=b0 && b0<= 27) { op = b0;  vs=1; }
-        if(b0==28) { valSet = true; intVal = bin.readShort(data,offset+1);  vs=3; }
+        if(b0==28) { valSet = true; numVal = bin.readShort(data,offset+1);  vs=3; }
         if(29 <=b0 && b0<= 31) { op = b0;  vs=1; }
-        if(32 <=b0 && b0<=246) { valSet = true; intVal = b0-139;  vs=1; }
-        if(247<=b0 && b0<=250) { valSet = true; intVal = (b0-247)*256+b1+108;  vs=2; }
-        if(251<=b0 && b0<=254) { valSet = true; intVal =-(b0-251)*256-b1-108;  vs=2; }
-        if(b0==255) { valSet = true; intVal = bin.readInt(data, offset+1)/0xffff;  vs=5;   }
+        if(32 <=b0 && b0<=246) { valSet = true; numVal = b0-139;  vs=1; }
+        if(247<=b0 && b0<=250) { valSet = true; numVal = (b0-247)*256+b1+108;  vs=2; }
+        if(251<=b0 && b0<=254) { valSet = true; numVal =-(b0-251)*256-b1-108;  vs=2; }
+        if(b0==255) { valSet = true; numVal = (double)bin.readInt(data, offset+1)/0xffff;  vs=5;   }
         
         if (valSet)
         {
           o.val = null;
-          o.intVal = intVal;
+          o.numVal = numVal;
         }
         else
         {
           o.val = "o"+op;
-          o.intVal = 0;
+          o.numVal = 0;
         }
         o.size = vs;
     }
