@@ -432,28 +432,46 @@ public class CFF
         return offset-1;
     }
     
-    @JsMethod public static native JavaScriptObject getCharString (JavaScriptObject data, int offset, int o)
-        /*-{
-        var bin = Typr._bin;
-        
-        var b0 = data[offset], b1 = data[offset+1], b2 = data[offset+2], b3 = data[offset+3], b4=data[offset+4];
-        var vs = 1;
-        var op=null, val=null;
+
+    @JsType(namespace="Typr")
+    public static class GetCharStringOutput
+    {
+      @JsProperty String val = null;
+      @JsProperty int intVal;
+      @JsProperty int size;
+    }
+    
+    @JsMethod public static void getCharString (Uint8Array data, int offset, GetCharStringOutput o)
+    {
+        int b0 = data.intAt(offset), b1 = data.intAt(offset+1), b2 = data.intAt(offset+2), b3 = data.intAt(offset+3), b4=data.intAt(offset+4);
+        int vs = 1;
+        boolean valSet = false;
+        int intVal = 0;
+        int op = 0;
         // operand
         if(b0<=20) { op = b0;  vs=1;  }
         if(b0==12) { op = b0*100+b1;  vs=2;  }
         //if(b0==19 || b0==20) { op = b0/ *+" "+b1* /;  vs=2; }
         if(21 <=b0 && b0<= 27) { op = b0;  vs=1; }
-        if(b0==28) { val = bin.readShort(data,offset+1);  vs=3; }
+        if(b0==28) { valSet = true; intVal = bin.readShort(data,offset+1);  vs=3; }
         if(29 <=b0 && b0<= 31) { op = b0;  vs=1; }
-        if(32 <=b0 && b0<=246) { val = b0-139;  vs=1; }
-        if(247<=b0 && b0<=250) { val = (b0-247)*256+b1+108;  vs=2; }
-        if(251<=b0 && b0<=254) { val =-(b0-251)*256-b1-108;  vs=2; }
-        if(b0==255) {  val = bin.readInt(data, offset+1)/0xffff;  vs=5;   }
+        if(32 <=b0 && b0<=246) { valSet = true; intVal = b0-139;  vs=1; }
+        if(247<=b0 && b0<=250) { valSet = true; intVal = (b0-247)*256+b1+108;  vs=2; }
+        if(251<=b0 && b0<=254) { valSet = true; intVal =-(b0-251)*256-b1-108;  vs=2; }
+        if(b0==255) { valSet = true; intVal = bin.readInt(data, offset+1)/0xffff;  vs=5;   }
         
-        o.val = val!=null ? val : "o"+op;
+        if (valSet)
+        {
+          o.val = null;
+          o.intVal = intVal;
+        }
+        else
+        {
+          o.val = "o"+op;
+          o.intVal = 0;
+        }
         o.size = vs;
-    }-*/;
+    }
     
 //    @JsMethod public static native JavaScriptObject readCharString (JavaScriptObject data, int offset, int length)
 //        /*-{

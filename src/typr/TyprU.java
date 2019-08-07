@@ -10,8 +10,10 @@ import elemental.util.Collections;
 import elemental.util.MapFromStringTo;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import typr.lctf.LookupTable;
+import typr.tabs.CFF;
 import typr.tabs.GPOSParser.GPOSTab;
 import typr.tabs.GPOSParser.MatrixEntry;
 import typr.tabs.GPOSParser.PairSet;
@@ -94,14 +96,31 @@ public class TyprU
 	else if(font.glyf != null) {  _drawGlyf(gid, font, path);  }
 	return path;
   }
-  
-  @JsIgnore static native void glyphToPathCFF(TyprFont font, int gid, TyprPath path, MapFromStringTo<JavaScriptObject> Private)
-  /*-{
-        var state = {x:0,y:0,stack:[],nStems:0,haveWidth:false,width: Private ? Private.defaultWidthX : 0,open:false};
-        Typr.U._drawCFF(font.CFF.CharStrings[gid], state, font.CFF, path, Private);
-    
-  }-*/;
 
+  @JsType
+  public static class CFFPathState
+  {
+    @JsProperty int x = 0;
+    @JsProperty int y = 0;
+    @JsProperty ArrayOfInt stack;
+    @JsProperty int nStems = 0;
+    @JsProperty boolean haveWidth = false;
+    @JsProperty int width;
+    @JsProperty boolean open = false;
+    @JsMethod native void init(MapFromStringTo<JavaScriptObject> Private)
+    /*-{
+      this.stack = [];
+      this.width = (Private != null ? Private.defaultWidthX : 0);
+    }-*/;
+  }
+  
+  @JsIgnore static void glyphToPathCFF(TyprFont font, int gid, TyprPath path, MapFromStringTo<JavaScriptObject> Private)
+  {
+    CFFPathState state = new CFFPathState();
+    state.init(Private);
+    _drawCFF(font.CFF.CharStrings.get(gid), state, font.CFF, path, Private);
+  }
+  
   @JsMethod public static ArrayOfInt getGlyphDimensions (TyprFont font, int gid)
   {
     if((font.SVG != null && font.SVG.entries.hasKey(gid)) || font.CFF != null) 
@@ -533,19 +552,22 @@ public class TyprU
   }
 
 
-  @JsMethod public static native JavaScriptObject _drawCFF (JavaScriptObject cmds, JavaScriptObject state, JavaScriptObject font, JavaScriptObject p, JavaScriptObject Private)
+  @JsMethod public static native JavaScriptObject _drawCFF (ArrayOfInt cmds, CFFPathState state, CFF font, TyprPath p, MapFromStringTo<JavaScriptObject> Private)
   /*-{
+// {
 	var stack = state.stack;
 	var nStems = state.nStems, haveWidth=state.haveWidth, width=state.width, open=state.open;
 	var i=0;
 	var x=state.x, y=state.y, c1x=0, c1y=0, c2x=0, c2y=0, c3x=0, c3y=0, c4x=0, c4y=0, jpx=0, jpy=0;
 	
-	var o = {val:0,size:0};
+	//var o = {val:0,size:0};
+	var o = new Typr.GetCharStringOutput();
 	//console.log(cmds);
 	while(i<cmds.length)
 	{
 		Typr.CFF.getCharString(cmds, i, o);
 		var v = o.val;
+		var vint = o.intVal;
 		i += o.size;
 			
 		if(false) {}
@@ -879,10 +901,12 @@ public class TyprU
 			}
 		}
 		
-		else if((v+"").charAt(0)=="o") {   console.log("Unknown operation: "+v, cmds); throw v;  }
-		else stack.push(v);
+		else if(v != null) {   console.log("Unknown operation: "+v, cmds); throw v;  }
+		else stack.push(vint);
 	}
 	//console.log(cmds);
 	state.x=x; state.y=y; state.nStems=nStems; state.haveWidth=haveWidth; state.width=width; state.open=open;
+//  }
   }-*/;
+
 }
