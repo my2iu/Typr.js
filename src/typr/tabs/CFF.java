@@ -76,8 +76,8 @@ public class CFF extends CffDictBase
         return parseMore(topdict, data, offset, strings, isCIDFont);
   }
   @JsProperty public ArrayOf<ArrayOfInt> CharStrings;
-  @JsProperty public JavaScriptObject Encoding;
-  @JsProperty public JavaScriptObject charset;
+  @JsProperty public ArrayOfInt Encoding;
+  @JsProperty public ArrayOfInt charset;
 //  @JsProperty public CffDict Private;
   @JsProperty public ArrayOf<CffDict> FDArray;
   @JsProperty public FDSelect FDSelect;
@@ -442,24 +442,6 @@ public class CFF extends CffDictBase
       throw new IllegalArgumentException("Unknown FDSelect type " + format);
   }
 
-  @JsIgnore private static native void setCFFString(CFF cff, String key, String val)
-  /*-{
-    return cff[key] = val;    
-  }-*/;
-  @JsIgnore private static native void copyCFFJSObj(CFF cff, String key, MapFromStringTo<JavaScriptObject> dict)
-  /*-{
-    return cff[key] = dict[key];    
-  }-*/;
-//  @JsIgnore private static native int getDictInt(CffDict dict, String key)
-//  /*-{
-//    return dict[key];    
-//  }-*/;
-
-  @JsIgnore private static native ArrayOfInt getDictArrayOfInt(MapFromStringTo<JavaScriptObject> dict, String key)
-  /*-{
-    return dict[key];    
-  }-*/;
-
   @JsIgnore private static void readSubrs(Uint8Array data, int offset, CffDictBase obj)
   {
 //        var bin = Typr._bin;
@@ -517,11 +499,11 @@ public class CFF extends CffDictBase
     146, 147, 148, 149,   0,   0,   0,   0
     };
   
-    @JsMethod public static native int glyphByUnicode (CFF cff, int code)
-        /*-{
-        for(var i=0; i<cff.charset.length; i++) if(cff.charset[i]==code) return i;
+    @JsMethod public static int glyphByUnicode (CFF cff, int code)
+    {
+        for(int i=0; i<cff.charset.length(); i++) if(cff.charset.get(i)==code) return i;
         return -1;
-    }-*/;
+    }
     
     @JsMethod public static int glyphBySE(CFF cff, int charcode)  // glyph by standard encoding
     {
@@ -529,19 +511,21 @@ public class CFF extends CffDictBase
         return CFF.glyphByUnicode(cff, CFF.tableSE[charcode]);        
     }
     
-    @JsIgnore private static native JavaScriptObject readEncoding (Uint8Array data, int offset, int num)
-        /*-{
-        var bin = Typr._bin;
+    @JsIgnore private static ArrayOfInt readEncoding (Uint8Array data, int offset, int num)
+        {
+//        var bin = Typr._bin;
         
-        var array = ['.notdef'];
-        var format = data[offset];  offset++;
+        ArrayOfInt array = Collections.arrayOfInt(); //['.notdef'];
+        array.push(0xdeadbeef);
+        
+        int format = data.intAt(offset);  offset++;
         //console.log("Encoding");
         //console.log(format);
         
         if(format==0)
         {
-            var nCodes = data[offset];  offset++;
-            for(var i=0; i<nCodes; i++)  array.push(data[offset+i]);
+            int nCodes = data.intAt(offset);  offset++;
+            for(int i=0; i<nCodes; i++)  array.push(data.intAt(offset+i));
         }
 //        else if(format==1 || format==2)
 //        {
@@ -554,41 +538,42 @@ public class CFF extends CffDictBase
 //                for(var i=0; i<=nLeft; i++)  {  charset.push(first);  first++;  }
 //            }
 //        }
-        else throw "error: unknown encoding format: " + format;
+        else throw new IllegalArgumentException("error: unknown encoding format: " + format);
         
         return array;
-    }-*/;
+    }
 
-    @JsIgnore private static native JavaScriptObject readCharset (Uint8Array data, int offset, int num)
-        /*-{
-        var bin = Typr._bin;
+    @JsIgnore private static ArrayOfInt readCharset (Uint8Array data, int offset, int num)
+        {
+//        var bin = Typr._bin;
         
-        var charset = ['.notdef'];
-        var format = data[offset];  offset++;
+        ArrayOfInt charset = Collections.arrayOfInt(); //['.notdef'];
+        charset.push(0xdeadbeef);
+        int format = data.intAt(offset);  offset++;
         
         if(format==0)
         {
-            for(var i=0; i<num; i++) 
+            for(int i=0; i<num; i++) 
             {
-                var first = bin.readUshort(data, offset);  offset+=2;
+                int first = bin.readUshort(data, offset);  offset+=2;
                 charset.push(first);
             }
         }
         else if(format==1 || format==2)
         {
-            while(charset.length<num)
+            while(charset.length()<num)
             {
-                var first = bin.readUshort(data, offset);  offset+=2;
-                var nLeft=0;
-                if(format==1) {  nLeft = data[offset];  offset++;  }
+                int first = bin.readUshort(data, offset);  offset+=2;
+                int nLeft=0;
+                if(format==1) {  nLeft = data.intAt(offset);  offset++;  }
                 else          {  nLeft = bin.readUshort(data, offset);  offset+=2;  }
-                for(var i=0; i<=nLeft; i++)  {  charset.push(first);  first++;  }
+                for(int i=0; i<=nLeft; i++)  {  charset.push(first);  first++;  }
             }
         }
-        else throw "error: format: " + format;
+        else throw new IllegalArgumentException("error: format: " + format);
         
         return charset;
-    }-*/;
+    }
 
     @JsIgnore private static int readIndex (Uint8Array data, int offset, ArrayOfInt inds)
     {

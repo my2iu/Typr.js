@@ -53,9 +53,11 @@ public class CffDictBase
   @JsProperty public ArrayOf<ArrayOfInt> Subrs;
   boolean hasSubrs = false;
   @JsProperty public int Bias;
-  @JsProperty double defaultWidthX; // private (number)
+  @JsProperty
+  public double defaultWidthX; // private (number)
   boolean hasdefaultWidthX = false;
-  @JsProperty double nominalWidthX; // private (number)
+  @JsProperty
+  public double nominalWidthX; // private (number)
   boolean hasnominalWidthX = false;
   @JsProperty double RawCharStrings; // top (number)
   boolean hasRawCharStrings = false;

@@ -113,10 +113,10 @@ public class TyprU
     @JsProperty boolean haveWidth = false;
     @JsProperty double width;   // maybe an int?
     @JsProperty boolean open = false;
-    @JsMethod native void init(CffDictBase Private)
-    /*-{
+    @JsMethod void init(CffDictBase Private)
+    {
       this.width = (Private != null ? Private.defaultWidthX : 0);
-    }-*/;
+    }
   }
   
   @JsIgnore static void glyphToPathCFF(TyprFont font, int gid, TyprPath path, CffDictBase Private)
@@ -556,25 +556,25 @@ public class TyprU
   }
 
 
-  @JsIgnore public static native double getPrivateNominalWidthX(CffDictBase Private)
-  /*-{
+  @JsIgnore public static double getPrivateNominalWidthX(CffDictBase Private)
+  {
     return Private.nominalWidthX;
-  }-*/;
+  }
 
-  @JsIgnore public static native double getCFFNominalWidthX(CFF font)
-  /*-{
-    return font.nominalWidthX
-  }-*/;
+  @JsIgnore public static double getCFFNominalWidthX(CFF font)
+  {
+    return font.nominalWidthX;
+  }
 
-  @JsIgnore public static native ArrayOfInt getPrivateSubrs(CffDictBase obj, int ind)
-  /*-{
-  return obj.Subrs[ ind + obj.Bias ];
-  }-*/;
+  @JsIgnore public static ArrayOfInt getPrivateSubrs(CffDictBase obj, int ind)
+  {
+    return obj.Subrs.get(ind + obj.Bias);
+  }
 
-  @JsIgnore public static native ArrayOfInt getCFFSubrs(CFF obj, int ind)
-  /*-{
-  return obj.Subrs[ ind + obj.Bias ];
-  }-*/;
+  @JsIgnore public static ArrayOfInt getCFFSubrs(CFF obj, int ind)
+  {
+    return obj.Subrs.get(ind + obj.Bias);
+  }
 
   
   @JsIgnore public static void _drawCFF (ArrayOfInt cmds, CFFPathState state, CFF font, TyprPath p, CffDictBase Private, Consumer<String> consoleLog)
