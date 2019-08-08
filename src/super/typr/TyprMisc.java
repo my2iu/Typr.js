@@ -22,9 +22,18 @@ public class TyprMisc
     Browser.getWindow().getConsole().log(s);
   }
 
+  public static native String toFixed(double d, int prec) /*-{
+    return d.toFixed(prec);
+  }-*/;
+  
   public static Uint8Array slicedUint8Array(Uint8Array data, int offset, int length)
   {
     return Browser.getWindow().newUint8Array(data.getBuffer().slice(offset, offset + length), 0, length);
+  }
+
+  public static Uint8Array viewOfUint8Array(Uint8Array data, int offset, int length)
+  {
+    return Browser.getWindow().newUint8Array(data.getBuffer(), offset, length);
   }
 
 }

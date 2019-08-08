@@ -3,12 +3,15 @@ package typr;
 import java.util.function.Consumer;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.shared.GWT;
+import com.google.gwt.i18n.client.NumberFormat;
 
 import elemental.client.Browser;
 import elemental.html.CanvasRenderingContext2D;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
 import elemental.util.ArrayOfNumber;
+import elemental.util.ArrayOfString;
 import elemental.util.Collections;
 import elemental.util.MapFromStringTo;
 import jsinterop.annotations.JsIgnore;
@@ -502,18 +505,35 @@ public class TyprU
 	return tpath;
   }
 
-  @JsMethod public static native JavaScriptObject pathToSVG (JavaScriptObject path, JavaScriptObject prec)
-  /*-{
+  @JsIgnore private static int typrPathCoordCount(String cmd)
+  {
+    switch (cmd)
+    {
+    case "M": return 2;
+    case "L": return 2;
+    case "Q": return 4;
+    case "C": return 6;
+    }
+    return 0;
+  }
+  
+  @JsMethod public static String pathToSVG (TyprPath path, Integer prec)
+  {
 	if(prec==null) prec = 5;
-	var out = [], co = 0, lmap = {"M":2,"L":2,"Q":4,"C":6};
-	for(var i=0; i<path.cmds.length; i++)
+	ArrayOfString out = Collections.arrayOfString();
+	int co = 0;
+//	var lmap = new {"M":2,"L":2,"Q":4,"C":6};
+	for(int i=0; i<path.cmds.length(); i++)
 	{
-		var cmd = path.cmds[i], cn = co+(lmap[cmd]?lmap[cmd]:0);  
+		String cmd = path.cmds.get(i);
+		int cn = co+(typrPathCoordCount(cmd) != 0?typrPathCoordCount(cmd):0);  
 		out.push(cmd);
-		while(co<cn) {  var c = path.crds[co++];  out.push(parseFloat(c.toFixed(prec))+(co==cn?"":" "));  }
+		while(co<cn) {  
+		  double c = path.crds.get(co++);  
+		  out.push(Double.parseDouble(TyprMisc.toFixed(c, prec))+(co==cn?"":" "));  }
 	}
 	return out.join("");
-  }-*/;
+  }
 
   @JsMethod public static void pathToContext (TyprPath path, CanvasRenderingContext2D ctx)
   {

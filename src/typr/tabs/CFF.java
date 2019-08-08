@@ -1,6 +1,5 @@
 package typr.tabs;
 
-import elemental.client.Browser;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfBoolean;
@@ -12,6 +11,7 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+import typr.TyprMisc;
 import typr.bin;
 
 @JsType(namespace="Typr")
@@ -21,7 +21,7 @@ public class CFF extends CffDictBase
   {
 //        var bin = Typr._bin;
         
-        data = Browser.getWindow().newUint8Array(data.getBuffer(), offset, length);
+        data = TyprMisc.viewOfUint8Array(data, offset, length);
         offset = 0;
         
         // Header
@@ -353,6 +353,7 @@ public class CFF extends CffDictBase
   
   @JsIgnore private static String lookupCffString(ArrayOfString strings, int idx)
   {
+    if (idx -426 + 35 < 0) return null;   // TODO: Is this necessary?
     return strings.get(idx -426 + 35);
   }
 
@@ -598,7 +599,8 @@ public class CFF extends CffDictBase
     
     @JsIgnore public static void getCharString (ArrayOfInt data, int offset, GetCharStringOutput o)
     {
-        int b0 = data.get(offset), b1 = data.get(offset+1), b2 = data.get(offset+2), b3 = data.get(offset+3), b4=data.get(offset+4);
+        int b0 = data.get(offset);
+        int b1 = offset +1 < data.length() ? data.get(offset+1) : 0;//, b2 = data.get(offset+2), b3 = data.get(offset+3), b4=data.get(offset+4);
         int vs = 1;
         boolean valSet = false;
         double numVal = 0;
