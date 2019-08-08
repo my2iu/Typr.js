@@ -7,6 +7,7 @@ import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfBoolean;
 import elemental.util.ArrayOfInt;
+import elemental.util.ArrayOfNumber;
 import elemental.util.ArrayOfString;
 import elemental.util.Collections;
 import elemental.util.MapFromStringTo;
@@ -17,7 +18,7 @@ import jsinterop.annotations.JsType;
 import typr.bin;
 
 @JsType(namespace="Typr")
-public class CFF
+public class CFF extends CffDictBase
 {
   @JsIgnore public static CFF parse (Uint8Array data, int offset, int length)
   {
@@ -47,7 +48,7 @@ public class CFF
         ArrayOfInt tdinds = Collections.arrayOfInt();
         offset = readIndex(data, offset, tdinds);
         // Top DICT Data
-        ArrayOf<JavaScriptObject> topDicts = Collections.arrayOf();
+        ArrayOf<CffDict> topDicts = Collections.arrayOf();
         boolean isCIDFont = false;
         for(int i=0; i<tdinds.length()-1; i++)
         {
@@ -58,7 +59,7 @@ public class CFF
             isCIDFont = true;
         }
         offset += tdinds.get(tdinds.length()-1);
-        MapFromStringTo<JavaScriptObject> topdict = (MapFromStringTo<JavaScriptObject>)topDicts.get(0);
+        CffDict topdict = topDicts.get(0);
         //console.log(topdict);
         
         // String INDEX
@@ -77,19 +78,19 @@ public class CFF
   @JsProperty public ArrayOf<ArrayOfInt> CharStrings;
   @JsProperty public JavaScriptObject Encoding;
   @JsProperty public JavaScriptObject charset;
-  @JsProperty public MapFromStringTo<JavaScriptObject> Private;
-  @JsProperty public ArrayOf<JavaScriptObject> FDArray;
+//  @JsProperty public CffDict Private;
+  @JsProperty public ArrayOf<CffDict> FDArray;
   @JsProperty public FDSelect FDSelect;
   @JsProperty public boolean isCIDFont = false;
   
-  @JsIgnore static CFF parseMore(MapFromStringTo<JavaScriptObject> topdict, Uint8Array data, int offset, ArrayOfString strings, boolean isCIDFont)
+  @JsIgnore static CFF parseMore(CffDict topdict, Uint8Array data, int offset, ArrayOfString strings, boolean isCIDFont)
   {
         CFF obj = new CFF();
 
         // charstrings
-        if(topdict.hasKey("CharStrings"))
+        if(topdict.hasRawCharStrings)
         {
-            offset = getDictInt(topdict, "CharStrings");
+            offset = (int)topdict.RawCharStrings;
             ArrayOfInt sinds = Collections.arrayOfInt();
             offset = readIndex(data, offset, sinds);
             
@@ -101,88 +102,262 @@ public class CFF
         }
         
         // Encoding
-        if(topdict.hasKey("Encoding")) 
+        if(topdict.hasRawEncoding) 
         {
-          obj.Encoding = readEncoding(data, getDictInt(topdict,"Encoding"), obj.CharStrings.length());
+          obj.Encoding = readEncoding(data, (int)topdict.RawEncoding, obj.CharStrings.length());
         }
         
         // charset
-        if(topdict.hasKey("charset"))
+        if(topdict.hasRawCharset)
         {
-          obj.charset = readCharset (data, getDictInt(topdict, "charset") , obj.CharStrings.length());
+          obj.charset = readCharset (data, (int)topdict.RawCharset , obj.CharStrings.length());
         }
         
-        if(topdict.hasKey("Private"))
+        if(topdict.hasRawPrivate)
         {
-            offset = getDictArrayOfInt(topdict, "Private").get(1);
+            offset = (int)topdict.RawPrivate.get(1);
             ArrayOfBoolean firstIsROS = Collections.arrayOfBoolean();
             firstIsROS.push(false);
-            obj.Private = (MapFromStringTo<JavaScriptObject>)readDict(data, offset, offset+getDictArrayOfInt(topdict, "Private").get(0), firstIsROS);
-            if(obj.Private.hasKey("Subrs"))  readSubrs(data, offset+getDictInt(obj.Private, "Subrs"), obj.Private);
+            obj.Private = readDict(data, offset, offset+(int)topdict.RawPrivate.get(0), firstIsROS);
+            if(obj.Private.hasRawSubrs)  readSubrs(data, offset+(int)obj.Private.RawSubrs, obj.Private);
         }
         
         if (isCIDFont)
         {
           obj.isCIDFont = true;
-          int fdArrayOffset = getDictInt(topdict, "FDArray");
-          int fdSelectOffset = getDictInt(topdict, "FDSelect");
+          int fdArrayOffset = (int)topdict.RawFDArray;
+          int fdSelectOffset = (int)topdict.RawFDSelect;
           // Read indices of the various dictionaries
           ArrayOfInt fdArrIndices = Collections.arrayOfInt();
           offset = readIndex(data, fdArrayOffset, fdArrIndices);
           // Read in the font dictionaries now
-          ArrayOf<JavaScriptObject> cidFontDicts = Collections.arrayOf();
+          ArrayOf<CffDict> cidFontDicts = Collections.arrayOf();
           for(int i=0; i<fdArrIndices.length()-1; i++)
           {
             ArrayOfBoolean dummyFirstIsROS = Collections.arrayOfBoolean();
             dummyFirstIsROS.push(false);
-            MapFromStringTo<JavaScriptObject> fontDict = (MapFromStringTo<JavaScriptObject>)readDict(data, offset+fdArrIndices.get(i), offset+fdArrIndices.get(i+1), dummyFirstIsROS);
+            CffDict fontDict = readDict(data, offset+fdArrIndices.get(i), offset+fdArrIndices.get(i+1), dummyFirstIsROS);
             // Might as well parse the Private data for each font dictionary too
-            if (fontDict.hasKey("Private"))
+            if (fontDict.hasRawPrivate)
             {
-              int privateOffset = getDictArrayOfInt(fontDict, "Private").get(1);
-              MapFromStringTo<JavaScriptObject> parsedPrivate = (MapFromStringTo<JavaScriptObject>)readDict(data, privateOffset, privateOffset+getDictArrayOfInt(fontDict, "Private").get(0), dummyFirstIsROS);
-              fontDict.put("Private", (JavaScriptObject)parsedPrivate);
-              if(parsedPrivate.hasKey("Subrs"))  
-                readSubrs(data, privateOffset+getDictInt(parsedPrivate, "Subrs"), parsedPrivate);
+              int privateOffset = (int)fontDict.RawPrivate.get(1);
+              CffDict parsedPrivate = readDict(data, privateOffset, privateOffset+(int)fontDict.RawPrivate.get(0), dummyFirstIsROS);
+              fontDict.setPrivate(parsedPrivate);
+              if(parsedPrivate.hasRawSubrs)  
+                readSubrs(data, privateOffset+(int)parsedPrivate.RawSubrs, parsedPrivate);
             }
-            cidFontDicts.push( (JavaScriptObject)fontDict );
+            cidFontDicts.push( fontDict );
           }
           obj.FDArray = cidFontDicts;
           offset += fdArrIndices.get(fdArrIndices.length()-1);
           // Read in the data for selecting which FontDict to use for each glyph
           obj.FDSelect = readFDSelect(data, fdSelectOffset, obj.CharStrings.length());
         }
-
-        ArrayOfString topdictKeys = topdict.keys();
-        for (int i = 0; i < topdict.keys().length(); i++)
+//        ArrayOfString topdictKeys = topdict.keys();
+//        for (int i = 0; i < topdict.keys().length(); i++)
+//        {
+//          String p = topdictKeys.get(i);
+//          switch(p)
+//          {
+//          case "FamilyName":
+//          case "FullName":
+//          case "Notice":
+//          case "version":
+//          case "Copyright":
+//            setCFFString(obj, p, strings.get(getDictInt(topdict, p) -426 + 35 ));
+//            break;
+//          case "CharStrings":
+//          case "Encoding":
+//          case "charset":
+//          case "Private":
+//            // Already handled elsewhere
+//            break;
+//          case "FDArray":
+//          case "FDSelect":
+//            if (isCIDFont) break;
+//            // Fall through if not a CID font (should not be possible)
+//          default:
+//            copyCFFJSObj(obj, p, topdict);
+//          }
+//        }
+        
+        if (topdict.hasRawVersion) 
+          obj.setVersion(lookupCffString(strings, (int)topdict.rawVersion));
+  
+        if (topdict.hasRawNotice) 
+          obj.setNotice(lookupCffString(strings, (int)topdict.RawNotice));
+  
+        if (topdict.hasRawFullName) 
+          obj.setFullName(lookupCffString(strings, (int)topdict.RawFullName));
+  
+        if (topdict.hasRawFamilyName) 
+          obj.setFamilyName(lookupCffString(strings, (int)topdict.RawFamilyName));
+  
+        if (topdict.hasWeight) 
+          obj.setWeight(topdict.Weight);
+  
+        if (topdict.hasFontBBox)
+          obj.setFontBBox(topdict.FontBBox);
+    
+        if (topdict.hasBlueValues)
+          obj.setBlueValues(topdict.BlueValues);
+    
+        if (topdict.hasOtherBlues)
+          obj.setOtherBlues(topdict.OtherBlues);
+    
+        if (topdict.hasFamilyBlues)
+          obj.setFamilyBlues(topdict.FamilyBlues);
+    
+        if (topdict.hasFamilyOtherBlues)
+          obj.setFamilyOtherBlues(topdict.FamilyOtherBlues);
+    
+        if (topdict.hasStdHW)
+          obj.setStdHW(topdict.StdHW);
+    
+        if (topdict.hasStdVW)
+          obj.setStdVW(topdict.StdVW);
+  
+        if (topdict.hasUniqueID)
+          obj.setUniqueID(topdict.UniqueID);
+    
+        if (topdict.hasXUID)
+          obj.setXUID(topdict.XUID);
+    
+        if (false)
         {
-          String p = topdictKeys.get(i);
-          switch(p)
-          {
-          case "FamilyName":
-          case "FullName":
-          case "Notice":
-          case "version":
-          case "Copyright":
-            setCFFString(obj, p, strings.get(getDictInt(topdict, p) -426 + 35 ));
-            break;
-          case "CharStrings":
-          case "Encoding":
-          case "charset":
-          case "Private":
-            // Already handled elsewhere
-            break;
-          case "FDArray":
-          case "FDSelect":
-            if (isCIDFont) break;
-            // Fall through if not a CID font (should not be possible)
-          default:
-            copyCFFJSObj(obj, p, topdict);
-          }
+          // Already handled elsewhere
+          if (topdict.hasRawCharset)
+            obj.setRawCharset(topdict.RawCharset);
+
+          if (topdict.hasRawEncoding)
+            obj.setEncoding(topdict.RawEncoding);
+
+          if (topdict.hasRawCharStrings)
+            obj.setCharStrings(topdict.RawCharStrings);
+
+          if (topdict.hasRawPrivate)
+            obj.setRawPrivate(topdict.RawPrivate);
         }
+    
+        if (topdict.hasRawSubrs)
+          obj.setRawSubrs(topdict.RawSubrs);
+
+        if (topdict.hasSubrs)
+          obj.setSubrs(topdict.Subrs, topdict.Bias);
+
+        if (topdict.hasdefaultWidthX)
+          obj.setdefaultWidthX(topdict.defaultWidthX);
+    
+        if (topdict.hasnominalWidthX)
+          obj.setnominalWidthX(topdict.nominalWidthX);
+    
+        if (topdict.hasRawCopyright)
+          obj.setCopyright(lookupCffString(strings, (int)topdict.RawCopyright));
+    
+        if (topdict.hasIsFixedPitch)
+          obj.setisFixedPitch(topdict.isFixedPitch);
+    
+        if (topdict.hasItalicAngle)
+          obj.setItalicAngle(topdict.ItalicAngle);
+    
+        if (topdict.hasUnderlinePosition)
+          obj.setUnderlinePosition(topdict.UnderlinePosition);
+    
+        if (topdict.hasUnderlineThickness)
+          obj.setUnderlineThickness(topdict.UnderlineThickness);
+    
+        if (topdict.hasPaintType)
+          obj.setPaintType(topdict.PaintType);
+    
+        if (topdict.hasCharstringType)
+          obj.setCharstringType(topdict.CharstringType);
+    
+        if (topdict.hasFontMatrix)
+          obj.setFontMatrix(topdict.FontMatrix);
+    
+        if (topdict.hasStrokeWidth)
+          obj.setStrokeWidth(topdict.StrokeWidth);
+    
+        if (topdict.hasBlueScale)
+          obj.setBlueScale(topdict.BlueScale);
+    
+        if (topdict.hasBlueShift)
+          obj.setBlueShift(topdict.BlueShift);
+    
+        if (topdict.hasBlueFuzz)
+          obj.setBlueFuzz(topdict.BlueFuzz);
+    
+        if (topdict.hasStemSnapH)
+          obj.setStemSnapH(topdict.StemSnapH);
+    
+        if (topdict.hasStemSnapV)
+          obj.setStemSnapV(topdict.StemSnapV);
+    
+        if (topdict.hasForceBold)
+          obj.setForceBold(topdict.ForceBold);
+    
+        if (topdict.hasLanguageGroup)
+          obj.setLanguageGroup(topdict.LanguageGroup);
+    
+        if (topdict.hasExpansionFactor)
+          obj.setExpansionFactor(topdict.ExpansionFactor);
+    
+        if (topdict.hasInitialRandomSeed)
+          obj.setinitialRandomSeed(topdict.initialRandomSeed);
+    
+        if (topdict.hasSyntheticBase)
+          obj.setSyntheticBase(topdict.SyntheticBase);
+    
+        if (topdict.hasPostScript)
+          obj.setPostScript(topdict.PostScript);
+    
+        if (topdict.hasBaseFontName)
+          obj.setBaseFontName(topdict.BaseFontName);
+    
+        if (topdict.hasBaseFontBlend)
+          obj.setBaseFontBlend(topdict.BaseFontBlend);
+    
+        if (topdict.hasROS)
+          obj.setROS(topdict.ROS);
+    
+        if (topdict.hasCIDFontVersion)
+          obj.setCIDFontVersion(topdict.CIDFontVersion);
+    
+        if (topdict.hasCIDFontRevision)
+          obj.setCIDFontRevision(topdict.CIDFontRevision);
+    
+        if (topdict.hasCIDFontType)
+          obj.setCIDFontType(topdict.CIDFontType);
+    
+        if (topdict.hasCIDCount)
+          obj.setCIDCount(topdict.CIDCount);
+    
+        if (topdict.hasUIDBase)
+          obj.setUIDBase(topdict.UIDBase);
+
+        if (!isCIDFont)
+        {
+          // Should be impossible to have these fields set on a CID font, but whatever
+          if (topdict.hasRawFDArray)
+            obj.setRawFDArray(topdict.RawFDArray);
+      
+          if (topdict.hasRawFDSelect)
+            obj.setRawFDSelect(topdict.RawFDSelect);
+        }
+
+    
+        if (topdict.hasFontName)
+          obj.setFontName(topdict.FontName);
+    
+
         //console.log(obj);
         return obj;
     }
+  
+  @JsIgnore private static String lookupCffString(ArrayOfString strings, int idx)
+  {
+    return strings.get(idx -426 + 35);
+  }
 
   static public abstract class FDSelect
   {
@@ -275,17 +450,17 @@ public class CFF
   /*-{
     return cff[key] = dict[key];    
   }-*/;
-  @JsIgnore private static native int getDictInt(MapFromStringTo<JavaScriptObject> dict, String key)
-  /*-{
-    return dict[key];    
-  }-*/;
+//  @JsIgnore private static native int getDictInt(CffDict dict, String key)
+//  /*-{
+//    return dict[key];    
+//  }-*/;
 
   @JsIgnore private static native ArrayOfInt getDictArrayOfInt(MapFromStringTo<JavaScriptObject> dict, String key)
   /*-{
     return dict[key];    
   }-*/;
 
-  @JsIgnore private static void readSubrs(Uint8Array data, int offset, MapFromStringTo<JavaScriptObject> obj)
+  @JsIgnore private static void readSubrs(Uint8Array data, int offset, CffDictBase obj)
   {
 //        var bin = Typr._bin;
         ArrayOfInt gsubinds = Collections.arrayOfInt();
@@ -302,11 +477,10 @@ public class CFF
         //offset += gsubinds[gsubinds.length-1];
         putBiasSubrs(obj, bias, subrs);
   }
-  @JsIgnore static native void putBiasSubrs (MapFromStringTo<JavaScriptObject> obj, int bias, ArrayOf<ArrayOfInt> subrs)
-  /*-{
-    obj.Bias = bias;
-    obj.Subrs = subrs;
-  }-*/;
+  @JsIgnore static void putBiasSubrs (CffDictBase obj, int bias, ArrayOf<ArrayOfInt> subrs)
+  {
+    obj.setSubrs(subrs, bias);
+  }
     
     private static int[] tableSE = new int[] {
       0,   0,   0,   0,   0,   0,   0,   0,
@@ -506,69 +680,238 @@ public class CFF
 //        return arr;
 //    }-*/;
 
-    @JsIgnore private static native JavaScriptObject readDict (Uint8Array data, int offset, int end, ArrayOfBoolean firstIsROS)
-        /*-{
-        var bin = Typr._bin;
+    @JsType
+    public static class CffDict extends CffDictBase
+    {
+
+      @JsIgnore public void loadDictValue(int key, ArrayOfNumber val)
+      {
+        switch(key)
+        {
+        case 0:
+          setRawVersion(val.get(0)); break;
+        case 1:
+          setRawNotice(val.get(0)); break;
+        case 2:
+          setRawFullName(val.get(0)); break;
+        case 3:
+          setRawFamilyName(val.get(0)); break;
+        case 4:
+          setWeight(val.get(0)); break;
+        case 5:
+          setFontBBox(val);
+          break;
+        case 6:
+          setBlueValues(val.get(0));
+          break;
+        case 7:
+          setOtherBlues(val.get(0));
+          break;
+        case 8:
+          setFamilyBlues(val.get(0));
+          break;
+        case 9:
+          setFamilyOtherBlues(val.get(0));
+          break;
+        case 10:
+          setStdHW(val.get(0));
+          break;
+        case 11:
+          setStdVW(val.get(0));
+          break;
+        case 12:
+          break;
+        case 13:
+          setUniqueID(val.get(0));
+          break;
+        case 14:
+          setXUID(val);
+          break;
+        case 15:
+          setRawCharset(val.get(0));
+          break;
+        case 16:
+          setEncoding(val.get(0));
+          break;
+        case 17:
+          setCharStrings(val.get(0));
+          break;
+        case 18:
+          setRawPrivate(val);
+          break;
+        case 19:
+          setRawSubrs(val.get(0));
+          break;
+        case 20:
+          setdefaultWidthX(val.get(0));
+          break;
+        case 21:
+          setnominalWidthX(val.get(0));
+          break;
+        }
+      }
+      
+      @JsIgnore public void loadEscapedDictValue(int key, ArrayOfNumber val)
+      {
+        switch(key)
+        {
+        case 0:
+          setRawCopyright(val.get(0));
+          break;
+        case 1:
+          setisFixedPitch(val.get(0) != 0);
+          break;
+        case 2:
+          setItalicAngle(val.get(0));
+          break;
+        case 3:
+          setUnderlinePosition(val.get(0));
+          break;
+        case 4:
+          setUnderlineThickness(val.get(0));
+          break;
+        case 5:
+          setPaintType(val.get(0));
+          break;
+        case 6:
+          setCharstringType(val.get(0));
+          break;
+        case 7:
+          setFontMatrix(val);
+          break;
+        case 8:
+          setStrokeWidth(val.get(0));
+          break;
+        case 9:
+          setBlueScale(val.get(0));
+          break;
+        case 10:
+          setBlueShift(val.get(0));
+          break;
+        case 11:
+          setBlueFuzz(val.get(0));
+          break;
+        case 12:
+          setStemSnapH(val.get(0));
+          break;
+        case 13:
+          setStemSnapV(val.get(0));
+          break;
+        case 14:
+          setForceBold(val.get(0) != 0);
+          break;
+        case 17:
+          setLanguageGroup(val.get(0));
+          break;
+        case 18:
+          setExpansionFactor(val.get(0));
+          break;
+        case 19:
+          setinitialRandomSeed(val.get(0));
+          break;
+        case 20:
+          setSyntheticBase(val.get(0));
+          break;
+        case 21:
+          setPostScript(val.get(0));
+          break;
+        case 22:
+          setBaseFontName(val.get(0));
+          break;
+        case 23:
+          setBaseFontBlend(val.get(0));
+          break;
+        case 30:
+          setROS(val);
+          break;
+        case 31:
+          setCIDFontVersion(val.get(0));
+          break;
+        case 32:
+          setCIDFontRevision(val.get(0));
+          break;
+        case 33:
+          setCIDFontType(val.get(0));
+          break;
+        case 34:
+          setCIDCount(val.get(0));
+          break;
+        case 35:
+          setUIDBase(val.get(0));
+          break;
+        case 36:
+          setRawFDArray(val.get(0));
+          break;
+        case 37:
+          setRawFDSelect(val.get(0));
+          break;
+        case 38:
+          setFontName(val.get(0));
+          break;
+        }
+      }
+      
+    }
+
+    @JsIgnore private static CffDict readDict (Uint8Array data, int offset, int end, ArrayOfBoolean firstIsROS)
+    {
         //var dict = [];
-        var dict = {};
-        var carr = [];
-        var firstKey = true;
+      CffDict dict = new CffDict();
+        ArrayOfNumber carr = Collections.arrayOfNumber();
+        boolean firstKey = true;
         
         while(offset<end)
         {
-            var b0 = data[offset], b1 = data[offset+1], b2 = data[offset+2], b3 = data[offset+3], b4=data[offset+4];
-            var vs = 1;
-            var key=null, val=null;
+            int b0 = data.intAt(offset), b1 = data.intAt(offset+1), b2 = data.intAt(offset+2), b3 = data.intAt(offset+3), b4=data.intAt(offset+4);
+            int vs = 1;
+            double val = 0xdeadbeef;
             // operand
             if(b0==28) { val = bin.readShort(data,offset+1);  vs=3; }
             if(b0==29) { val = bin.readInt  (data,offset+1);  vs=5; }
             if(32 <=b0 && b0<=246) { val = b0-139;  vs=1; }
             if(247<=b0 && b0<=250) { val = (b0-247)*256+b1+108;  vs=2; }
             if(251<=b0 && b0<=254) { val =-(b0-251)*256-b1-108;  vs=2; }
-            if(b0==255) {  val = bin.readInt(data, offset+1)/0xffff;  vs=5;  throw "unknown number";  }
+            if(b0==255) {  val = (double)bin.readInt(data, offset+1)/0xffff;  vs=5;  throw new IllegalArgumentException("unknown number");  }
             
             if(b0==30) 
             {  
-                var nibs = [];
+                ArrayOfInt nibs = Collections.arrayOfInt();
                 vs = 1;
                 while(true)
                 {
-                    var b = data[offset+vs];  vs++;
-                    var nib0 = b>>4, nib1 = b&0xf;
+                    int b = data.intAt(offset+vs);  vs++;
+                    int nib0 = b>>4, nib1 = b&0xf;
                     if(nib0 != 0xf) nibs.push(nib0);  if(nib1!=0xf) nibs.push(nib1);
                     if(nib1==0xf) break;
                 }
-                var s = "";
-                var chars = [0,1,2,3,4,5,6,7,8,9,".","e","e-","reserved","-","endOfNumber"];
-                for(var i=0; i<nibs.length; i++) s += chars[nibs[i]];
+                String s = "";
+                final String [] chars = new String[] {"0","1","2","3","4","5","6","7","8","9",".","e","e-","reserved","-","endOfNumber"};
+                for(int i=0; i<nibs.length(); i++) s += chars[nibs.get(i)];
                 //console.log(nibs);
-                val = parseFloat(s);
+                val = Double.parseDouble(s); //parseFloat(s);
             }
-            
+
             if(b0<=21)  // operator
             {
-                var keys = ["version", "Notice", "FullName", "FamilyName", "Weight", "FontBBox", "BlueValues", "OtherBlues", "FamilyBlues","FamilyOtherBlues",
-                    "StdHW", "StdVW", "escape", "UniqueID", "XUID", "charset", "Encoding", "CharStrings", "Private", "Subrs", 
-                    "defaultWidthX", "nominalWidthX"];
-                    
-                key = keys[b0];  vs=1;
-                if(b0==12) { 
-                    var keys = [ "Copyright", "isFixedPitch", "ItalicAngle", "UnderlinePosition", "UnderlineThickness", "PaintType", "CharstringType", "FontMatrix", "StrokeWidth", "BlueScale",
-                    "BlueShift", "BlueFuzz", "StemSnapH", "StemSnapV", "ForceBold", 0,0, "LanguageGroup", "ExpansionFactor", "initialRandomSeed",
-                    "SyntheticBase", "PostScript", "BaseFontName", "BaseFontBlend", 0,0,0,0,0,0, 
-                    "ROS", "CIDFontVersion", "CIDFontRevision", "CIDFontType", "CIDCount", "UIDBase", "FDArray", "FDSelect", "FontName"];
-                    key = keys[b1];  vs=2;
-                    if (firstKey && b1 == 30)
-                        firstIsROS[0] = true;
-                }
-                firstKey = false;
+              if (b0 != 12)
+              {
+                dict.loadDictValue(b0, carr);
+              }
+              vs=1;
+              if(b0==12) {
+                dict.loadEscapedDictValue(b1, carr);
+                vs=2;
+                if (firstKey && b1 == 30)
+                  firstIsROS.set(0, true);
+              }
+              firstKey = false;
+//              dict.put(key, carr.length()==1 ? carr.get(0) : carr);
+              carr=Collections.arrayOfNumber();
             }
-            
-            if(key!=null) {  dict[key] = carr.length==1 ? carr[0] : carr;  carr=[]; }
             else  carr.push(val);  
             
             offset += vs;       
         }   
         return dict;
-    }-*/;
+    }
 }

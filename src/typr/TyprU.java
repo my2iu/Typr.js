@@ -17,7 +17,9 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import typr.lctf.LookupTable;
 import typr.tabs.CFF;
+import typr.tabs.CFF.CffDict;
 import typr.tabs.CFF.GetCharStringOutput;
+import typr.tabs.CffDictBase;
 import typr.tabs.GPOSParser.GPOSTab;
 import typr.tabs.GPOSParser.MatrixEntry;
 import typr.tabs.GPOSParser.PairSet;
@@ -88,12 +90,12 @@ public class TyprU
 		return pth;
 	}
 	else if(font.CFF != null) {
-	    MapFromStringTo<JavaScriptObject> Private = font.CFF.Private;
+	    CffDictBase Private = font.CFF.Private;
 	    if (font.CFF.isCIDFont)
 	    {
 	      int fdIdx = font.CFF.FDSelect.getFd(gid);
-	      JavaScriptObject fd = font.CFF.FDArray.get(fdIdx);
-	      Private = (MapFromStringTo<JavaScriptObject>)((MapFromStringTo<JavaScriptObject>)fd).get("Private");
+	      CffDict fd = font.CFF.FDArray.get(fdIdx);
+	      Private = fd.Private;
 	    }
 	    glyphToPathCFF(font, gid, path, Private);
 	}
@@ -111,13 +113,13 @@ public class TyprU
     @JsProperty boolean haveWidth = false;
     @JsProperty double width;   // maybe an int?
     @JsProperty boolean open = false;
-    @JsMethod native void init(MapFromStringTo<JavaScriptObject> Private)
+    @JsMethod native void init(CffDictBase Private)
     /*-{
       this.width = (Private != null ? Private.defaultWidthX : 0);
     }-*/;
   }
   
-  @JsIgnore static void glyphToPathCFF(TyprFont font, int gid, TyprPath path, MapFromStringTo<JavaScriptObject> Private)
+  @JsIgnore static void glyphToPathCFF(TyprFont font, int gid, TyprPath path, CffDictBase Private)
   {
     CFFPathState state = new CFFPathState();
     state.init(Private);
@@ -554,7 +556,7 @@ public class TyprU
   }
 
 
-  @JsIgnore public static native double getPrivateNominalWidthX(MapFromStringTo<JavaScriptObject> Private)
+  @JsIgnore public static native double getPrivateNominalWidthX(CffDictBase Private)
   /*-{
     return Private.nominalWidthX;
   }-*/;
@@ -564,7 +566,7 @@ public class TyprU
     return font.nominalWidthX
   }-*/;
 
-  @JsIgnore public static native ArrayOfInt getPrivateSubrs(MapFromStringTo<JavaScriptObject> obj, int ind)
+  @JsIgnore public static native ArrayOfInt getPrivateSubrs(CffDictBase obj, int ind)
   /*-{
   return obj.Subrs[ ind + obj.Bias ];
   }-*/;
@@ -575,7 +577,7 @@ public class TyprU
   }-*/;
 
   
-  @JsIgnore public static void _drawCFF (ArrayOfInt cmds, CFFPathState state, CFF font, TyprPath p, MapFromStringTo<JavaScriptObject> Private, Consumer<String> consoleLog)
+  @JsIgnore public static void _drawCFF (ArrayOfInt cmds, CFFPathState state, CFF font, TyprPath p, CffDictBase Private, Consumer<String> consoleLog)
  {
 	ArrayOfNumber stack = state.stack;
 	int nStems = state.nStems;
