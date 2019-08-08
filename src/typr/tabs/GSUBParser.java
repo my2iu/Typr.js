@@ -118,7 +118,7 @@ public class GSUBParser
     return lset;
   }
   
-  static class SubClassRule
+  public static class SubClassRule
   {
     @JsProperty public ArrayOfInt input;
     @JsProperty public ArrayOfInt substLookupRecords;
@@ -186,7 +186,7 @@ public class GSUBParser
     return lset;
   }
   
-  static class Ligature
+  public static class Ligature
   {
     @JsProperty public ArrayOfInt chain;
     @JsProperty public int nglyph;

@@ -15,6 +15,8 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+import typr.lctf.FeatureList;
+import typr.lctf.LayoutCommonTable;
 import typr.lctf.LookupTable;
 import typr.tabs.CFF;
 import typr.tabs.CFF.CffDict;
@@ -24,6 +26,8 @@ import typr.tabs.GPOSParser.GPOSTab;
 import typr.tabs.GPOSParser.MatrixEntry;
 import typr.tabs.GPOSParser.PairSet;
 import typr.tabs.GSUBParser.GSUBTab;
+import typr.tabs.GSUBParser.Ligature;
+import typr.tabs.GSUBParser.SubClassRule;
 import typr.tabs.SVG;
 import typr.tabs.glyf;
 import typr.tabs.glyf.Part;
@@ -317,100 +321,115 @@ public class TyprU
   }
 
   
-  @JsMethod public static native ArrayOfInt stringToGlyphs (TyprFont font, String str)
-  /*-{
-	var gls = [];
-	for(var i=0; i<str.length; i++) {
-		var cc = str.codePointAt(i);  if(cc>0xffff) i++;
-		gls.push(Typr.U.codeToGlyph(font, cc));
+  @JsMethod public static ArrayOfInt stringToGlyphs (TyprFont font, String str)
+  {
+	ArrayOfInt gls = Collections.arrayOfInt();
+	for(int i=0; i<str.length(); i++) {
+		int cc = str.codePointAt(i);  if(cc>0xffff) i++;
+		gls.push(codeToGlyph(font, cc));
 	}
 	//console.log(gls.slice(0));
 	
 	//console.log(gls);  return gls;
 	
-	var gsub = font["GSUB"];  if(gsub==null) return gls;
-	var llist = gsub.lookupList, flist = gsub.featureList;
+	LayoutCommonTable<GSUBTab> gsub = font.GSUB;  if(gsub==null) return gls;
+	ArrayOf<LookupTable<GSUBTab>> llist = gsub.lookupList;
+	ArrayOf<FeatureList> flist = gsub.featureList;
 	
-	var wsep = "\n\t\" ,.:;!?()  ،";
-	var R = "آأؤإاةدذرزوٱٲٳٵٶٷڈډڊڋڌڍڎڏڐڑڒړڔڕږڗژڙۀۃۄۅۆۇۈۉۊۋۍۏےۓەۮۯܐܕܖܗܘܙܞܨܪܬܯݍݙݚݛݫݬݱݳݴݸݹࡀࡆࡇࡉࡔࡧࡩࡪࢪࢫࢬࢮࢱࢲࢹૅેૉ૊૎૏ૐ૑૒૝ૡ૤૯஁ஃ஄அஉ஌எஏ஑னப஫஬";
-	var L = "ꡲ્૗";
+	String wsep = "\n\t\" ,.:;!?()  ،";
+	String R = "آأؤإاةدذرزوٱٲٳٵٶٷڈډڊڋڌڍڎڏڐڑڒړڔڕږڗژڙۀۃۄۅۆۇۈۉۊۋۍۏےۓەۮۯܐܕܖܗܘܙܞܨܪܬܯݍݙݚݛݫݬݱݳݴݸݹࡀࡆࡇࡉࡔࡧࡩࡪࢪࢫࢬࢮࢱࢲࢹૅેૉ૊૎૏ૐ૑૒૝ૡ૤૯஁ஃ஄அஉ஌எஏ஑னப஫஬";
+	String L = "ꡲ્૗";
 	
-	for(var ci=0; ci<gls.length; ci++) {
-		var gl = gls[ci];
+	for(int ci=0; ci<gls.length(); ci++) {
+		int gl = gls.get(ci);
 		
-		var slft = ci==0            || wsep.indexOf(str[ci-1])!=-1;
-		var srgt = ci==gls.length-1 || wsep.indexOf(str[ci+1])!=-1;
+		boolean slft = ci==0              || wsep.indexOf(str.charAt(ci-1))!=-1;
+		boolean srgt = ci==gls.length()-1 || wsep.indexOf(str.charAt(ci+1))!=-1;
 		
-		if(!slft && R.indexOf(str[ci-1])!=-1) slft=true;
-		if(!srgt && R.indexOf(str[ci  ])!=-1) srgt=true;
+		if(!slft && R.indexOf(str.charAt(ci-1))!=-1) slft=true;
+		if(!srgt && R.indexOf(str.charAt(ci  ))!=-1) srgt=true;
 		
-		if(!srgt && L.indexOf(str[ci+1])!=-1) srgt=true;
-		if(!slft && L.indexOf(str[ci  ])!=-1) slft=true;
+		if(!srgt && L.indexOf(str.charAt(ci+1))!=-1) srgt=true;
+		if(!slft && L.indexOf(str.charAt(ci  ))!=-1) slft=true;
 		
-		var feat = null;
+		String feat = null;
 		if(slft) feat = srgt ? "isol" : "init";
 		else     feat = srgt ? "fina" : "medi";
 		
-		for(var fi=0; fi<flist.length; fi++)
+		for(int fi=0; fi<flist.length(); fi++)
 		{
-			if(flist[fi].tag!=feat) continue;
-			for(var ti=0; ti<flist[fi].tab.length; ti++)
+			if(!feat.equals(flist.get(fi).tag)) continue;
+			for(int ti=0; ti<flist.get(fi).tab.length(); ti++)
 			{
-				var tab = llist[flist[fi].tab[ti]];
+				LookupTable<GSUBTab> tab = llist.get(flist.get(fi).tab.get(ti));
 				if(tab.ltype!=1) continue;
-				Typr.U._applyType1(gls, ci, tab);
+				_applyType1(gls, ci, tab);
 			}
 		}
 	}
-	var cligs = ["rlig", "liga", "mset"];
+	final String[] cligs = new String[] {"rlig", "liga", "mset"};
 	
 	//console.log(gls);
 	
-	for(var ci=0; ci<gls.length; ci++) {
-		var gl = gls[ci];
-		var rlim = Math.min(3, gls.length-ci-1);
-		for(var fi=0; fi<flist.length; fi++)
+	for(int ci=0; ci<gls.length(); ci++) {
+		int gl = gls.get(ci);
+		int rlim = Math.min(3, gls.length()-ci-1);
+		for(int fi=0; fi<flist.length(); fi++)
 		{
-			var fl = flist[fi];  if(cligs.indexOf(fl.tag)==-1) continue;
-			for(var ti=0; ti<fl.tab.length; ti++)
+			FeatureList fl = flist.get(fi);
+			int ligMatch = -1;
+			for (int cligsIdx = 0; cligsIdx < cligs.length; cligsIdx++)
 			{
-				var tab = llist[fl.tab[ti]];
-				for(var j=0; j<tab.tabs.length; j++)
+			  if (cligs[cligsIdx].equals(fl.tag))
+			  {
+			    ligMatch = cligsIdx;
+			    break;
+			  }
+			}
+			if(ligMatch==-1) continue;
+			for(int ti=0; ti<fl.tab.length(); ti++)
+			{
+				LookupTable<GSUBTab> tab = llist.get(fl.tab.get(ti));
+				for(int j=0; j<tab.tabs.length(); j++)
 				{
-					if(tab.tabs[j]==null) continue;
-					var ind = Typr._lctf.coverageIndex(tab.tabs[j].coverage, gl);  if(ind==-1) continue;  
+					if(tab.tabs.get(j)==null) continue;
+					int ind = lctf.coverageIndex(tab.tabs.get(j).coverage, gl);  if(ind==-1) continue;  
 					//*
 					if(tab.ltype==4) {
-						var vals = tab.tabs[j].vals[ind];
+						ArrayOf<Ligature> vals = tab.tabs.get(j).vals.get(ind);
 						
-						for(var k=0; k<vals.length; k++) {
-							var lig = vals[k], rl = lig.chain.length;  if(rl>rlim) continue;
-							var good = true;
-							for(var l=0; l<rl; l++) if(lig.chain[l]!=gls[ci+(1+l)]) good=false;
+						for(int k=0; k<vals.length(); k++) {
+							Ligature lig = vals.get(k);
+							int rl = lig.chain.length();  if(rl>rlim) continue;
+							boolean good = true;
+							for(int l=0; l<rl; l++) if(lig.chain.get(l)!=gls.get(ci+(1+l))) good=false;
 							if(!good) continue;
-							gls[ci]=lig.nglyph;
-							for(var l=0; l<rl; l++) gls[ci+l+1]=-1;
+							gls.set(ci,lig.nglyph);
+							for(int l=0; l<rl; l++) gls.set(ci+l+1,-1);
 							//console.log("lig", fl.tag,  gl, lig.chain, lig.nglyph);
 						}
 					}
 					else  if(tab.ltype==5) {
-						var ltab = tab.tabs[j];  if(ltab.fmt!=2) continue;
-						var cind = Typr._lctf.getInterval(ltab.cDef, gl);
-						var cls = ltab.cDef[cind+2], scs = ltab.scset[cls]; 
-						for(var i=0; i<scs.length; i++) {
-							var sc = scs[i], inp = sc.input;
-							if(inp.length>rlim) continue;
-							var good = true;
-							for(var l=0; l<inp.length; l++) {
-								var cind2 = Typr._lctf.getInterval(ltab.cDef, gls[ci+1+l]);
-								if(cind==-1 && ltab.cDef[cind2+2]!=inp[l]) {  good=false;  break;  }
+						GSUBTab ltab = tab.tabs.get(j);  if(ltab.fmt!=2) continue;
+						int cind = lctf.getInterval(ltab.cDef, gl);
+						int cls = ltab.cDef.get(cind+2);
+						ArrayOf<SubClassRule> scs = ltab.scset.get(cls); 
+						for(int i=0; i<scs.length(); i++) {
+							SubClassRule sc = scs.get(i);
+							ArrayOfInt inp = sc.input;
+							if(inp.length()>rlim) continue;
+							boolean good = true;
+							for(int l=0; l<inp.length(); l++) {
+								int cind2 = lctf.getInterval(ltab.cDef, gls.get(ci+1+l));
+								if(cind==-1 && ltab.cDef.get(cind2+2)!=inp.get(l)) {  good=false;  break;  }
 							}
 							if(!good) continue;
 							//console.log(ci, gl);
-							var lrs = sc.substLookupRecords;
-							for(var k=0; k<lrs.length; k+=2)
+							ArrayOfInt lrs = sc.substLookupRecords;
+							for(int k=0; k<lrs.length(); k+=2)
 							{
-								var gi = lrs[k], tabi = lrs[k+1];
+								int gi = lrs.get(k);
+								int tabi = lrs.get(k+1);
 								//Typr.U._applyType1(gls, ci+gi, llist[tabi]);
 								//console.log(tabi, gls[ci+gi], llist[tabi]);
 							}
@@ -422,7 +441,7 @@ public class TyprU
 	}
 	
 	return gls;
-  }-*/;
+  }
   
   @JsMethod public static void _applyType1 (ArrayOfInt gls, int ci, LookupTable<GSUBTab> tab) {
 	int gl = gls.get(ci);

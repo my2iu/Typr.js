@@ -1,7 +1,5 @@
 package typr.tabs;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import elemental.client.Browser;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
@@ -10,7 +8,6 @@ import elemental.util.ArrayOfInt;
 import elemental.util.ArrayOfNumber;
 import elemental.util.ArrayOfString;
 import elemental.util.Collections;
-import elemental.util.MapFromStringTo;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
