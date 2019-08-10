@@ -41,7 +41,7 @@ public class Typr
     return parseIndex(data, fontIndex);
   }
   
-  @JsIgnore public static TyprFont parseIndex (Uint8Array data, int fontIndex)
+  @JsIgnore public static TyprFont parseIndex (Uint8Array data, Integer fontIndex)
   {
 //	var bin = Typr._bin;
     try {
@@ -99,6 +99,59 @@ public class Typr
   	}
   	
   	return obj;
+    }
+    catch (Throwable t)
+    {
+      TyprMisc.consoleLog(t);
+      return null;
+    }
+  }
+
+  @JsIgnore public static TyprFont parseFromSeparateTables (Map<Integer, Uint8Array> data)
+  {
+    try {
+      TyprFont obj = new TyprFont();
+    
+       String []tags = new String[] {
+            "cmap",
+            "head",
+            "hhea",
+            "maxp",
+            "hmtx",
+            "name",
+            "OS/2",
+            "post",
+            
+            //"cvt",
+            //"fpgm",
+            "loca",
+            "glyf",
+            "kern",
+            
+            //"prep"
+            //"gasp"
+            
+            "CFF ",
+            
+            
+            "GPOS",
+            "GSUB",
+            
+            "SVG "
+            //"VORG",
+        };
+  
+    for(String t: tags)
+    {
+       int tagInt = TableRecord.stringTagToInt(t);
+       if (data.containsKey(tagInt))
+       {
+          Uint8Array tableData = data.get(tagInt);
+          parseTab(obj, tableData, 0, tableData.getByteLength(), t);
+       }
+    }
+    
+    return obj;
     }
     catch (Throwable t)
     {

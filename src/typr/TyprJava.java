@@ -70,6 +70,18 @@ public class TyprJava
       s += String.valueOf((char)ch);
       return s;
     }
+    public static int stringTagToInt(String tag)
+    {
+       int val;
+       val = (int)tag.charAt(0);
+       val <<= 8;
+       val |= (int)tag.charAt(1);
+       val <<= 8;
+       val |= (int)tag.charAt(2);
+       val <<= 8;
+       val |= (int)tag.charAt(3);
+       return val;
+    }
   }
   
   /**
