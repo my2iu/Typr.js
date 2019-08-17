@@ -360,12 +360,12 @@ public class CFF extends CffDictBase
   static public abstract class FDSelect
   {
     public int format;
-    @JsMethod public abstract int getFd(int glyphId);
+    public abstract int getFd(int glyphId);
   }
   static public class FDSelect0 extends FDSelect
   {
     ArrayOfInt fds;
-    @Override @JsMethod public int getFd(int glyphId)
+    @Override public int getFd(int glyphId)
     {
       return fds.get(glyphId);
     }
@@ -373,7 +373,7 @@ public class CFF extends CffDictBase
   static public class FDSelect3 extends FDSelect
   {
     ArrayOf<FDSelectRange3> range3;
-    @Override @JsMethod public int getFd(int glyphId)
+    @Override public int getFd(int glyphId)
     {
       if (glyphId >= range3.get(range3.length() - 1).first)
         throw new IllegalArgumentException("Glyph outside of FD range");
@@ -497,13 +497,13 @@ public class CFF extends CffDictBase
     146, 147, 148, 149,   0,   0,   0,   0
     };
   
-    @JsMethod public static int glyphByUnicode (CFF cff, int code)
+    @JsIgnore public static int glyphByUnicode (CFF cff, int code)
     {
         for(int i=0; i<cff.charset.length(); i++) if(cff.charset.get(i)==code) return i;
         return -1;
     }
     
-    @JsMethod public static int glyphBySE(CFF cff, int charcode)  // glyph by standard encoding
+    @JsIgnore public static int glyphBySE(CFF cff, int charcode)  // glyph by standard encoding
     {
         if ( charcode < 0 || charcode > 255 ) return -1;
         return CFF.glyphByUnicode(cff, CFF.tableSE[charcode]);        

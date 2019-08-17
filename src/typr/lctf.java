@@ -7,13 +7,11 @@ import elemental.util.Collections;
 import elemental.util.MapFromStringTo;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 //OpenType Layout Common Table Formats
 
-@JsType(name="_lctf", namespace="Typr")
 public class lctf
 {
   @JsFunction public static interface Subt<T>
@@ -89,14 +87,14 @@ public class lctf
 	return obj;
   }
 
-  @JsMethod public static int numOfOnes (int n)
+  @JsIgnore public static int numOfOnes (int n)
   {
 	int num = 0;
 	for(int i=0; i<32; i++) if(((n>>>i)&1) != 0) num++;
 	return num;
   }
 
-  @JsMethod public static ArrayOfInt readClassDef(Uint8Array data, int offset)
+  @JsIgnore public static ArrayOfInt readClassDef(Uint8Array data, int offset)
   {
 //	var bin = Typr._bin;
 	ArrayOfInt obj = Collections.arrayOfInt();
@@ -124,7 +122,7 @@ public class lctf
 	}
 	return obj;
   }
-  @JsMethod public static int getInterval (ArrayOfInt tab, int val)
+  @JsIgnore public static int getInterval (ArrayOfInt tab, int val)
   {
 	for(int i=0; i<tab.length(); i+=3)
 	{
@@ -134,7 +132,7 @@ public class lctf
 	return -1;
   }
 
-  @JsMethod public static ArrayOfInt readValueRecord (Uint8Array data, int offset, char valFmt)
+  @JsIgnore public static ArrayOfInt readValueRecord (Uint8Array data, int offset, char valFmt)
   {
 //	var bin = Typr._bin;
      int iValFmt = (int)valFmt;
@@ -152,7 +150,7 @@ public class lctf
     @JsProperty public ArrayOfInt tab;
   }
   
-  @JsMethod public static Coverage readCoverage (Uint8Array data, int offset)
+  @JsIgnore public static Coverage readCoverage (Uint8Array data, int offset)
   {
 //	var bin = Typr._bin;
 	Coverage cvg = new Coverage();
@@ -164,7 +162,7 @@ public class lctf
 	return cvg;
   }
 
-  @JsMethod public static int coverageIndex (Coverage cvg, int val)
+  @JsIgnore public static int coverageIndex (Coverage cvg, int val)
   {
 	ArrayOfInt tab = cvg.tab;
 	if(cvg.fmt==1) return tab.indexOf(val);
@@ -237,7 +235,7 @@ public class lctf
 	return obj;
   }
 
-  @JsMethod public static MapFromStringTo<LangSysTable> readScriptTable (Uint8Array data, int offset)
+  @JsIgnore public static MapFromStringTo<LangSysTable> readScriptTable (Uint8Array data, int offset)
   {
 //	var bin = Typr._bin;
 	int offset0 = offset;
@@ -263,7 +261,7 @@ public class lctf
     @JsProperty public ArrayOfInt features;
   }
 
-  @JsMethod public static LangSysTable readLangSysTable (Uint8Array data, int offset)
+  @JsIgnore public static LangSysTable readLangSysTable (Uint8Array data, int offset)
   {
 //	var bin = Typr._bin;
     LangSysTable obj = new LangSysTable();

@@ -179,7 +179,7 @@ public class TyprU
 	return null;
   }
   
-  @JsMethod public static glyf _getGlyf (int gid, TyprFont font)
+  @JsIgnore public static glyf _getGlyf (int gid, TyprFont font)
   {
     glyf gl = font.glyf.get(gid);
 	if(gl==null) 
@@ -189,7 +189,7 @@ public class TyprU
 	}
 	return gl;
   }
-  @JsMethod public static void _drawGlyf (int gid, TyprFont font, TyprPath path)
+  @JsIgnore public static void _drawGlyf (int gid, TyprFont font, TyprPath path)
   {
 	glyf gl = _getGlyf(gid, font);
 	if(gl!=null){
@@ -197,7 +197,7 @@ public class TyprU
 		else          _compoGlyph (gl, font, path);
 	}
   }
-  @JsMethod public static void _simpleGlyph (glyf gl, TyprPath p)
+  @JsIgnore public static void _simpleGlyph (glyf gl, TyprPath p)
   {
 	for(int c=0; c<gl.noc; c++)
 	{
@@ -240,7 +240,7 @@ public class TyprU
 		TyprUP.closePath(p);
 	}
   }
-  @JsMethod public static void _compoGlyph (glyf gl, TyprFont font, TyprPath p)
+  @JsIgnore public static void _compoGlyph (glyf gl, TyprFont font, TyprPath p)
   {
 	for(int j=0; j<gl.parts.length(); j++)
 	{
@@ -260,7 +260,7 @@ public class TyprU
   }
 
 
-  @JsMethod public static int _getGlyphClass (int g, ArrayOfInt cd)
+  @JsIgnore public static int _getGlyphClass (int g, ArrayOfInt cd)
   {
 	int intr = lctf.getInterval(cd, g);
 	return intr==-1 ? 0 : cd.get(intr+2);

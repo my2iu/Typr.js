@@ -7,7 +7,6 @@ import elemental.util.ArrayOfInt;
 import elemental.util.Collections;
 import elemental.util.MapFromStringTo;
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import typr.TyprFont;
@@ -105,7 +104,7 @@ public class GSUBParser
     return tab;
   };
 
-  @JsMethod public static ArrayOf<SubClassRule> readSubClassSet (Uint8Array data, int offset)
+  @JsIgnore public static ArrayOf<SubClassRule> readSubClassSet (Uint8Array data, int offset)
   {
 //    var rUs = Typr._bin.readUshort, ;
     int offset0 = offset;
@@ -145,7 +144,7 @@ public class GSUBParser
     return out;
   }
 
-  @JsMethod public static ArrayOf<MapFromStringTo<ArrayOfInt>> readChainSubClassSet (Uint8Array data, int offset)
+  @JsIgnore public static ArrayOf<MapFromStringTo<ArrayOfInt>> readChainSubClassSet (Uint8Array data, int offset)
   {
 //    var bin = Typr._bin, 
     int offset0 = offset;
@@ -173,7 +172,7 @@ public class GSUBParser
     return rule;
   }
 
-  @JsMethod public static ArrayOf<Ligature> readLigatureSet (Uint8Array data, int offset)
+  @JsIgnore public static ArrayOf<Ligature> readLigatureSet (Uint8Array data, int offset)
   {
 //    var bin = Typr._bin, 
     int offset0 = offset;
