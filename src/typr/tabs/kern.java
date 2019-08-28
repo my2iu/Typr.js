@@ -11,13 +11,13 @@ import typr.bin;
 
 public class kern
 {
-  @JsProperty public ArrayOfInt glyph1;
-  @JsProperty public ArrayOf<KernRval> rval;
+  public ArrayOfInt glyph1;
+  public ArrayOf<KernRval> rval;
 
   public static class KernRval
   {
-    @JsProperty public ArrayOfInt glyph2;
-    @JsProperty public ArrayOfInt vals;
+    public ArrayOfInt glyph2;
+    public ArrayOfInt vals;
   }
   
   @JsIgnore

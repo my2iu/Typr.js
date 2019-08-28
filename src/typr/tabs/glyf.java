@@ -18,36 +18,37 @@ public class glyf
 	return obj;
   }
 
-  @JsProperty public short noc;
-  @JsProperty public short xMin;
-  @JsProperty public short yMin;
-  @JsProperty public short xMax;
-  @JsProperty public short yMax;
-  @JsProperty public ArrayOfInt endPts;
-  @JsProperty public ArrayOfInt instructions;
-  @JsProperty public ArrayOfInt flags;
-  @JsProperty public ArrayOfInt ys;
-  @JsProperty public ArrayOfInt xs;
-  @JsProperty public ArrayOfInt instr;
-  @JsProperty public ArrayOf<Part> parts;
+
+  public short noc;
+  public short xMin;
+  public short yMin;
+  public short xMax;
+  public short yMax;
+  public ArrayOfInt endPts;
+  public ArrayOfInt instructions;
+  public ArrayOfInt flags;
+  public ArrayOfInt ys;
+  public ArrayOfInt xs;
+  public ArrayOfInt instr;
+  public ArrayOf<Part> parts;
 
   
   public static class PartInternal
   {
-    @JsProperty public double a=1;
-    @JsProperty public double b=0;
-    @JsProperty public double c=0;
-    @JsProperty public double d=1;
-    @JsProperty public int tx=0;
-    @JsProperty public int ty=0;
+    public double a=1;
+    public double b=0;
+    public double c=0;
+    public double d=1;
+    public int tx=0;
+    public int ty=0;
   }
   
   public static class Part
   {
-    @JsProperty public PartInternal m = new PartInternal();
-    @JsProperty public int p1 = -1;
-    @JsProperty public int p2 = -1;
-    @JsProperty public char glyphIndex;
+    public PartInternal m = new PartInternal();
+    public int p1 = -1;
+    public int p2 = -1;
+    public char glyphIndex;
   }
 
   

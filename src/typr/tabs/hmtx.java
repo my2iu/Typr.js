@@ -10,10 +10,10 @@ import typr.bin;
 
 public class hmtx
 {
-  @JsProperty public ArrayOfInt aWidth;
-  @JsProperty public ArrayOfInt lsBearing;
+  public ArrayOfInt aWidth;
+  public ArrayOfInt lsBearing;
   
-  @JsIgnore  public static hmtx parse (Uint8Array data, int offset, int length, TyprFont font)
+  public static hmtx parse (Uint8Array data, int offset, int length, TyprFont font)
   {
 //	var bin = Typr._bin;
 	hmtx obj = new hmtx();

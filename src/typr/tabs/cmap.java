@@ -12,31 +12,31 @@ import typr.bin;
 
 public class cmap
 {
-  @JsProperty public MapFromStringToInt platformEncodingMap;
+  public MapFromStringToInt platformEncodingMap;
   
-  @JsProperty public ArrayOf<Table> tables;
+  public ArrayOf<Table> tables;
   public static class Table
   {
-    @JsProperty(name="format") public int format;
+    public int format;
     
     // parse0
-    @JsProperty(name="map") public ArrayOfInt map;
+    public ArrayOfInt map;
     
     // parse4
-    @JsProperty(name="startCount") public ArrayOfInt startCount;
-    @JsProperty(name="endCount") public ArrayOfInt endCount;
-    @JsProperty(name="idRangeOffset") public ArrayOfInt idRangeOffset;
-    @JsProperty(name="glyphIdArray") public ArrayOfInt glyphIdArray;
-    @JsProperty(name="idDelta") public ArrayOfInt idDelta;
-    @JsProperty(name="searchRange") public char searchRange;
-    @JsProperty(name="entrySelector") public char entrySelector;
-    @JsProperty(name="rangeShift") public char rangeShift;
+    public ArrayOfInt startCount;
+    public ArrayOfInt endCount;
+    public ArrayOfInt idRangeOffset;
+    public ArrayOfInt glyphIdArray;
+    public ArrayOfInt idDelta;
+    public char searchRange;
+    public char entrySelector;
+    public char rangeShift;
 
     // parse6
-    @JsProperty(name="firstCode") public char firstCode;
+    public char firstCode;
     
     // parse12
-    @JsProperty(name="groups") public ArrayOf<ArrayOfInt> groups;
+    public ArrayOf<ArrayOfInt> groups;
   }
   
   @JsIgnore public static cmap parse(Uint8Array data, int offset, int length)
