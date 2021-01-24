@@ -55,7 +55,7 @@ public class glyf
   @JsIgnore public static glyf _parseGlyf (TyprFont font, int g)
   {
 //	var bin = Typr._bin;
-	Uint8Array data = font._rawGlyfTableData;
+	Uint8Array data = font.rawFontTables.get(0x676c7966);
 	
 	int offset = font.loca.get(g);
 		

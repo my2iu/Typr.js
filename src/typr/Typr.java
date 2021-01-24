@@ -43,12 +43,16 @@ public class Typr
   
   @JsIgnore public static TyprFont parseIndex (Uint8Array data, Integer fontIndex)
   {
+    return parseIndex(data, fontIndex, false, false);
+  }
+  
+  @JsIgnore public static TyprFont parseIndex (Uint8Array data, int fontIndex, boolean withRawFontTables, boolean copyTables)
+  {
 //	var bin = Typr._bin;
     try {
       
       
       boolean isTtcf = TyprJava.checkIsTtcf(data);
-      TyprFont obj = new TyprFont();
 //      obj._data = data;
   	
       int fontOffset = 0;
@@ -88,7 +92,28 @@ public class Typr
   	        "SVG "
   	        //"VORG",
   	    };
-  
+
+	   TyprFont obj = new TyprFont();
+	   if (withRawFontTables)
+	   {
+	     obj.hasRawFontTables = true;
+	     for (TableRecord table: tableRecords.values())
+	     {
+	       if (copyTables)
+	         obj.rawFontTables.put(table.tag, TyprMisc.slicedUint8Array(data, table.offset, table.length));
+	       else
+             obj.rawFontTables.put(table.tag, TyprMisc.viewOfUint8Array(data, table.offset, table.length));
+	     }
+	   }
+	   else if (tableRecords.containsKey("glyf"))
+	   {
+	     TableRecord table = tableRecords.get("glyf");
+	     if (copyTables)
+	       obj.rawFontTables.put(table.tag, TyprMisc.slicedUint8Array(data, table.offset, table.length));
+	     else
+           obj.rawFontTables.put(table.tag, TyprMisc.viewOfUint8Array(data, table.offset, table.length));
+	   }
+
   	for(String t: tags)
   	{
   		//console.log(t);
@@ -195,8 +220,7 @@ public class Typr
       obj.loca = loca.parse(data, offset, length, obj);
       break;
     case "glyf":
-      obj._rawGlyfTableData = TyprMisc.slicedUint8Array(data, offset, length);
-      obj.glyf = glyf.parse(obj._rawGlyfTableData, 0, length, obj);
+      obj.glyf = glyf.parse(obj.rawFontTables.get((103<<24)|(108<<16)|(121<<8)|102), 0, length, obj);
       break;
     case "kern":
       obj.kern = kern.parse(data, offset, length, obj);

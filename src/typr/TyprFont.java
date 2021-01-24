@@ -1,5 +1,8 @@
 package typr;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfInt;
@@ -10,8 +13,19 @@ import typr.tabs.GSUBParser.GSUBTab;
 
 public class TyprFont
 {
+  /**
+   * In order to use Harfbuzz for text shaping, the raw font tables need to be
+   * kept around, so this field optionally augments the normal Typr.js font  
+   * information with the raw font tables so that both Harfbuzz and Typr can   
+   * be used simultaneously for text rendering. (Even if the raw font tables
+   * are not saved, the raw glyf table will saved so that it will not waste
+   * memory and resources fully extracting it.) 
+   */
+  public Map<Integer, Uint8Array> rawFontTables = new HashMap<>();
+  public boolean hasRawFontTables = false;
+  
 //  @JsProperty public Uint8Array _data;
-  @JsProperty public Uint8Array _rawGlyfTableData;  // Glyf table only parsed when needed
+//  @JsProperty public Uint8Array _rawGlyfTableData;  // Glyf table only parsed when needed
 
   
   @JsProperty public typr.tabs.cmap cmap;
