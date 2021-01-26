@@ -40,7 +40,13 @@ public class Typr
     Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
     return parseIndex(data, fontIndex);
   }
-  
+
+  @JsIgnore public static TyprFont parseIndex (ArrayBuffer buff, int fontIndex, boolean copyTables)
+  {
+    Uint8Array data = Browser.getWindow().newUint8Array(buff, 0, buff.getByteLength());
+    return parseIndex(data, fontIndex, true, copyTables);
+  }
+
   @JsIgnore public static TyprFont parseIndex (Uint8Array data, Integer fontIndex)
   {
     return parseIndex(data, fontIndex, false, false);
@@ -132,11 +138,21 @@ public class Typr
     }
   }
 
-  @JsIgnore public static TyprFont parseFromSeparateTables (Map<Integer, Uint8Array> data)
+  @JsIgnore public static TyprFont parseFromSeparateTables (Map<Integer, Uint8Array> data, boolean withRawFontTables)
   {
     try {
       TyprFont obj = new TyprFont();
-    
+
+      if (withRawFontTables)
+      {
+        obj.hasRawFontTables = true;
+        obj.rawFontTables.putAll(data);
+      }
+      else if (data.containsKey(TableRecord.stringTagToInt("glyf")))
+      {
+        obj.rawFontTables.put(TableRecord.stringTagToInt("glyf"), data.get(TableRecord.stringTagToInt("glyf")));
+      }
+      
        String []tags = new String[] {
             "cmap",
             "head",
