@@ -26,6 +26,7 @@ import typr.tabs.loca;
 import typr.tabs.maxp;
 import typr.tabs.name;
 import typr.tabs.post;
+import typr.tabs.vhea;
 
 @JsType(namespace=JsPackage.GLOBAL)
 public class Typr
@@ -74,6 +75,7 @@ public class Typr
   	        "cmap",
   	        "head",
   	        "hhea",
+  	        "vhea",
   	        "maxp",
   	        "hmtx",
   	        "name",
@@ -213,6 +215,9 @@ public class Typr
       break;
     case "hhea":
       obj.hhea = hhea.parse(data, offset, length);
+      break;
+    case "vhea":
+      obj.vhea = vhea.parse(data, offset, length);
       break;
     case "maxp":
       obj.maxp = maxp.parse(data, offset, length);

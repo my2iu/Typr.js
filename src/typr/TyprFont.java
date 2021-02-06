@@ -31,6 +31,7 @@ public class TyprFont
   @JsProperty public typr.tabs.cmap cmap;
   @JsProperty public typr.tabs.head head;
   @JsProperty public typr.tabs.hhea hhea;
+  @JsProperty public typr.tabs.vhea vhea;
   @JsProperty public typr.tabs.maxp maxp;
   @JsProperty public typr.tabs.hmtx hmtx;
   @JsProperty public typr.tabs.name name;
