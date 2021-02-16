@@ -583,6 +583,7 @@ public class CFF extends CffDictBase
         if     (offsize==1) for(int i=0; i<count+1; i++) inds.push( data.intAt(offset+i) );
         else if(offsize==2) for(int i=0; i<count+1; i++) inds.push( bin.readUshort(data, offset+i*2) );
         else if(offsize==3) for(int i=0; i<count+1; i++) inds.push( bin.readUint  (data, offset+i*3 - 1) & 0x00ffffff );
+        else if(offsize==4) for(int i=0; i<count+1; i++) inds.push( bin.readUint  (data, offset+i*4) );
         else if(count!=0) throw new IllegalArgumentException("unsupported offset size: " + offsize + ", count: " + (int)count);
         
         offset += (count+1)*offsize;
